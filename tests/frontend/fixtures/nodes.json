@@ -1,0 +1,332 @@
+{
+  "_comment": [
+    "A deliberately small, HAND-WRITTEN stand-in for the /sceneweaver/fields",
+    "payload and for the widget lists ComfyUI builds from define_schema().",
+    "",
+    "Hand-written rather than generated on purpose. A generated fixture would",
+    "have to import the data layer, and importing it runs the user_options.json",
+    "merge -- which would bake whichever pool values the maintainer happened to",
+    "have locally into a committed file (the failure named in the memory lesson",
+    "'feedback-generator-cannot-leak-user-data'). It would also be ~130KB of",
+    "pool values to prove behaviour that eight fields prove just as well.",
+    "",
+    "What stops it drifting from the real payload is not a --check on this file",
+    "but tests/test_frontend_payload.py, which asserts the real pack produces",
+    "the same STRUCTURE this declares -- the direction that actually matters,",
+    "since the frontend reads a shape and Python must keep emitting it.",
+    "",
+    "The genre here is fictional ('fixture'), which is also a small proof that",
+    "js/sceneweaver.js knows nothing about sci-fi: it is handed node ids and",
+    "field data, never a genre."
+  ],
+  "nodes": {
+    "SceneWeaverFixture": {
+      "genre": "fixture",
+      "display": "Fixture",
+      "role": "scene",
+      "kind_field": "kind",
+      "random": "Random",
+      "none": "None",
+      "default_key": "_default",
+      "order": [
+        "seed",
+        "scene_filter",
+        "entity_count",
+        "set_all_fields",
+        "environment",
+        "entity1_kind",
+        "entity1_subkind",
+        "entity1_form",
+        "entity1_emitter_count",
+        "entity1_situation",
+        "entity2_kind",
+        "entity2_situation",
+        "relation_1_2"
+      ],
+      "fields": {
+        "environment": {
+          "base": "environment",
+          "slot": null,
+          "label": "Environment",
+          "qualifier": "",
+          "kind_scoped": false,
+          "scope": [],
+          "endpoints": null,
+          "group": "Scene"
+        },
+        "entity1_kind": {
+          "base": "kind",
+          "slot": 1,
+          "label": "Kind",
+          "qualifier": " 1",
+          "kind_scoped": false,
+          "scope": [],
+          "endpoints": null,
+          "group": "Identity"
+        },
+        "entity1_subkind": {
+          "base": "subkind",
+          "slot": 1,
+          "label": "Type",
+          "qualifier": " 1",
+          "kind_scoped": true,
+          "scope": ["kind"],
+          "endpoints": null,
+          "group": "Identity"
+        },
+        "entity1_form": {
+          "base": "form",
+          "slot": 1,
+          "label": "Form",
+          "qualifier": " 1",
+          "kind_scoped": true,
+          "scope": ["subkind", "kind"],
+          "endpoints": null,
+          "group": "Form & Material"
+        },
+        "entity1_emitter_count": {
+          "base": "emitter_count",
+          "slot": 1,
+          "label": "Emitter count",
+          "qualifier": " 1",
+          "kind_scoped": false,
+          "scope": [],
+          "endpoints": null,
+          "group": "Components"
+        },
+        "entity1_situation": {
+          "base": "situation",
+          "slot": 1,
+          "label": "Situation",
+          "qualifier": " 1",
+          "kind_scoped": true,
+          "scope": ["kind"],
+          "endpoints": null,
+          "group": "Scene"
+        },
+        "entity2_kind": {
+          "base": "kind",
+          "slot": 2,
+          "label": "Kind",
+          "qualifier": " 2",
+          "kind_scoped": false,
+          "scope": [],
+          "endpoints": null,
+          "group": "Identity"
+        },
+        "entity2_situation": {
+          "base": "situation",
+          "slot": 2,
+          "label": "Situation",
+          "qualifier": " 2",
+          "kind_scoped": true,
+          "scope": ["kind"],
+          "endpoints": null,
+          "group": "Scene"
+        },
+        "relation_1_2": {
+          "base": "relation",
+          "slot": null,
+          "label": "Relation",
+          "qualifier": " 1-2",
+          "kind_scoped": false,
+          "scope": [],
+          "endpoints": [1, 2],
+          "group": "Relations"
+        }
+      },
+      "choices": {
+        "environment": ["Random", "deep space", "low orbit", "None"],
+        "kind": ["Random", "vessel", "creature", "None"],
+        "subkind": ["Random", "courier", "heavy freighter", "None"],
+        "form": ["Random", "needle hull", "saucer", "hexapodal frame", "serpentine", "None"],
+        "emitter_count": ["Random", "a single", "a pair of", "None"],
+        "situation": ["Random", "docking at a station", "stalking prey", "drifting", "None"],
+        "relation": ["Random", "orbiting", "pursuing", "None"]
+      },
+      "kind_widgets": {
+        "entity1_kind": ["entity1_form", "entity1_emitter_count", "entity1_situation"],
+        "entity2_kind": ["entity2_situation"]
+      },
+      "scope_widgets": {
+        "entity1_kind": ["entity1_subkind", "entity1_form", "entity1_situation"],
+        "entity1_subkind": ["entity1_form"],
+        "entity2_kind": ["entity2_situation"]
+      },
+      "pool_groups": {
+        "subkind": {
+          "bulk freighter": ["heavy freighter"]
+        }
+      },
+      "labels": {
+        "form": {
+          "vessel": "Hull silhouette",
+          "creature": "Body plan"
+        },
+        "emitter_count": {
+          "vessel": "Engine count",
+          "creature": "Eye count"
+        }
+      },
+      "pools": {
+        "environment": {
+          "_default": ["deep space", "low orbit"]
+        },
+        "kind": {
+          "_default": ["vessel", "creature"]
+        },
+        "subkind": {
+          "vessel": ["courier", "heavy freighter"]
+        },
+        "form": {
+          "vessel": ["needle hull", "saucer"],
+          "creature": ["hexapodal frame", "serpentine"],
+          "courier": ["needle hull"],
+          "bulk freighter": ["saucer"]
+        },
+        "emitter_count": {
+          "_default": ["a single", "a pair of"]
+        },
+        "situation": {
+          "vessel": ["docking at a station"],
+          "creature": ["stalking prey"],
+          "_default": ["drifting"]
+        },
+        "relation": {
+          "_default": ["orbiting", "pursuing"]
+        }
+      },
+      "set_all": {
+        "key": "set_all_fields",
+        "off": "Off",
+        "clear": "Clear all",
+        "randomize": "Randomize all"
+      },
+      "situation_field": "situation",
+      "entity_count_key": "entity_count"
+    },
+    "SceneEntityFixture": {
+      "genre": "fixture",
+      "display": "Fixture",
+      "role": "entity",
+      "kind_field": "kind",
+      "random": "Random",
+      "none": "None",
+      "default_key": "_default",
+      "order": ["seed", "kind", "subkind", "form", "emitter_count"],
+      "fields": {
+        "kind": {
+          "base": "kind",
+          "slot": 1,
+          "label": "Kind",
+          "qualifier": "",
+          "kind_scoped": false,
+          "scope": [],
+          "endpoints": null,
+          "group": "Identity"
+        },
+        "subkind": {
+          "base": "subkind",
+          "slot": 1,
+          "label": "Type",
+          "qualifier": "",
+          "kind_scoped": true,
+          "scope": ["kind"],
+          "endpoints": null,
+          "group": "Identity"
+        },
+        "form": {
+          "base": "form",
+          "slot": 1,
+          "label": "Form",
+          "qualifier": "",
+          "kind_scoped": true,
+          "scope": ["subkind", "kind"],
+          "endpoints": null,
+          "group": "Form & Material"
+        },
+        "emitter_count": {
+          "base": "emitter_count",
+          "slot": 1,
+          "label": "Emitter count",
+          "qualifier": "",
+          "kind_scoped": false,
+          "scope": [],
+          "endpoints": null,
+          "group": "Components"
+        }
+      },
+      "choices": {
+        "kind": ["Random", "vessel", "creature", "None"],
+        "subkind": ["Random", "courier", "heavy freighter", "None"],
+        "form": ["Random", "needle hull", "saucer", "hexapodal frame", "serpentine", "None"],
+        "emitter_count": ["Random", "a single", "a pair of", "None"]
+      },
+      "kind_widgets": {
+        "kind": ["form", "emitter_count"]
+      },
+      "scope_widgets": {
+        "kind": ["subkind", "form"],
+        "subkind": ["form"]
+      },
+      "pool_groups": {
+        "subkind": {
+          "bulk freighter": ["heavy freighter"]
+        }
+      },
+      "labels": {
+        "form": {
+          "vessel": "Hull silhouette",
+          "creature": "Body plan"
+        },
+        "emitter_count": {
+          "vessel": "Engine count",
+          "creature": "Eye count"
+        }
+      },
+      "pools": {
+        "kind": {
+          "_default": ["vessel", "creature"]
+        },
+        "subkind": {
+          "vessel": ["courier", "heavy freighter"]
+        },
+        "form": {
+          "vessel": ["needle hull", "saucer"],
+          "creature": ["hexapodal frame", "serpentine"],
+          "courier": ["needle hull"],
+          "bulk freighter": ["saucer"]
+        },
+        "emitter_count": {
+          "_default": ["a single", "a pair of"]
+        }
+      },
+      "situation_field": "situation",
+      "entity_count_key": null
+    }
+  },
+  "widgets": {
+    "SceneWeaverFixture": [
+      { "name": "seed", "type": "number", "default": 0 },
+      { "name": "scene_filter", "type": "combo", "default": "Any", "options": ["Any", "Peaceful", "Conflict"] },
+      { "name": "entity_count", "type": "combo", "default": "1", "options": ["1", "2"] },
+      { "name": "set_all_fields", "type": "combo", "default": "Off", "options": ["Off", "Randomize all", "Clear all"] },
+      { "name": "environment", "type": "combo", "default": "Random", "options": ["Random", "deep space", "low orbit", "None"] },
+      { "name": "entity1_kind", "type": "combo", "default": "Random", "options": ["Random", "vessel", "creature", "None"] },
+      { "name": "entity1_subkind", "type": "combo", "default": "Random", "options": ["Random", "courier", "heavy freighter", "None"] },
+      { "name": "entity1_form", "type": "combo", "default": "Random", "options": ["Random", "needle hull", "saucer", "hexapodal frame", "serpentine", "None"] },
+      { "name": "entity1_emitter_count", "type": "combo", "default": "Random", "options": ["Random", "a single", "a pair of", "None"] },
+      { "name": "entity1_situation", "type": "combo", "default": "Random", "options": ["Random", "docking at a station", "stalking prey", "drifting", "None"] },
+      { "name": "entity2_kind", "type": "combo", "default": "None", "options": ["Random", "vessel", "creature", "None"] },
+      { "name": "entity2_situation", "type": "combo", "default": "Random", "options": ["Random", "docking at a station", "stalking prey", "drifting", "None"] },
+      { "name": "relation_1_2", "type": "combo", "default": "None", "options": ["Random", "orbiting", "pursuing", "None"] }
+    ],
+    "SceneEntityFixture": [
+      { "name": "seed", "type": "number", "default": 0 },
+      { "name": "kind", "type": "combo", "default": "Random", "options": ["Random", "vessel", "creature", "None"] },
+      { "name": "subkind", "type": "combo", "default": "Random", "options": ["Random", "courier", "heavy freighter", "None"] },
+      { "name": "form", "type": "combo", "default": "Random", "options": ["Random", "needle hull", "saucer", "hexapodal frame", "serpentine", "None"] },
+      { "name": "emitter_count", "type": "combo", "default": "Random", "options": ["Random", "a single", "a pair of", "None"] }
+    ]
+  }
+}

@@ -1,0 +1,42 @@
+name: "Incoherent scene"
+description: "A scene that contradicts itself, or describes something that could not exist as described."
+title: "[incoherent] "
+labels: ["coherence", "beta-feedback"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks — this is the single most useful kind of report during the beta.
+
+        **The `prompt_text` on its own is usually enough for me to reproduce it.**
+        Everything else here is a bonus.
+  - type: textarea
+    id: prompt_text
+    attributes:
+      label: The prompt_text
+      description: "Paste the prose the node produced. Wire prompt_text into a Show Text node if you aren't already."
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: wrong
+    attributes:
+      label: What's wrong with it?
+      description: "e.g. 'a burrowing worm-form with four wheels', 'a starship parked on a gas giant', 'says it is pristine and also burnt out'."
+    validations:
+      required: true
+  - type: textarea
+    id: json
+    attributes:
+      label: "prompt_json (optional)"
+      description: "The node's other output. It carries the seed and the resolved fields, which makes the scene exactly reproducible."
+      render: json
+    validations:
+      required: false
+  - type: input
+    id: version
+    attributes:
+      label: "SceneWeaver version"
+      placeholder: "0.3.0"
+    validations:
+      required: false

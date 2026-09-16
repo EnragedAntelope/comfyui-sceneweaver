@@ -1,0 +1,47 @@
+# What the ComfyUI Registry zip leaves out.
+#
+# This file ONLY filters the Registry archive. It has no effect on GitHub and
+# no effect on a `git clone` install, so anything that must not be published at
+# all belongs in .gitignore instead -- the two files are not alternatives.
+#
+# The rule here is "would a user running this node ever load it?". Development
+# tooling would not: it is on GitHub for contributors, and shipping it makes
+# every install larger for nothing.
+
+# Test suites and their harnesses.
+tests/
+
+# Node tooling for the jsdom suite. node_modules/ is gitignored as well; the
+# manifests are not, because CI needs them.
+package.json
+package-lock.json
+node_modules/
+
+# Maintainer scripts: the distribution sweep and the pool lister.
+scripts/
+
+# Contributor documentation and the README's images. The README itself ships,
+# and it references its images by absolute raw.githubusercontent URL precisely
+# so it still renders on the Registry page with docs/ left out of the zip.
+docs/
+AGENTS.md
+CLAUDE.md
+conftest.py
+
+# CI.
+.github/
+
+# Caches and local working notes.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.omo/
+
+# NOT excluded, deliberately:
+#   js/                       -- the frontend; WEB_DIRECTORY serves it at runtime
+#   user_options.example.json -- the template users copy to add their own values
+#   data/ engine/ nodes/      -- the pack
+#   example_workflows/        -- ComfyUI scans this exact name and lists them
+#                                under Workflow > Browse Templates
+#   LICENSE README.md pyproject.toml

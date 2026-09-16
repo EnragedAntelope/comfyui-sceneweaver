@@ -1,0 +1,31 @@
+name: "Seeing too much of something"
+description: "A value, kind, environment or phrase that keeps coming back more often than it should."
+title: "[bias] "
+labels: ["distribution", "beta-feedback"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Distribution bias is genuinely hard to see from the inside — I look at
+        these scenes all day and stop noticing. An outside read is worth a lot.
+  - type: input
+    id: what
+    attributes:
+      label: What are you seeing too much of?
+      placeholder: "asteroid fields / saucer hulls / the word 'derelict' / wrecks in general"
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Roughly how often, and out of how many?
+      description: "A rough count is fine — 'about 1 in 3 of ~40 generations'. Pasting a few prompt_text samples helps most."
+    validations:
+      required: true
+  - type: textarea
+    id: settings
+    attributes:
+      label: What was locked?
+      description: "Any dropdown not on Random narrows the pools, which changes the odds for everything else. 'Nothing, all Random' is a perfectly good answer."
+    validations:
+      required: false

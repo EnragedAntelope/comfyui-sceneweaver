@@ -1,0 +1,37 @@
+name: "Request a value, option or setting"
+description: "Something you want to be able to generate, lock or control that isn't there yet."
+title: "[request] "
+labels: ["content", "beta-feedback"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Most of these are a data change rather than a rewrite, so they can land quickly.
+  - type: dropdown
+    id: sort
+    attributes:
+      label: What sort of thing?
+      options:
+        - "A creature type / ship class / subkind"
+        - "An environment or setting"
+        - "A situation (what an entity is doing)"
+        - "A new kind entirely (something that isn't a ship, creature, mech, station, world or artifact)"
+        - "A control or setting on the node"
+        - "A whole genre (fantasy, horror, post-apocalyptic, ...)"
+        - "Something else"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What do you want?
+      description: "Be as concrete as you like — specific values are easier to act on than categories."
+      placeholder: "Creature types: silicon-lattice swarm, tidal-pool filter feeder. Environments: a ringworld inner surface."
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        **You don't have to wait for me.** A `user_options.json` beside the pack adds your own
+        values to any pool immediately, and survives a `git pull` — see `user_options.example.json`.
+        Requests here are for things that should ship for everyone.

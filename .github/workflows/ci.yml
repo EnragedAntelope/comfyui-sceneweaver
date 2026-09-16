@@ -1,0 +1,101 @@
+name: CI
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+# Least privilege: CI only needs to read the repo.
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Cover the floor (requires-python = ">=3.10") and a current release.
+        python-version: ["3.10", "3.13"]
+    steps:
+      - name: Check out code
+        # Pinned to an immutable commit SHA (v7.0.1).
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Set up Python ${{ matrix.python-version }}
+        # Pinned to an immutable commit SHA (v7.0.0). Re-verify and bump with:
+        #   git ls-remote https://github.com/actions/setup-python refs/tags/v7
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run the test suite
+        # The pack has no third-party deps and the engine runs without ComfyUI,
+        # so nothing needs installing -- CI installing nothing is what keeps the
+        # dependency-free property honest rather than merely claimed.
+        #
+        # -t . is load-bearing: it makes `tests` a genuine subpackage of the repo
+        # root, which is what guarantees tests/__init__.py (the comfy_api stub
+        # registration) runs before any test_*.py imports a node module. Without
+        # it, `discover` imports test files as bare top-level modules and the
+        # package __init__ never runs first.
+        run: python -m unittest discover -s tests -t . -v
+      - name: Validate the pack data
+        # A data defect is invisible in a diff -- adding "no weapons" to a pool
+        # looks exactly like adding "spinal railgun" -- so the authoring rules
+        # are a gate rather than a convention. It also prints the live pool
+        # numbers, which is why no document in this repo states them.
+        run: python tests/validate_data.py
+      - name: Measure the distribution
+        # Bias is measured, not assumed: a distribution defect has no
+        # single-scene symptom. Fails if one kind or the scale extremes break
+        # their documented ceiling; the baseline is in docs/architecture.md.
+        run: python scripts/sample_distribution.py --seeds 500
+      - name: Audit the reported concern classes
+        # The user's own graph: a Scene Entity wired into the Scene Weaver. Every class a
+        # reported image fell into must stay absent; the flags are frozen in scripts/concern_flags.py.
+        run: python scripts/concern_audit.py --seeds 600 --gate
+
+  frontend:
+    name: Frontend tests
+    runs-on: ubuntu-latest
+    # A SEPARATE job for the same reason `lint` is: the `test` job's
+    # dependency-free property is itself being asserted, and this job's own
+    # devDependency (jsdom) must never leak into it.
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Set up Node
+        # Pinned to an immutable commit SHA (v7.0.0). Re-verify and bump with:
+        #   git ls-remote https://github.com/actions/setup-node refs/tags/v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          # registerHooks (tests/frontend/hooks.mjs) needs >=22.15.0 / >=23.5.0.
+          node-version: "24"
+      - name: Install dependencies
+        run: npm ci
+      - name: Run frontend tests
+        # Drives the real js/sceneweaver.js under jsdom -- ComfyUI's own frontend
+        # modules are the only thing stubbed. Testing a copy would prove nothing
+        # about the file that ships.
+        run: npm run test:frontend
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    # A SEPARATE job on purpose. The test job above must stay dependency-free,
+    # because that is the property being asserted: the pack and its tests import
+    # nothing but the standard library. ruff is developer tooling, so installing
+    # it there would quietly weaken that guarantee.
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.13"
+      - name: Install ruff
+        # Pinned so a new ruff release cannot turn a green branch red on its own.
+        run: pip install "ruff==0.15.11"
+      - name: Lint
+        run: python -m ruff check .

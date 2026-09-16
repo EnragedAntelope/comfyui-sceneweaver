@@ -1,0 +1,68 @@
+{
+  "_README": [
+    "Copy this file to 'user_options.json' in the same folder to add your own",
+    "dropdown values. That filename is gitignored, so your additions survive a",
+    "'git pull' and are never published. Restart ComfyUI after editing it.",
+    "",
+    "'pools' maps a field name to {kind: [values]}. Use '_default' for the",
+    "fall-through pool every kind reads when it has no override of its own --",
+    "but note that some fields (markings, form, situation, material, and the",
+    "other kind-scoped ones) are overridden by EVERY kind, so nothing ever",
+    "reads their '_default'. Add to those under a kind name instead. The",
+    "ComfyUI console says so if you get it the wrong way round.",
+    "",
+    "Field names: environment, situation, relation, kind, subkind, scale,",
+    "condition, form, material, primary_color, accent_color, emitter_color,",
+    "markings, surface_detail, appendages, appendage_count, emitters,",
+    "emitter_count, armament, armament_count, sensors, sensor_count,",
+    "aperture, extras.",
+    "",
+    "Kind names: vessel, celestial body, station or structure,",
+    "creature or being, person or spacefarer, robot or mech,",
+    "artifact or object, vehicle, wreck or derelict.",
+    "",
+    "List every built-in value of a field with:",
+    "    python scripts/builtin_options.py markings --kind vessel",
+    "",
+    "'tags' is optional and only affects the Scene filter widget. It applies to",
+    "subkind, armament, aperture, situation and relation. A value you do not tag",
+    "is 'neutral' and is drawn under Any, Peaceful and Conflict alike.",
+    "Tags: neutral, peaceful_only, conflict_only.",
+    "",
+    "Three house rules your values should follow, because the engine assumes",
+    "them. None is enforced -- your file is yours -- but the console warns:",
+    "  1. No article. Write 'ion thruster', not 'an ion thruster': the engine",
+    "     composes articles, counts and plurals ('six ion thrusters').",
+    "  2. Singular for anything with a count partner (appendages, emitters,",
+    "     armament, sensors). The engine pluralizes.",
+    "  3. Describe the SUBJECT, never the rendering and never an absence. A hull",
+    "     colour is fine; 'cinematic lighting', 'golden hour' or 'shot on 35mm'",
+    "     will fight whatever style node you pair this with. And say what IS",
+    "     there -- 'a smooth sensory dome where a face would be', never",
+    "     'no eyes', which draws eyes.",
+    "",
+    "Constraint rules match values by exact string, so a value you add is not",
+    "named by any rule and no rule excludes it. Delete this '_README' key or",
+    "leave it; it is ignored either way."
+  ],
+
+  "pools": {
+    "primary_color": {
+      "_default": ["hunter green", "oxblood"]
+    },
+    "situation": {
+      "vessel": ["running dark past a picket line"],
+      "creature or being": ["shedding a drift of luminous spores"]
+    },
+    "emitters": {
+      "vessel": ["antimatter torch nozzle"]
+    }
+  },
+
+  "tags": {
+    "situation": {
+      "running dark past a picket line": "conflict_only",
+      "shedding a drift of luminous spores": "neutral"
+    }
+  }
+}

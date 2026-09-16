@@ -1,0 +1,38 @@
+name: Publish to Comfy Registry
+
+# Publishing is driven by the version in pyproject.toml: bump it, merge to main,
+# and this runs. `workflow_dispatch` is kept for a manual re-run after a
+# transient Registry failure, which must not need a no-op version bump.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - pyproject.toml
+  workflow_dispatch:
+
+# Least privilege: the action reads the checkout and talks to the Registry over
+# its own token. It needs nothing else, and in particular no write scope.
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    # A fork that merges to its own main must not try to publish to the
+    # upstream publisher id -- it has no token, so it would fail every push.
+    if: github.repository_owner == 'EnragedAntelope'
+    steps:
+      - name: Check out code
+        # Pinned to an immutable commit SHA (v7.0.1), as in ci.yml.
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Publish the node pack
+        # Pinned to an immutable commit SHA (v1.0.1). Re-verify and bump with:
+        #   git ls-remote --tags https://github.com/Comfy-Org/publish-node-action
+        uses: Comfy-Org/publish-node-action@7578cdb0c1410f2515e6f9b1443c6859cab94f05
+        with:
+          # Repo secret. Created at https://registry.comfy.org under the
+          # publisher named in pyproject.toml's [tool.comfy] PublisherId.
+          personal_access_token: ${{ secrets.REGISTRY_ACCESS_TOKEN }}

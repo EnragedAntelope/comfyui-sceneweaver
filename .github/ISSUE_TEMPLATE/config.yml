@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Show off a scene, or just chat
+    url: https://github.com/EnragedAntelope/comfyui-sceneweaver/discussions
+    about: "Good outputs, workflow questions, which genre should come next — discussions are the place."
