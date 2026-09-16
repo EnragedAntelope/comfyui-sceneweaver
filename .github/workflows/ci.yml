@@ -14,6 +14,9 @@ jobs:
   test:
     name: Tests
     runs-on: ubuntu-latest
+    # Without this a hung step runs to the 6-hour default. The suite plus both
+    # sweeps finish well inside 30 minutes.
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -23,6 +26,8 @@ jobs:
       - name: Check out code
         # Pinned to an immutable commit SHA (v7.0.1).
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
       - name: Set up Python ${{ matrix.python-version }}
         # Pinned to an immutable commit SHA (v7.0.0). Re-verify and bump with:
         #   git ls-remote https://github.com/actions/setup-python refs/tags/v7
@@ -59,12 +64,15 @@ jobs:
   frontend:
     name: Frontend tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     # A SEPARATE job for the same reason `lint` is: the `test` job's
     # dependency-free property is itself being asserted, and this job's own
     # devDependency (jsdom) must never leak into it.
     steps:
       - name: Check out code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
       - name: Set up Node
         # Pinned to an immutable commit SHA (v7.0.0). Re-verify and bump with:
         #   git ls-remote https://github.com/actions/setup-node refs/tags/v7
@@ -83,6 +91,7 @@ jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     # A SEPARATE job on purpose. The test job above must stay dependency-free,
     # because that is the property being asserted: the pack and its tests import
     # nothing but the standard library. ruff is developer tooling, so installing
@@ -90,6 +99,8 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:

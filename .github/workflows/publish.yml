@@ -20,6 +20,7 @@ jobs:
   publish:
     name: Publish
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     # A fork that merges to its own main must not try to publish to the
     # upstream publisher id -- it has no token, so it would fail every push.
     if: github.repository_owner == 'EnragedAntelope'
@@ -27,11 +28,18 @@ jobs:
       - name: Check out code
         # Pinned to an immutable commit SHA (v7.0.1), as in ci.yml.
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          # Nothing here pushes; leaving the token in .git/config would only
+          # widen what a compromised step could reach.
+          persist-credentials: false
 
       - name: Publish the node pack
-        # Pinned to an immutable commit SHA (v1.0.1). Re-verify and bump with:
-        #   git ls-remote --tags https://github.com/Comfy-Org/publish-node-action
-        uses: Comfy-Org/publish-node-action@7578cdb0c1410f2515e6f9b1443c6859cab94f05
+        # Pinned to the main-branch HEAD commit, NOT the v1.0.1 tag. The tag
+        # runs `comfy --yes env`, and `--yes` was removed from comfy-cli, so the
+        # tagged release dies with `No such option: --yes` (exit 2). main works.
+        # Re-verify and bump with:
+        #   git ls-remote https://github.com/Comfy-Org/publish-node-action HEAD
+        uses: Comfy-Org/publish-node-action@d2366e7abb6ab16f3bb03e3520ae25c8cf749bc9
         with:
           # Repo secret. Created at https://registry.comfy.org under the
           # publisher named in pyproject.toml's [tool.comfy] PublisherId.
