@@ -10,13 +10,17 @@ module and two registration lines.
 
 _Last verified: 2026-09-16_
 
-- **Status:** **public beta, v0.3.0.** The repo is public at
-  `EnragedAntelope/comfyui-sceneweaver`, `main` carries a single squashed
-  initial commit (the full pre-release history stays local only, in the
-  `coherence-round-*` and `tmp/*` branches), and the pack is published to the
-  ComfyUI Registry. Content of the release is coherence overhaul XIII: a noun
-  says how many of it there can be, a state and an act cannot contradict each
-  other, and the sweep that measures this is no longer a frozen list.
+- **Status:** **public beta.** `main` is v0.3.0 (published to the ComfyUI
+  Registry); **v0.4.0 (coherence round XIV) is on `tmp/sceneweaver-round-xiv`,
+  awaiting the maintainer's ComfyUI test** before a squashed PR to `main`. The
+  repo is public at `EnragedAntelope/comfyui-sceneweaver`; the full pre-release
+  history stays local only, in the `coherence-round-*` and `tmp/*` branches.
+  Round XIV: a dead ship is the `wreck` kind and is dead (closed dormant-act
+  list, no lit emitters, no cables), no open fire or uncaused machine breakage,
+  a small or indoor creature takes no craft, one thrust source, context
+  sentences carry no stance verb, and render-trap renames (patch, sail, loader,
+  boom, neon). The sweep went from 50.0% to 5.4% of wired scenes with variety
+  measured against `main` and kept by adding values.
   Saved-workflow compatibility was deliberately dropped before 0.3.0 and is
   now a real constraint -- the pack is distributed, so widget_order is a
   compatibility surface from here on.
@@ -98,9 +102,12 @@ _Last verified: 2026-09-16_
   the scope that emptied its pool was itself re-drawn later in the same fixed
   point -- which is how a subject arrived with no silhouette at all. The Python
   suites, the jsdom suite, the data validator, the distribution sweep, the
-  coherence audit, the reach audit, the new coherence sweep and `ruff` are all
-  green.
-- **In progress:** nothing. Round XIII was driven by a measured gap rather than
+  coherence audit, the coherence sweep and `ruff` are green; the reach audit is
+  not (see Known gaps). Round XIV's decisions D16-D24 and its measurements are
+  in `docs/architecture.md` ("Concern audit (round XIV)").
+- **In progress:** round XIV on `tmp/sceneweaver-round-xiv`, pending the
+  maintainer's render test; the fantasy and horror packs are a design
+  brainstorm in `docs/genre-roadmap.md`, not started. Round XIII was driven by a measured gap rather than
   by a report: on the 2026-09-15 batch `scripts/concern_audit.py` read **0.0%
   flagged** while 44 of 101 rendered images -- 43.6% -- were bad enough that the
   user pulled them out by hand. Every previous round had driven its own frozen
@@ -111,6 +118,16 @@ _Last verified: 2026-09-16_
   its ceiling. `scripts/concern_audit.py` still reports 0.0% on both paths and
   `scripts/reach_audit.py --gate` still reports every non-exempt value drawn.
 - **Known gaps:**
+  - `scripts/reach_audit.py --gate` **fails on `main` (0.3.0) and on round XIV**
+    with a handful of never-drawn situations that are feasible but confined to a
+    rare place and a rare kind (a drone at a trench vent). It samples; it is a
+    maintainer instrument and CI does not run it. Round XIII's note calling it
+    green was measured on a different seed.
+  - Round XIV renamed or removed dropdown values; a saved workflow that locked
+    one reports "value not in list". The README's "Upgrading" section says so.
+  - Not fixed in round XIV (no clean fix yet): a generation ship can still be
+    drawn landed on a surface, and "lunar far-side orbit" can render as the
+    lunar surface despite the open-space staging suffix.
   - There is **no core-nodes-only example workflow.** The two graphs in
     `example_workflows/` are the maintainer's real Krea2 graphs, saved from a
     running ComfyUI, so they are known-good wiring but need a specific
@@ -122,8 +139,10 @@ _Last verified: 2026-09-16_
   - Sci-fi is the only genre. The `GenrePack` seam is built and verified against
     a throwaway fixture pack (`tests/test_genre_seam.py`), including
     `detail_cap` / `detail_priority`, `motifs` and the cross-genre direction; a
-    concrete "how to add fantasy" checklist lives in `docs/architecture.md`, but
-    no second genre exists yet.
+    concrete "how to add fantasy" checklist lives in `docs/architecture.md` and
+    the fantasy/horror content brainstorm in `docs/genre-roadmap.md`, but no
+    second genre exists yet. Cross-genre trait conflicts still fail open (the
+    roadmap proposes carrying traits in the payload).
   - A world as **scenery** behind a ground-level scene has no placement concept,
     so `celestial body` is excluded from the `planetary surface` kind pool, and
     a world is no longer the subject in `orbit` either: with the camera already
@@ -173,6 +192,8 @@ pytest tests
 python tests/validate_data.py
 python scripts/sample_distribution.py --seeds 1000
 python scripts/coherence_audit.py --seeds 2000
+python scripts/coherence_sweep.py --gate
+python scripts/coherence_sweep.py --gate --path unwired
 npm ci && npm run test:frontend
 python -m ruff check .
 ```
@@ -359,6 +380,21 @@ that reads a gitignored file passes locally and fails on a clean checkout.
   that emptied it is often re-drawn later in the same pass. A repeated head noun
   is ordinary English; a subject with no silhouette is a defect, and it arrived
   with no warning and nothing in `redrawn_fields`.
+- **Liveness is a closed list.** `DORMANT_ACTS` names what a thing with no power,
+  crew or intent can be doing; every other situation is derived `powered-act`.
+  A new situation is live by default. Never go back to tagging powered acts by
+  hand: two such lists missed every act nobody remembered, and a dead hull rode
+  a re-entry sheath in orbit.
+- **A pool is a literal.** Add values inside the pool literal (or as a named
+  tuple declared before it and concatenated in it), never with
+  `POOLS["key"] = POOLS["key"] + (...)` afterwards: `scripts/builtin_options.py`
+  reads pools with `ast` and `tests/test_user_options.py` fails on the drift.
+- **Variety is kept by adding.** A rule that removes values ships with values
+  that replace them. Measure distinct values and entropy per field and per kind
+  against `main` (seeded, both paths) before calling a coherence round done; a
+  floor failure is fixed by authoring, never by lowering the floor.
+- **A context framing names where, never how.** "A ladder crowds in close" was a
+  template's verb forced onto a value; validator check 31 fails a stance verb.
 - **A table applied later wins.** `VALUE_NEEDS["subkind"].update({...})` over
   `_TYPES_NEEDING_NOTHING` runs after the per-value entries and silently
   overwrote one, so a glider needed nothing of a place and was feasible at the

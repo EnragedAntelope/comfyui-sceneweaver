@@ -730,14 +730,26 @@ def _subjects(pack: G.GenrePack):
             yield kind, value
 
 
-def _reach(pack: G.GenrePack, field_name: str) -> "dict[str, list[tuple[str, str | None]]]":
-    """``{value: [(kind, type), ...]}`` -- every subject whose resolved pool holds the value."""
+def _reach(
+    pack: G.GenrePack, field_name: str, honour_omits: bool = False
+) -> "dict[str, list[tuple[str, str | None]]]":
+    """``{value: [(kind, type), ...]}`` -- every subject whose resolved pool holds the value.
+
+    With ``honour_omits``, a subject whose archetype omits the field reaches
+    nothing there: it never draws the field, so a part it would fall through to
+    cannot misfit its body. A wreck's archetype omits ``emitters``, and the
+    default emitter pool is not its vocabulary. The shadowed-value check keeps
+    the plain reach, because an omitted pool is still authored vocabulary."""
     name = G.type_field(pack)
     reach: dict[str, list[tuple[str, str | None]]] = {}
     for kind, value in _subjects(pack):
         scope = {G.KIND_FIELD: kind}
         if name and value is not None:
             scope[name] = value
+        if honour_omits:
+            archetype = G.archetype_for(pack, scope)
+            if archetype is not None and field_name in archetype.omits:
+                continue
         for option in G.pool_for(pack, field_name, scope):
             reach.setdefault(option, []).append((kind, value))
     return reach
@@ -769,7 +781,7 @@ def check_body_keywords(pack: G.GenrePack, report: Report) -> None:
     if not pack.body_keywords:
         return
     for field_name in pack.body_lint_fields:
-        for option, subjects in sorted(_reach(pack, field_name).items()):
+        for option, subjects in sorted(_reach(pack, field_name, honour_omits=True).items()):
             named = _named(pack.body_keywords, option)
             if not named:
                 continue
@@ -800,7 +812,7 @@ def check_part_keywords(pack: G.GenrePack, report: Report) -> None:
     if not pack.part_keywords:
         return
     for field_name in pack.part_lint_fields:
-        for option, subjects in sorted(_reach(pack, field_name).items()):
+        for option, subjects in sorted(_reach(pack, field_name, honour_omits=True).items()):
             named = _named(pack.part_keywords, option)
             if not named:
                 continue
@@ -816,6 +828,28 @@ def check_part_keywords(pack: G.GenrePack, report: Report) -> None:
                     f"{field_name}: {option!r} is drawn by {len(lacking)} body(ies) "
                     f"without it, e.g. {lacking[:3]}",
                 )
+
+
+#: Verbs that say how a thing holds itself up. Genre-agnostic English: a context
+#: framing that carries one imposes it on every context value it is given.
+_CONTEXT_STANCE_VERBS = re.compile(
+    r"\b(stands?|lies|crowds?|sits?|rests?|hangs?|floats?|looms?|perch(es)?)\b", re.I
+)
+
+
+def check_context_sentence_stance(pack: G.GenrePack, report: Report) -> None:
+    """31. A context framing says where the context is, never how it stands.
+
+    Round XIV: "a ladder rising into the dark crowds in close behind it" and "a
+    long trail of frozen vapour stands further back" were one template's verb
+    forced onto a value with its own stance."""
+    for sentence in pack.prose.context_sentences:
+        found = _CONTEXT_STANCE_VERBS.search(sentence.text)
+        if found:
+            report.fail(
+                "CONTEXTSTANCE",
+                f"context sentence {sentence.text!r} imposes the stance verb {found.group(0)!r}",
+            )
 
 
 def check_cardinality_coverage(pack: G.GenrePack, report: Report) -> None:
@@ -939,6 +973,7 @@ CHECKS = (
     check_body_coverage,
     check_part_keywords,
     check_cardinality_coverage,
+    check_context_sentence_stance,
     check_spoken_completeness,
     check_tier_coverage,
     check_shadowed_values,

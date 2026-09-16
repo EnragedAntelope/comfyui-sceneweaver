@@ -24,6 +24,7 @@ for _entry in (str(_ROOT), str(_ROOT / "scripts")):
 from concern_flags import flags  # noqa: E402
 from concern_flags_0914 import STRUCTURAL_0914, flags_0914  # noqa: E402
 from concern_flags_0915 import STRUCTURAL_0915, flags_0915  # noqa: E402
+from concern_flags_0916 import STRUCTURAL_0916, flags_0916  # noqa: E402
 from data.scifi import SCIFI_PACK  # noqa: E402
 from engine.scene import generate_entity, generate_scene  # noqa: E402
 
@@ -41,7 +42,7 @@ STRUCTURAL = frozenset({
 
 #: Both instruments' gated classes: the round-X structural set and the round-XI render traps.
 #: Every instrument's gated classes: round-X structural, round-XI render traps, round-XII parts.
-GATED = STRUCTURAL | STRUCTURAL_0914 | STRUCTURAL_0915
+GATED = STRUCTURAL | STRUCTURAL_0914 | STRUCTURAL_0915 | STRUCTURAL_0916
 
 
 def sweep(seeds: int, path: str) -> "tuple[Counter, int]":
@@ -60,7 +61,9 @@ def sweep(seeds: int, path: str) -> "tuple[Counter, int]":
         )
         found = set(flags(SCIFI_PACK, document, text)) | set(
             flags_0914(SCIFI_PACK, document, text)
-        ) | set(flags_0915(SCIFI_PACK, document, text))
+        ) | set(flags_0915(SCIFI_PACK, document, text)) | set(
+            flags_0916(SCIFI_PACK, document, text)
+        )
         tally.update(found)
         flagged += any(not name.startswith("info-") for name in found)
     return tally, flagged

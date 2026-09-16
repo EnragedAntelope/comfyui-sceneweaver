@@ -564,12 +564,11 @@ class EnvironmentBandTests(unittest.TestCase):
         "taking hits from a ridge line",
         "burrowing up through fractured rock",
         "kicking up a long dust plume",
-        "boring into rock with a drill arm",
+        "boring into rock with a heavy rock drill",
     )
     _NEEDS_OPEN_SPACE = (
         "drifting slowly through the void",
         "fleeing through an asteroid field",
-        "burning its station-keeping thrusters",
         "drifting through a debris field",
     )
 

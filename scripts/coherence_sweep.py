@@ -101,13 +101,53 @@ ANATOMY_OR_WORN = ("gauntleted hand", "magnetic boot", "prosthetic arm",
 EARTH_GUN = _words("holstered sidearm", "wrist blaster", "mag-rifle", "energy carbine",
                    "shoulder launcher", "stun prod", "grenade bandolier", "sidearm",
                    "rifle", "carbine", "pistol", "shotgun")
+#: Round XIV. A stance verb a context sentence imposes on whatever context it
+#: is given: "a ladder crowds in close", "a trail of vapour stands".
+STANCE_VERB = _words("stands", "lies", "crowds in", "sits", "rests", "hangs", "floats")
+#: A made body coming apart. Read against machines and stations only: a
+#: starship's battle damage is one legible event, a droid's elbow is not.
+BREAKAGE = _words("losing", "collapsing", "breaking", "buckling", "shattering", "bursting",
+                  "shorting", "sparks?", "sparking", "torn", "severed", "shower of parts")
+#: The object of a creature's act, when it is a craft.
+CRAFT = _words("drones?", "pods?", "hulls?", "shuttlecraft", "shuttles?", "landers?",
+               "probes?", "starships?", "interceptors?", "spacecraft")
+#: A creature that reads as an Earth animal. The subkind and form carry it.
+EARTH_ANALOG = _words("arachnoid", "insectoid", "cephalopod", "serpent", "serpentine",
+                      "worm-form", "hexapodal")
+#: The integuments an Earth arthropod, snake or bird already wears.
+EARTH_INTEGUMENT = _words("chitinous carapace", "keratinous plate", "leathery hide",
+                          "scaled hide", "feathered pelt")
+#: Exhaust on the hull, and an act that describes its own plume.
+EXHAUST = _words("thrusters?", "nozzles?", "torch", "exhaust", "nacelles?", "plume")
+PLUME_ACT = _words("plume", "sheath", "long burn", "thrusters?", "stuck open")
+#: A calm working crew in the scenery.
+CREW = _words("crew", "pressure suits", "technicians", "workers")
+#: Wider than the pack's own traits on purpose: a live act nobody tagged.
+LIVE_ACT = _words("sparks?", "sparking", "fire", "firing", "burning", "burn", "thrusters?",
+                  "plume", "plasma", "holding station", "holding position", "riding",
+                  "retracting", "deploying", "launching", "crouching", "catching", "sweeping",
+                  "flaring", "pulsing", "strobing")
 
-#: The highest share each class is allowed. Measured at the end of round XIII;
+#: The highest share each class is allowed. Measured at the end of rounds XIII and XIV;
 #: anything above is a regression worth a look, not necessarily a bug.
 CEILINGS: dict[str, float] = {
     "count-vs-noun": 0.5,
     "offframe-actor": 3.0,
-    "inactive-but-acting": 2.5,
+    # Round XIV, measured on both paths (start of round -> end): context stance
+    # verb 26.7 -> 0, dead-but-live 19.0 -> 0.1 ("catching the light" on a wreck),
+    # uncaused breakage 6.2 -> 1.2 (a vehicle's named mechanical failure and a
+    # station's disaster are kept), open fire 2.6 -> 0.1 (a star's "streamer of
+    # fire"), craft prey 2.9 -> 0, earth-analog creature 1.8 -> 0, thrust twice
+    # 1.1 -> 0, crew beside a creature 0.7 -> 0. Whole sweep 50.0% -> 5.4%.
+    "dead-but-live": 0.5,
+    "no-situation": 0.2,
+    "context-stance-verb": 0.2,
+    "uncaused-breakage": 1.5,
+    "open-fire": 0.5,
+    "craft-prey-misfit": 0.2,
+    "earth-analog-creature": 0.2,
+    "thrust-twice": 0.3,
+    "crew-beside-creature": 0.2,
     "pristine-but-destroyed": 1.5,
     "interior-wrong-subject": 1.5,
     "interior-distance-context": 1.0,
@@ -181,9 +221,18 @@ def classes(text: str, document: dict) -> "list[str]":
             out.append("count-vs-noun")
             break
 
-    # A state and an act that cannot both be true.
-    if condition in INACTIVE and ACTIVE_GERUND.search(situation):
-        out.append("inactive-but-acting")
+    # A state and an act that cannot both be true. Round XIV: a wreck is dead
+    # whatever its condition says, and a lit emitter is as live as an act.
+    # ``ACTIVE_GERUND`` is read against a state only: "settling deeper into the
+    # sand" is gravity on a wreck. A wreck falling through a cloud deck may burn.
+    falling = "as it falls" in situation or "drops through" in situation
+    if (condition in INACTIVE and ACTIVE_GERUND.search(situation)) or (
+        (condition in INACTIVE or kind == "wreck")
+        and ((LIVE_ACT.search(situation) and not falling) or entity.get("emitters"))
+    ):
+        out.append("dead-but-live")
+    if not situation:
+        out.append("no-situation")
     if condition in PRISTINE and BREAKING_GERUND.search(situation):
         out.append("pristine-but-destroyed")
 
@@ -225,6 +274,27 @@ def classes(text: str, document: dict) -> "list[str]":
         out.append("earth-gun-word")
     if kind == "spacefarer" and subkind not in COMBAT_ROLES and entity.get("armament"):
         out.append("noncombat-role-armed")
+
+    # Round XIV -- the 0916 batch.
+    context_sentence = next((s for s in low.split(". ") if context and context in s), "")
+    if STANCE_VERB.search(context_sentence.replace(context, "")):
+        out.append("context-stance-verb")
+    if kind in {"robot or mech", "surface vehicle", "space station"} and BREAKAGE.search(situation):
+        out.append("uncaused-breakage")
+    if FIRE.search(situation) and "sky" not in affords:
+        out.append("open-fire")
+    if kind == "alien creature" and CRAFT.search(situation) and (
+            indoors or entity.get("scale") in {"tiny", "small"}):
+        out.append("craft-prey-misfit")
+    if kind == "alien creature" and EARTH_ANALOG.search(subkind + " " + (entity.get("form") or "")) \
+            and EARTH_INTEGUMENT.search(entity.get("material") or ""):
+        out.append("earth-analog-creature")
+    if kind in {"starship", "surface vehicle", "robot or mech", "space station"} and \
+            EXHAUST.search(entity.get("emitters") or "") and PLUME_ACT.search(situation) and \
+            "ash plume" not in situation:
+        out.append("thrust-twice")
+    if kind == "alien creature" and CREW.search(context):
+        out.append("crew-beside-creature")
 
     return out
 
