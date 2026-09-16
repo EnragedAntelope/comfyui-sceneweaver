@@ -1,6 +1,6 @@
 # SceneWeaver for ComfyUI
 
-**One click. A whole science-fiction scene — the place, the thing standing in it,
+**One click. A whole science-fiction scene - the place, the thing standing in it,
 and what that thing is *doing*.** Not a wildcard salad. Sentences your text
 encoder can actually follow.
 
@@ -9,20 +9,20 @@ encoder can actually follow.
 Nothing above was hand-written. No prompt engineering, no wildcard files, no LLM
 call. Six seeds on a node whose every dropdown was left on `Random`.
 
-> ### 🧪 This is a beta, and I want to hear from you
+> ### This is a beta, and I want to hear from you
 >
 > SceneWeaver works, but it is new and the vocabulary is still being tuned.
 > **[Open an issue](https://github.com/EnragedAntelope/comfyui-sceneweaver/issues) or
-> [start a discussion](https://github.com/EnragedAntelope/comfyui-sceneweaver/discussions)** — the three things I most need:
+> [start a discussion](https://github.com/EnragedAntelope/comfyui-sceneweaver/discussions)** - the three things I most need:
 >
 > * **What came out incoherent?** A creature with the wrong anatomy, a ship
 >   parked somewhere ships can't park, a description that contradicts itself.
->   Paste the `prompt_text` — that alone is enough for me to reproduce it.
+>   Paste the `prompt_text` - that alone is enough for me to reproduce it.
 > * **What are you seeing too much of?** If every third scene is an asteroid
 >   field, or the same three hull shapes keep coming back, tell me. Bias is
 >   hard to see from the inside.
 > * **What's missing?** Kinds, creature types, environments, situations,
->   controls, settings — say the word and it's a data change, not a rewrite.
+>   controls, settings - say the word and it's a data change, not a rewrite.
 
 ## Why it's different
 
@@ -44,10 +44,10 @@ rust-brown ceramic ablative shell. It shows four ice-blue reactor exhaust ports.
 
 A starship is *clad in* its material. A creature is *covered in* one. A
 spacefarer *wears* one. A nebula, having no surface at all, is never given one to
-describe. That grammar is data, not a template — which is why a second genre will
+describe. That grammar is data, not a template - which is why a second genre will
 be a data module rather than a rewrite.
 
-And it is **deep**. Every entity is drawn across a whole morphology — silhouette,
+And it is **deep**. Every entity is drawn across a whole morphology - silhouette,
 material, primary and accent colour, markings, surface detail, appendages *and
 how many*, emitters *and how many* and **what colour they glow**, armament,
 sensors, apertures. That is the difference between two seeds giving you two
@@ -55,19 +55,19 @@ visibly different ships and two seeds giving you two paraphrases of one ship.
 
 ### Things it makes
 
-**Alien creatures** that are actually alien — cephalopods and arachnoids, sure,
+**Alien creatures** that are actually alien - cephalopods and arachnoids, sure,
 but also fungal colonies, crystalline growths, gelatinous masses, colonial
 swarms, plasma drifters, lithovores, spore-caste drones, sessile brooders, mimic
 forms and hive castes, each with anatomy that matches its body plan.
 
-**Spacefarers** with a job and a face — pilots, salvagers, xenobiologists, void
+**Spacefarers** with a job and a face - pilots, salvagers, xenobiologists, void
 order priests, quartermasters, and non-human crew like tendril-faced navigators,
 four-armed quartermasters, tusked mercenaries and crested pilots.
 
-**Mechs and robots** — siege mechs, scout walkers, terraforming walkers, exosuit
+**Mechs and robots** - siege mechs, scout walkers, terraforming walkers, exosuit
 walkers, welding drones, medical automatons, swarm drones.
 
-**Ships, stations, wrecks, worlds and artifacts** — from strike carriers and
+**Ships, stations, wrecks, worlds and artifacts** - from strike carriers and
 generation ships to gate rings, monoliths, resonant lattice spires, collapsing
 stars and stripped-out hulks.
 
@@ -84,35 +84,35 @@ with a hooked limb. An action in progress is what makes a still frame a *scene*.
 
 Every dropdown offers `Random`, then its values, then `None`:
 
-* **`Random`** — draw it. This is the default on every field, so an untouched
+* **`Random`** - draw it. This is the default on every field, so an untouched
   node is already a complete scene generator.
-* **a value** — **lock it.** Set `Creature type: cephalopod` and every scene is a
+* **a value** - **lock it.** Set `Creature type: cephalopod` and every scene is a
   cephalopod, with everything else still rolling around it. Lock the creature
   type and the hull colour and the environment; leave the rest wild. A locked
   field is never cut and never overruled.
-* **`None`** — omit it. Switch a slot's `kind` to `None` and that entity leaves
+* **`None`** - omit it. Switch a slot's `kind` to `None` and that entity leaves
   the scene entirely, which is how you get a pure-landscape shot.
 
 Locking is the whole workflow: find a creature you like, pin the two or three
 fields that made it work, and generate a hundred variations of *that*.
 
 Coherence is enforced while it draws, not patched afterwards. Pick
-**Type: gas giant** and the **Form** dropdown narrows, live, to sphere shapes —
+**Type: gas giant** and the **Form** dropdown narrows, live, to sphere shapes -
 you will not get a gas giant shaped like a spiral coil, or a gelatinous mass
 wearing a feathered pelt.
 
 ## Install
 
-**ComfyUI Manager** — search for **SceneWeaver** and install.
+**ComfyUI Manager** - search for **SceneWeaver** and install.
 
-**Manually** — clone into your `custom_nodes/` directory and restart:
+**Manually** - clone into your `custom_nodes/` directory and restart:
 
 ```
 cd ComfyUI/custom_nodes
 git clone https://github.com/EnragedAntelope/comfyui-sceneweaver
 ```
 
-Keep the directory name `comfyui-sceneweaver`. **There are no dependencies** —
+Keep the directory name `comfyui-sceneweaver`. **There are no dependencies** -
 the pack imports nothing but the Python standard library, so there is no
 `requirements.txt` step and nothing to build. Needs ComfyUI 0.25.0+ and Python
 3.10+.
@@ -123,8 +123,8 @@ Both live under **`conditioning/sceneweaver`**.
 
 | Node | What it's for |
 |---|---|
-| **Scene Weaver – Sci-Fi** | The main node, and **complete on its own.** Environment, entity, situation, relationships → `prompt_text` (prose) + `prompt_json` (structured). |
-| **Scene Entity – Sci-Fi** | *Optional.* Describes one entity in full depth and emits a `SCENE_ENTITY` payload you wire into a Scene Weaver slot. |
+| **Scene Weaver - Sci-Fi** | The main node, and **complete on its own.** Environment, entity, situation, relationships -> `prompt_text` (prose) + `prompt_json` (structured). |
+| **Scene Entity - Sci-Fi** | *Optional.* Describes one entity in full depth and emits a `SCENE_ENTITY` payload you wire into a Scene Weaver slot. |
 
 <img src="https://raw.githubusercontent.com/EnragedAntelope/comfyui-sceneweaver/main/docs/images/scene-weaver-node.png" alt="The Scene Weaver node in ComfyUI" width="320" align="right">
 
@@ -152,7 +152,7 @@ worlds. If your outputs look flat, the prompt is usually not the problem.
 
 **There is no style in the output, on purpose.** SceneWeaver says nothing about
 lighting, lens, medium, film stock, mood or artist. A prompt with no rendering
-frame gets drawn as bare scene content — so **you have to supply the style**,
+frame gets drawn as bare scene content - so **you have to supply the style**,
 either through your model/LoRA choice or by adding it to the prompt. The
 maintainer's own graphs prefix every prompt with:
 
@@ -164,15 +164,12 @@ That one line is the difference between a flat render and the images at the top
 of this page.
 
 **Start with one entity.** The `Entities` control goes to 4, and the prose stays
-correct at every setting — but most current image models lose coherence as you
+correct at every setting - but most current image models lose coherence as you
 add subjects. **One entity has by far the highest hit rate**, two is usually
 fine, and three or four is where models start blending subjects together. Turn
 it up when you want a crowd and expect to cherry-pick.
 
-**Seeds are reproducible.** The whole scene is a pure function of the seed and
-the widgets, so a scene you like comes back exactly.
-
-## Pair it with a style — Stylebook
+## Pair it with a style - Stylebook
 
 Because SceneWeaver deliberately owns no rendering vocabulary, it composes
 cleanly with a style pack instead of fighting one.
@@ -182,11 +179,11 @@ describes the subject.* Wire Stylebook's style in front of SceneWeaver's
 `prompt_text` and the two never argue about the same words.
 
 Any style prompt, LoRA trigger or hand-written rendering clause works just as
-well — Stylebook is simply the one designed around the same rule.
+well - Stylebook is simply the one designed around the same rule.
 
 The one deliberate exception: a **hull colour**, a creature's **skin colour** and
 an **engine's glow** belong to the subject, so SceneWeaver owns those. A colour
-*grade* — teal-and-orange, bleach bypass — is rendering, and it doesn't.
+*grade* - teal-and-orange, bleach bypass - is rendering, and it doesn't.
 
 ## Example workflows
 
@@ -202,12 +199,12 @@ checkpoint, VAE and CLIP plus two third-party packs
 ([Krea2T-Enhancer](https://github.com/capitan01R/ComfyUI-Krea2T-Enhancer)
 and `ShowText|pysssss` from
 [custom-scripts](https://github.com/pythongosssss/ComfyUI-Custom-Scripts)).
-**Swap in your own model and sampler** — they are here to show the *wiring*, not
+**Swap in your own model and sampler** - they are here to show the *wiring*, not
 to be run as-is.
 
 ## Your own vocabulary
 
-Drop a `user_options.json` beside the pack to add your own values to any pool —
+Drop a `user_options.json` beside the pack to add your own values to any pool -
 your own creature types, environments, situations. It is gitignored, so it
 survives a `git pull`, and `user_options.example.json` shows the shape. To see
 what a pool already holds:
@@ -219,7 +216,7 @@ python scripts/builtin_options.py subkind --kind "alien creature"
 ## What's next
 
 Sci-fi ships first, but the genre boundary is a **seam in the data layer**, not
-an assumption baked into the engine — the grammar, the vocabulary and the
+an assumption baked into the engine - the grammar, the vocabulary and the
 coherence rules all live in a genre module. Fantasy, horror, post-apocalyptic and
 historical are the obvious next ones.
 
@@ -241,4 +238,4 @@ seam, the generation pipeline and the measured distribution baseline.
 
 ## Licence
 
-MIT — see [LICENSE](https://github.com/EnragedAntelope/comfyui-sceneweaver/blob/main/LICENSE).
+MIT - see [LICENSE](https://github.com/EnragedAntelope/comfyui-sceneweaver/blob/main/LICENSE).

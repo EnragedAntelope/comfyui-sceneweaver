@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks — this is the single most useful kind of report during the beta.
+        Thanks - this is the single most useful kind of report during the beta.
 
         **The `prompt_text` on its own is usually enough for me to reproduce it.**
         Everything else here is a bonus.

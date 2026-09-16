@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Distribution bias is genuinely hard to see from the inside — I look at
+        Distribution bias is genuinely hard to see from the inside - I look at
         these scenes all day and stop noticing. An outside read is worth a lot.
   - type: input
     id: what
@@ -19,7 +19,7 @@ body:
     id: evidence
     attributes:
       label: Roughly how often, and out of how many?
-      description: "A rough count is fine — 'about 1 in 3 of ~40 generations'. Pasting a few prompt_text samples helps most."
+      description: "A rough count is fine - 'about 1 in 3 of ~40 generations'. Pasting a few prompt_text samples helps most."
     validations:
       required: true
   - type: textarea

@@ -25,7 +25,7 @@ body:
     id: what
     attributes:
       label: What do you want?
-      description: "Be as concrete as you like — specific values are easier to act on than categories."
+      description: "Be as concrete as you like - specific values are easier to act on than categories."
       placeholder: "Creature types: silicon-lattice swarm, tidal-pool filter feeder. Environments: a ringworld inner surface."
     validations:
       required: true
@@ -33,5 +33,5 @@ body:
     attributes:
       value: |
         **You don't have to wait for me.** A `user_options.json` beside the pack adds your own
-        values to any pool immediately, and survives a `git pull` — see `user_options.example.json`.
+        values to any pool immediately, and survives a `git pull` - see `user_options.example.json`.
         Requests here are for things that should ship for everyone.

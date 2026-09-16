@@ -1,7 +1,7 @@
 [project]
 name = "comfyui-sceneweaver"
 version = "0.3.0"
-description = "One click, one whole sci-fi scene: the environment, what is standing in it, and what it is doing - written as coherent prose a text encoder can follow, not a pile of comma-separated tags. Alien creatures, spacefarers, mechs, starships, stations and derelicts, each drawn across a full morphology - silhouette, material, colour, limbs, emitters and their glow, armament, sensors - and every field independently lockable. Seeded and reproducible. Sci-fi first; the data layer is a genre seam."
+description = "One click, one whole sci-fi scene: the environment, what is standing in it, and what it is doing - written as coherent prose a text encoder can follow, not a pile of comma-separated tags. Alien creatures, spacefarers, mechs, starships, stations and derelicts, each drawn across a full morphology - silhouette, material, colour, limbs, emitters and their glow, armament, sensors - and every field independently lockable. Sci-fi first; the data layer is a genre seam."
 license = { text = "MIT" }
 readme = "README.md"
 requires-python = ">=3.10"
