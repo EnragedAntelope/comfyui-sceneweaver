@@ -1,0 +1,63 @@
+/*
+ * SceneWeaver search-overlay styles.
+ *
+ * Every class is prefixed `sceneweaver-` and scoped tightly so this stylesheet
+ * cannot bleed into ComfyUI's own chrome or a theme. A minimal reset keeps the
+ * overlay readable over both the legacy frontend and the newer Nodes 2.0.
+ */
+
+.sceneweaver-search {
+  position: fixed;
+  z-index: 10000;
+  width: 260px;
+  max-height: 320px;
+  display: flex;
+  flex-direction: column;
+  background: #1b1b1e;
+  border: 1px solid #3a3a40;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  font-family: sans-serif;
+  font-size: 13px;
+  color: #e6e6e6;
+  overflow: hidden;
+}
+
+.sceneweaver-search-input {
+  margin: 0;
+  padding: 8px 10px;
+  border: 0;
+  border-bottom: 1px solid #3a3a40;
+  background: #222226;
+  color: #e6e6e6;
+  font-size: 13px;
+  outline: none;
+}
+
+.sceneweaver-search-input:focus {
+  border-bottom-color: #5a8ac6;
+}
+
+.sceneweaver-search-list {
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.sceneweaver-search-list li {
+  padding: 5px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sceneweaver-search-list li:hover {
+  background: #2c2c31;
+}
+
+.sceneweaver-search-list li.is-current {
+  color: #8ab4f0;
+}

@@ -1,0 +1,31 @@
+[project]
+name = "comfyui-sceneweaver"
+version = "0.3.0"
+description = "One click, one whole sci-fi scene: the environment, what is standing in it, and what it is doing - written as coherent prose a text encoder can follow, not a pile of comma-separated tags. Alien creatures, spacefarers, mechs, starships, stations and derelicts, each drawn across a full morphology - silhouette, material, colour, limbs, emitters and their glow, armament, sensors - and every field independently lockable. Sci-fi first; the data layer is a genre seam."
+license = { text = "MIT" }
+readme = "README.md"
+requires-python = ">=3.10"
+keywords = ["comfyui", "scene", "scene generator", "scene builder", "sci-fi", "science fiction", "spaceship", "starship", "alien", "creature", "space", "environment", "prompt", "prompt generator", "randomizer", "random", "wildcard", "constraint", "worldbuilding", "composition"]
+dependencies = []
+
+[[project.authors]]
+name = "EnragedAntelope"
+
+[project.urls]
+Repository = "https://github.com/EnragedAntelope/comfyui-sceneweaver"
+"Bug Tracker" = "https://github.com/EnragedAntelope/comfyui-sceneweaver/issues"
+
+[tool.comfy]
+PublisherId = "enragedantelope"
+DisplayName = "SceneWeaver"
+requires-comfyui = ">=0.25.0"
+Icon = "https://raw.githubusercontent.com/EnragedAntelope/comfyui-sceneweaver/main/docs/images/icon.jpg"
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint.per-file-ignores]
+# The test modules prepend the repo root onto sys.path so they can be run
+# standalone (``python tests/...``); those imports necessarily follow the shim,
+# which is the sole, intentional source of E402 in these files.
+"tests/*.py" = ["E402"]

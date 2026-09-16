@@ -1,0 +1,1952 @@
+{
+  "revision": 0,
+  "last_node_id": 103,
+  "last_link_id": 143,
+  "nodes": [
+    {
+      "id": 5,
+      "type": "CLIPLoader",
+      "pos": [
+        1340,
+        170
+      ],
+      "size": [
+        250,
+        140
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "clip_name",
+          "name": "clip_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "clip_name"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "type",
+          "name": "type",
+          "type": "COMBO",
+          "widget": {
+            "name": "type"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "device",
+          "name": "device",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "device"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "CLIP",
+          "name": "CLIP",
+          "type": "CLIP",
+          "slot_index": 0,
+          "links": [
+            114
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.28.0",
+        "Node name for S&R": "CLIPLoader"
+      },
+      "widgets_values": [
+        "Krea2-Engineer-V1-bf16.safetensors",
+        "krea2",
+        "default"
+      ],
+      "widgets_values_named": {
+        "clip_name": "Krea2-Engineer-V1-bf16.safetensors",
+        "type": "krea2",
+        "device": "default"
+      }
+    },
+    {
+      "id": 6,
+      "type": "VAELoader",
+      "pos": [
+        1340,
+        360
+      ],
+      "size": [
+        250,
+        90
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "vae_name",
+          "name": "vae_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "vae_name"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "VAE",
+          "name": "VAE",
+          "type": "VAE",
+          "slot_index": 0,
+          "links": [
+            14
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.28.0",
+        "Node name for S&R": "VAELoader"
+      },
+      "widgets_values": [
+        "krea2RealVae_v10.safetensors"
+      ],
+      "widgets_values_named": {
+        "vae_name": "krea2RealVae_v10.safetensors"
+      }
+    },
+    {
+      "id": 80,
+      "type": "EmptyLatentImage",
+      "pos": [
+        1340,
+        510
+      ],
+      "size": [
+        270,
+        110
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "width",
+          "name": "width",
+          "type": "INT",
+          "widget": {
+            "name": "width"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "height",
+          "name": "height",
+          "type": "INT",
+          "widget": {
+            "name": "height"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "batch_size",
+          "name": "batch_size",
+          "type": "INT",
+          "widget": {
+            "name": "batch_size"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "LATENT",
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            109
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.35.0",
+        "Node name for S&R": "EmptyLatentImage"
+      },
+      "widgets_values": [
+        1888,
+        1056,
+        1
+      ],
+      "widgets_values_named": {
+        "width": 1888,
+        "height": 1056,
+        "batch_size": 1
+      }
+    },
+    {
+      "id": 65,
+      "type": "Krea2T-Enhancer-Advanced",
+      "pos": [
+        1840,
+        200
+      ],
+      "size": [
+        290,
+        130
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "model",
+          "name": "model",
+          "type": "MODEL",
+          "link": 132
+        },
+        {
+          "localized_name": "enabled",
+          "name": "enabled",
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "enabled"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "strength",
+          "name": "strength",
+          "type": "FLOAT",
+          "widget": {
+            "name": "strength"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "text_scale",
+          "name": "text_scale",
+          "type": "FLOAT",
+          "widget": {
+            "name": "text_scale"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "debug",
+          "name": "debug",
+          "type": "BOOLEAN",
+          "widget": {
+            "name": "debug"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "model",
+          "name": "model",
+          "type": "MODEL",
+          "links": [
+            62
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "ComfyUI-Krea2T-Enhancer",
+        "ver": "6666ffb729b2afc8ecdffd3cb6f121555ec948cb",
+        "Node name for S&R": "Krea2T-Enhancer-Advanced"
+      },
+      "widgets_values": [
+        true,
+        1,
+        1.5,
+        false
+      ],
+      "widgets_values_named": {
+        "enabled": true,
+        "strength": 1,
+        "text_scale": 1.5,
+        "debug": false
+      }
+    },
+    {
+      "id": 12,
+      "type": "KSampler",
+      "pos": [
+        2160,
+        60
+      ],
+      "size": [
+        250,
+        300
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "model",
+          "name": "model",
+          "type": "MODEL",
+          "link": 62
+        },
+        {
+          "localized_name": "positive",
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 10
+        },
+        {
+          "localized_name": "negative",
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 11
+        },
+        {
+          "localized_name": "latent_image",
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 109
+        },
+        {
+          "localized_name": "seed",
+          "name": "seed",
+          "type": "INT",
+          "widget": {
+            "name": "seed"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "steps",
+          "name": "steps",
+          "type": "INT",
+          "widget": {
+            "name": "steps"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "cfg",
+          "name": "cfg",
+          "type": "FLOAT",
+          "widget": {
+            "name": "cfg"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "sampler_name",
+          "name": "sampler_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "sampler_name"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "scheduler",
+          "name": "scheduler",
+          "type": "COMBO",
+          "widget": {
+            "name": "scheduler"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "denoise",
+          "name": "denoise",
+          "type": "FLOAT",
+          "widget": {
+            "name": "denoise"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "LATENT",
+          "name": "LATENT",
+          "type": "LATENT",
+          "slot_index": 0,
+          "links": [
+            13
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.28.0",
+        "Node name for S&R": "KSampler"
+      },
+      "widgets_values": [
+        597521558886093,
+        "randomize",
+        10,
+        1,
+        "er_sde",
+        "bong_tangent",
+        1
+      ],
+      "widgets_values_named": {
+        "seed": 597521558886093,
+        "control_after_generate": "randomize",
+        "steps": 10,
+        "cfg": 1,
+        "sampler_name": "er_sde",
+        "scheduler": "bong_tangent",
+        "denoise": 1
+      }
+    },
+    {
+      "id": 21,
+      "type": "ShowText|pysssss",
+      "pos": [
+        880,
+        270
+      ],
+      "size": [
+        440,
+        170
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "text",
+          "name": "text",
+          "type": "STRING",
+          "link": 18
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "STRING",
+          "name": "STRING",
+          "shape": 6,
+          "type": "STRING",
+          "slot_index": 0,
+          "links": [
+            19
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-custom-scripts",
+        "ver": "1.2.5",
+        "Node name for S&R": "ShowText|pysssss"
+      },
+      "widgets_values": [
+        "cinematic film-quality slightly-grainy analog film still . A science fiction scene set in a deep ocean trench of a water world, deep underwater. A massive pristine ice-cutting crawler is catching fire after a hard impact. It has an articulated segmented crawler, clad in rust-brown anodised alloy shell. It carries a pair of drill booms. It bears six reactor-blue tail beacon bars."
+      ],
+      "widgets_values_named": {
+        "text_0": "cinematic film-quality slightly-grainy analog film still . A science fiction scene set in a deep ocean trench of a water world, deep underwater. A massive pristine ice-cutting crawler is catching fire after a hard impact. It has an articulated segmented crawler, clad in rust-brown anodised alloy shell. It carries a pair of drill booms. It bears six reactor-blue tail beacon bars."
+      },
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 4,
+      "type": "UNETLoader",
+      "pos": [
+        1340,
+        10
+      ],
+      "size": [
+        260,
+        110
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "unet_name",
+          "name": "unet_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "unet_name"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "weight_dtype",
+          "name": "weight_dtype",
+          "type": "COMBO",
+          "widget": {
+            "name": "weight_dtype"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "MODEL",
+          "name": "MODEL",
+          "type": "MODEL",
+          "slot_index": 0,
+          "links": [
+            133
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.28.0",
+        "Node name for S&R": "UNETLoader"
+      },
+      "widgets_values": [
+        "krea2\\krea2_turbo_int8_convrot.safetensors",
+        "default"
+      ],
+      "widgets_values_named": {
+        "unet_name": "krea2\\krea2_turbo_int8_convrot.safetensors",
+        "weight_dtype": "default"
+      }
+    },
+    {
+      "id": 13,
+      "type": "VAEDecode",
+      "pos": [
+        2450,
+        60
+      ],
+      "size": [
+        250,
+        90
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "samples",
+          "name": "samples",
+          "type": "LATENT",
+          "link": 13
+        },
+        {
+          "localized_name": "vae",
+          "name": "vae",
+          "type": "VAE",
+          "link": 14
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "IMAGE",
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "slot_index": 0,
+          "links": [
+            137
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.28.0",
+        "Node name for S&R": "VAEDecode"
+      }
+    },
+    {
+      "id": 9,
+      "type": "CLIPTextEncode",
+      "pos": [
+        1600,
+        200
+      ],
+      "size": [
+        400,
+        170
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "clip",
+          "name": "clip",
+          "type": "CLIP",
+          "link": 114
+        },
+        {
+          "localized_name": "text",
+          "name": "text",
+          "type": "STRING",
+          "widget": {
+            "name": "text"
+          },
+          "link": 19
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "CONDITIONING",
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "slot_index": 0,
+          "links": [
+            8,
+            10
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.28.0",
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        ""
+      ],
+      "widgets_values_named": {
+        "text": ""
+      }
+    },
+    {
+      "id": 10,
+      "type": "ConditioningZeroOut",
+      "pos": [
+        1850,
+        160
+      ],
+      "size": [
+        250,
+        70
+      ],
+      "flags": {
+        "collapsed": true
+      },
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "conditioning",
+          "name": "conditioning",
+          "type": "CONDITIONING",
+          "link": 8
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "CONDITIONING",
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "slot_index": 0,
+          "links": [
+            11
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.28.0",
+        "Node name for S&R": "ConditioningZeroOut"
+      }
+    },
+    {
+      "id": 96,
+      "type": "LoraLoaderModelOnly",
+      "pos": [
+        1630,
+        10
+      ],
+      "size": [
+        270,
+        90
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "model",
+          "name": "model",
+          "type": "MODEL",
+          "link": 133
+        },
+        {
+          "localized_name": "lora_name",
+          "name": "lora_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "lora_name"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "strength_model",
+          "name": "strength_model",
+          "type": "FLOAT",
+          "widget": {
+            "name": "strength_model"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "MODEL",
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            132
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.35.0",
+        "Node name for S&R": "LoraLoaderModelOnly"
+      },
+      "widgets_values": [
+        "krea2\\style\\KreaCore_V2.safetensors",
+        0.8
+      ],
+      "widgets_values_named": {
+        "lora_name": "krea2\\style\\KreaCore_V2.safetensors",
+        "strength_model": 0.8
+      }
+    },
+    {
+      "id": 99,
+      "type": "SaveImage",
+      "pos": [
+        2750,
+        60
+      ],
+      "size": [
+        270,
+        270
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "images",
+          "name": "images",
+          "type": "IMAGE",
+          "link": 137
+        },
+        {
+          "localized_name": "filename_prefix",
+          "name": "filename_prefix",
+          "type": "STRING",
+          "widget": {
+            "name": "filename_prefix"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "images",
+          "name": "images",
+          "type": "IMAGE",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.35.0",
+        "Node name for S&R": "SaveImage"
+      },
+      "widgets_values": [
+        "sceneweaver\\sceneweaver_"
+      ],
+      "widgets_values_named": {
+        "filename_prefix": "sceneweaver\\sceneweaver_"
+      }
+    },
+    {
+      "id": 102,
+      "type": "SceneEntitySciFi",
+      "pos": [
+        380,
+        100
+      ],
+      "size": [
+        210,
+        606
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "Seed",
+          "name": "seed",
+          "type": "INT",
+          "widget": {
+            "name": "seed"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Kind",
+          "name": "kind",
+          "type": "COMBO",
+          "widget": {
+            "name": "kind"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Type",
+          "name": "subkind",
+          "type": "COMBO",
+          "widget": {
+            "name": "subkind"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Scale",
+          "name": "scale",
+          "type": "COMBO",
+          "widget": {
+            "name": "scale"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Condition",
+          "name": "condition",
+          "type": "COMBO",
+          "widget": {
+            "name": "condition"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Form",
+          "name": "form",
+          "type": "COMBO",
+          "widget": {
+            "name": "form"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Material",
+          "name": "material",
+          "type": "COMBO",
+          "widget": {
+            "name": "material"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Primary colour",
+          "name": "primary_color",
+          "type": "COMBO",
+          "widget": {
+            "name": "primary_color"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Accent colour",
+          "name": "accent_color",
+          "type": "COMBO",
+          "widget": {
+            "name": "accent_color"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Markings",
+          "name": "markings",
+          "type": "COMBO",
+          "widget": {
+            "name": "markings"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Surface detail",
+          "name": "surface_detail",
+          "type": "COMBO",
+          "widget": {
+            "name": "surface_detail"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Appendages",
+          "name": "appendages",
+          "type": "COMBO",
+          "widget": {
+            "name": "appendages"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Appendage count",
+          "name": "appendage_count",
+          "type": "COMBO",
+          "widget": {
+            "name": "appendage_count"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Emitters",
+          "name": "emitters",
+          "type": "COMBO",
+          "widget": {
+            "name": "emitters"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Emitter count",
+          "name": "emitter_count",
+          "type": "COMBO",
+          "widget": {
+            "name": "emitter_count"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Emitter colour",
+          "name": "emitter_color",
+          "type": "COMBO",
+          "widget": {
+            "name": "emitter_color"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Armament",
+          "name": "armament",
+          "type": "COMBO",
+          "widget": {
+            "name": "armament"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Armament count",
+          "name": "armament_count",
+          "type": "COMBO",
+          "widget": {
+            "name": "armament_count"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Sensors",
+          "name": "sensors",
+          "type": "COMBO",
+          "widget": {
+            "name": "sensors"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Sensor count",
+          "name": "sensor_count",
+          "type": "COMBO",
+          "widget": {
+            "name": "sensor_count"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Aperture",
+          "name": "aperture",
+          "type": "COMBO",
+          "widget": {
+            "name": "aperture"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Extras",
+          "name": "extras",
+          "type": "COMBO",
+          "widget": {
+            "name": "extras"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "entity_text",
+          "name": "entity_text",
+          "type": "STRING",
+          "links": null
+        },
+        {
+          "localized_name": "entity",
+          "name": "entity",
+          "type": "SCENE_ENTITY",
+          "links": [
+            142
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "SceneEntitySciFi"
+      },
+      "widgets_values": [
+        0,
+        "randomize",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random"
+      ],
+      "widgets_values_named": {
+        "seed": 0,
+        "randomize": "randomize",
+        "kind": "Random",
+        "subkind": "Random",
+        "scale": "Random",
+        "condition": "Random",
+        "form": "Random",
+        "material": "Random",
+        "primary_color": "Random",
+        "accent_color": "Random",
+        "markings": "Random",
+        "surface_detail": "Random",
+        "appendages": "Random",
+        "appendage_count": "Random",
+        "emitters": "Random",
+        "emitter_count": "Random",
+        "emitter_color": "Random",
+        "armament": "Random",
+        "armament_count": "Random",
+        "sensors": "Random",
+        "sensor_count": "Random",
+        "aperture": "Random",
+        "extras": "Random"
+      }
+    },
+    {
+      "id": 103,
+      "type": "SceneWeaverSciFi",
+      "pos": [
+        620,
+        120
+      ],
+      "size": [
+        210,
+        286
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "entity_1_in",
+          "name": "entity_1_in",
+          "shape": 7,
+          "type": "SCENE_ENTITY",
+          "link": 142
+        },
+        {
+          "localized_name": "entity_2_in",
+          "name": "entity_2_in",
+          "shape": 7,
+          "type": "SCENE_ENTITY",
+          "link": null
+        },
+        {
+          "localized_name": "entity_3_in",
+          "name": "entity_3_in",
+          "shape": 7,
+          "type": "SCENE_ENTITY",
+          "link": null
+        },
+        {
+          "localized_name": "entity_4_in",
+          "name": "entity_4_in",
+          "shape": 7,
+          "type": "SCENE_ENTITY",
+          "link": null
+        },
+        {
+          "localized_name": "Seed",
+          "name": "seed",
+          "type": "INT",
+          "widget": {
+            "name": "seed"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Entities",
+          "name": "entity_count",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity_count"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Scene filter",
+          "name": "scene_filter",
+          "type": "COMBO",
+          "widget": {
+            "name": "scene_filter"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Bulk edit widgets",
+          "name": "set_all_fields",
+          "type": "COMBO",
+          "widget": {
+            "name": "set_all_fields"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Environment",
+          "name": "environment",
+          "type": "COMBO",
+          "widget": {
+            "name": "environment"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Kind 1",
+          "name": "entity1_kind",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity1_kind"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Type 1",
+          "name": "entity1_subkind",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity1_subkind"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Scale 1",
+          "name": "entity1_scale",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity1_scale"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Condition 1",
+          "name": "entity1_condition",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity1_condition"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Form 1",
+          "name": "entity1_form",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity1_form"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Material 1",
+          "name": "entity1_material",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity1_material"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Primary colour 1",
+          "name": "entity1_primary_color",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity1_primary_color"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Accent colour 1",
+          "name": "entity1_accent_color",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity1_accent_color"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Markings 1",
+          "name": "entity1_markings",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity1_markings"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Surface detail 1",
+          "name": "entity1_surface_detail",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity1_surface_detail"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Appendages 1",
+          "name": "entity1_appendages",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity1_appendages"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Appendage count 1",
+          "name": "entity1_appendage_count",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity1_appendage_count"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Emitters 1",
+          "name": "entity1_emitters",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity1_emitters"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Emitter count 1",
+          "name": "entity1_emitter_count",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity1_emitter_count"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Emitter colour 1",
+          "name": "entity1_emitter_color",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity1_emitter_color"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Armament 1",
+          "name": "entity1_armament",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity1_armament"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Armament count 1",
+          "name": "entity1_armament_count",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity1_armament_count"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Sensors 1",
+          "name": "entity1_sensors",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity1_sensors"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Sensor count 1",
+          "name": "entity1_sensor_count",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity1_sensor_count"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Aperture 1",
+          "name": "entity1_aperture",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity1_aperture"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Extras 1",
+          "name": "entity1_extras",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity1_extras"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Situation 1",
+          "name": "entity1_situation",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity1_situation"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Kind 2",
+          "name": "entity2_kind",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity2_kind"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Type 2",
+          "name": "entity2_subkind",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity2_subkind"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Scale 2",
+          "name": "entity2_scale",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity2_scale"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Condition 2",
+          "name": "entity2_condition",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity2_condition"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Situation 2",
+          "name": "entity2_situation",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity2_situation"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Kind 3",
+          "name": "entity3_kind",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity3_kind"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Type 3",
+          "name": "entity3_subkind",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity3_subkind"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Scale 3",
+          "name": "entity3_scale",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity3_scale"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Condition 3",
+          "name": "entity3_condition",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity3_condition"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Situation 3",
+          "name": "entity3_situation",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity3_situation"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Kind 4",
+          "name": "entity4_kind",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity4_kind"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Type 4",
+          "name": "entity4_subkind",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity4_subkind"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Scale 4",
+          "name": "entity4_scale",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity4_scale"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Condition 4",
+          "name": "entity4_condition",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity4_condition"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Situation 4",
+          "name": "entity4_situation",
+          "type": "COMBO",
+          "widget": {
+            "name": "entity4_situation"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Relation 1-2",
+          "name": "relation_1_2",
+          "type": "COMBO",
+          "widget": {
+            "name": "relation_1_2"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Relation 1-3",
+          "name": "relation_1_3",
+          "type": "COMBO",
+          "widget": {
+            "name": "relation_1_3"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Relation 1-4",
+          "name": "relation_1_4",
+          "type": "COMBO",
+          "widget": {
+            "name": "relation_1_4"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Relation 2-3",
+          "name": "relation_2_3",
+          "type": "COMBO",
+          "widget": {
+            "name": "relation_2_3"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Relation 2-4",
+          "name": "relation_2_4",
+          "type": "COMBO",
+          "widget": {
+            "name": "relation_2_4"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Relation 3-4",
+          "name": "relation_3_4",
+          "type": "COMBO",
+          "widget": {
+            "name": "relation_3_4"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Position 1-2",
+          "name": "relation_1_2_position",
+          "type": "COMBO",
+          "widget": {
+            "name": "relation_1_2_position"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Position 1-3",
+          "name": "relation_1_3_position",
+          "type": "COMBO",
+          "widget": {
+            "name": "relation_1_3_position"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Position 1-4",
+          "name": "relation_1_4_position",
+          "type": "COMBO",
+          "widget": {
+            "name": "relation_1_4_position"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Position 2-3",
+          "name": "relation_2_3_position",
+          "type": "COMBO",
+          "widget": {
+            "name": "relation_2_3_position"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Position 2-4",
+          "name": "relation_2_4_position",
+          "type": "COMBO",
+          "widget": {
+            "name": "relation_2_4_position"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Position 3-4",
+          "name": "relation_3_4_position",
+          "type": "COMBO",
+          "widget": {
+            "name": "relation_3_4_position"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "Context",
+          "name": "context",
+          "type": "COMBO",
+          "widget": {
+            "name": "context"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "prompt_text",
+          "name": "prompt_text",
+          "type": "STRING",
+          "links": [
+            143
+          ]
+        },
+        {
+          "localized_name": "prompt_json",
+          "name": "prompt_json",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "SceneWeaverSciFi"
+      },
+      "widgets_values": [
+        0,
+        "randomize",
+        "1",
+        "Any",
+        "Off",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "Random",
+        "None",
+        "None",
+        "None",
+        "None",
+        "None",
+        "None",
+        "None",
+        "None",
+        "None",
+        "None",
+        "None",
+        "None",
+        "Random"
+      ],
+      "widgets_values_named": {
+        "seed": 0,
+        "randomize": "randomize",
+        "entity_count": "1",
+        "scene_filter": "Any",
+        "set_all_fields": "Off",
+        "environment": "Random",
+        "entity1_kind": "Random",
+        "entity1_subkind": "Random",
+        "entity1_scale": "Random",
+        "entity1_condition": "Random",
+        "entity1_form": "Random",
+        "entity1_material": "Random",
+        "entity1_primary_color": "Random",
+        "entity1_accent_color": "Random",
+        "entity1_markings": "Random",
+        "entity1_surface_detail": "Random",
+        "entity1_appendages": "Random",
+        "entity1_appendage_count": "Random",
+        "entity1_emitters": "Random",
+        "entity1_emitter_count": "Random",
+        "entity1_emitter_color": "Random",
+        "entity1_armament": "Random",
+        "entity1_armament_count": "Random",
+        "entity1_sensors": "Random",
+        "entity1_sensor_count": "Random",
+        "entity1_aperture": "Random",
+        "entity1_extras": "Random",
+        "entity1_situation": "Random",
+        "entity2_kind": "Random",
+        "entity2_subkind": "Random",
+        "entity2_scale": "Random",
+        "entity2_condition": "Random",
+        "entity2_situation": "Random",
+        "entity3_kind": "Random",
+        "entity3_subkind": "Random",
+        "entity3_scale": "Random",
+        "entity3_condition": "Random",
+        "entity3_situation": "Random",
+        "entity4_kind": "Random",
+        "entity4_subkind": "Random",
+        "entity4_scale": "Random",
+        "entity4_condition": "Random",
+        "entity4_situation": "Random",
+        "relation_1_2": "None",
+        "relation_1_3": "None",
+        "relation_1_4": "None",
+        "relation_2_3": "None",
+        "relation_2_4": "None",
+        "relation_3_4": "None",
+        "relation_1_2_position": "None",
+        "relation_1_3_position": "None",
+        "relation_1_4_position": "None",
+        "relation_2_3_position": "None",
+        "relation_2_4_position": "None",
+        "relation_3_4_position": "None",
+        "context": "Random"
+      }
+    },
+    {
+      "id": 8,
+      "type": "StringConcatenate",
+      "pos": [
+        920,
+        40
+      ],
+      "size": [
+        340,
+        170
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "localized_name": "string_a",
+          "name": "string_a",
+          "type": "STRING",
+          "widget": {
+            "name": "string_a"
+          },
+          "link": null
+        },
+        {
+          "localized_name": "string_b",
+          "name": "string_b",
+          "type": "STRING",
+          "widget": {
+            "name": "string_b"
+          },
+          "link": 143
+        },
+        {
+          "localized_name": "delimiter",
+          "name": "delimiter",
+          "type": "STRING",
+          "widget": {
+            "name": "delimiter"
+          },
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "localized_name": "STRING",
+          "name": "STRING",
+          "type": "STRING",
+          "slot_index": 0,
+          "links": [
+            18
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.28.0",
+        "Node name for S&R": "StringConcatenate"
+      },
+      "widgets_values": [
+        "cinematic film-quality slightly-grainy analog film still",
+        "",
+        " . "
+      ],
+      "widgets_values_named": {
+        "string_a": "cinematic film-quality slightly-grainy analog film still",
+        "string_b": "",
+        "delimiter": " . "
+      }
+    }
+  ],
+  "links": [
+    [
+      8,
+      9,
+      0,
+      10,
+      0,
+      "CONDITIONING"
+    ],
+    [
+      10,
+      9,
+      0,
+      12,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      11,
+      10,
+      0,
+      12,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      13,
+      12,
+      0,
+      13,
+      0,
+      "LATENT"
+    ],
+    [
+      14,
+      6,
+      0,
+      13,
+      1,
+      "VAE"
+    ],
+    [
+      18,
+      8,
+      0,
+      21,
+      0,
+      "STRING"
+    ],
+    [
+      19,
+      21,
+      0,
+      9,
+      1,
+      "STRING"
+    ],
+    [
+      62,
+      65,
+      0,
+      12,
+      0,
+      "MODEL"
+    ],
+    [
+      109,
+      80,
+      0,
+      12,
+      3,
+      "LATENT"
+    ],
+    [
+      114,
+      5,
+      0,
+      9,
+      0,
+      "CLIP"
+    ],
+    [
+      132,
+      96,
+      0,
+      65,
+      0,
+      "MODEL"
+    ],
+    [
+      133,
+      4,
+      0,
+      96,
+      0,
+      "MODEL"
+    ],
+    [
+      137,
+      13,
+      0,
+      99,
+      0,
+      "IMAGE"
+    ],
+    [
+      142,
+      102,
+      1,
+      103,
+      0,
+      "SCENE_ENTITY"
+    ],
+    [
+      143,
+      103,
+      0,
+      8,
+      1,
+      "STRING"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 9000,
+      "title": "SceneWeaver",
+      "bounding": [
+        360,
+        -10,
+        500,
+        780
+      ],
+      "color": "#3f789e",
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.7610841434136913,
+      "offset": [
+        -13.965838729545496,
+        189.92129580963544
+      ]
+    },
+    "draftsman_title": "Krea2_IdentityForge_CharacterCycle"
+  },
+  "version": 0.4
+}

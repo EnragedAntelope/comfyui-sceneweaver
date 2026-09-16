@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# User-supplied dropdown options (keep local; survives git pull)
+user_options.json
+
+# Node (dev-only frontend test harness, tests/frontend/)
+node_modules/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local agent / working notes and evidence (not for distribution)
+.claude/
+.omo/
+.superpowers/
+.serena/
+docs/worklog/
+worklog-*.md
+*.backup-before-*
+*.backup-*
+
