@@ -124,7 +124,8 @@ _Last verified: 2026-09-16_
     maintainer instrument and CI does not run it. Round XIII's note calling it
     green was measured on a different seed.
   - Round XIV renamed or removed dropdown values; a saved workflow that locked
-    one reports "value not in list". The README's "Upgrading" section says so.
+    one reports "value not in list". Release notes live in commit messages,
+    never in the README (maintainer's rule).
   - Not fixed in round XIV (no clean fix yet): a generation ship can still be
     drawn landed on a surface, and "lunar far-side orbit" can render as the
     lunar surface despite the open-space staging suffix.
