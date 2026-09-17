@@ -10,9 +10,8 @@ module and two registration lines.
 
 _Last verified: 2026-09-16_
 
-- **Status:** **public beta.** `main` is v0.3.0 (published to the ComfyUI
-  Registry); **v0.4.0 (coherence round XIV) is on `tmp/sceneweaver-round-xiv`,
-  awaiting the maintainer's ComfyUI test** before a squashed PR to `main`. The
+- **Status:** **public beta, v0.4.0** (coherence round XIV), squash-merged to
+  `main` and published to the ComfyUI Registry by the publish workflow. The
   repo is public at `EnragedAntelope/comfyui-sceneweaver`; the full pre-release
   history stays local only, in the `coherence-round-*` and `tmp/*` branches.
   Round XIV: a dead ship is the `wreck` kind and is dead (closed dormant-act
@@ -105,9 +104,9 @@ _Last verified: 2026-09-16_
   coherence audit, the coherence sweep and `ruff` are green; the reach audit is
   not (see Known gaps). Round XIV's decisions D16-D24 and its measurements are
   in `docs/architecture.md` ("Concern audit (round XIV)").
-- **In progress:** round XIV on `tmp/sceneweaver-round-xiv`, pending the
-  maintainer's render test; the fantasy and horror packs are a design
-  brainstorm in `docs/genre-roadmap.md`, not started. Round XIII was driven by a measured gap rather than
+- **In progress:** nothing in code. The fantasy and horror packs are a design
+  brainstorm with recorded decisions in `docs/genre-roadmap.md`, not started;
+  round XIV has not yet been checked against a fresh rendered batch. Round XIII was driven by a measured gap rather than
   by a report: on the 2026-09-15 batch `scripts/concern_audit.py` read **0.0%
   flagged** while 44 of 101 rendered images -- 43.6% -- were bad enough that the
   user pulled them out by hand. Every previous round had driven its own frozen
