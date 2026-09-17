@@ -233,17 +233,6 @@ brainstorm is in
 **Which genre do you want first?**
 [Tell me in the discussions.](https://github.com/EnragedAntelope/comfyui-sceneweaver/discussions)
 
-## Upgrading
-
-**0.4.0** tightened coherence across the sci-fi pack: a wreck is dead (no lit
-engines, sparks or plugged-in cables), a small creature no longer seizes a craft,
-there is no stray open fire, and the background sentence no longer tells a ladder
-to "crowd in close". To do that, some dropdown values were **renamed or removed** -
-fire and spark actions, sewn-patch, crane and sail wording, and the abandoned /
-derelict / crashed / breached conditions on ships and machines (a dead ship is the
-`wreck` kind now). If a saved workflow locked one of those values, ComfyUI reports
-it as not in the list: set that dropdown back to `Random` or pick the new wording.
-
 ## Development
 
 ```
