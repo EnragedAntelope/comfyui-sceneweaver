@@ -51,6 +51,7 @@ is spoken only to ``_meta.warnings``.
 """
 from __future__ import annotations
 
+import dataclasses
 import json
 import logging
 import random
@@ -69,6 +70,7 @@ try:
         RELATION_FIELD,
         RELATION_ANY,
         RULE_EXCLUDE,
+        RULE_REQUIRE,
         SCENE_NODE_SLOTS,
         SET_ALL_CLEAR,
         SET_ALL_OFF,
@@ -79,6 +81,7 @@ try:
         FieldDef,
         GenrePack,
         bind_address,
+        canonical_scene_filter,
         build_field_definitions,
         archetype_for,
         affordances_of,
@@ -113,6 +116,7 @@ except ImportError:  # pragma: no cover -- standalone/test context
         RELATION_FIELD,
         RELATION_ANY,
         RULE_EXCLUDE,
+        RULE_REQUIRE,
         SCENE_NODE_SLOTS,
         SET_ALL_CLEAR,
         SET_ALL_OFF,
@@ -123,6 +127,7 @@ except ImportError:  # pragma: no cover -- standalone/test context
         FieldDef,
         GenrePack,
         bind_address,
+        canonical_scene_filter,
         build_field_definitions,
         archetype_for,
         affordances_of,
@@ -769,6 +774,52 @@ def _silence_repeats(
             taken.add(value)
 
 
+def _mask_drawn_wired_values(
+    rng: random.Random,
+    pack: GenrePack,
+    state: dict[str, str | None],
+    address_of: Mapping[str, FieldDef],
+    slot: int,
+    chosen: "frozenset[str]",
+    scene_filter: str,
+) -> None:
+    """Apply the scene's content filter to a wired entity's *drawn* values.
+
+    The Scene Entity node has no filter of its own, so a value it drew at random
+    reached a "No gore" scene intact -- a blood-soaked corpse passed straight
+    through. A drawn value is a draw, not a choice (the same reasoning that lets
+    a rule re-draw it), so a tag-scoped field whose value the filter masks is
+    re-drawn from the filtered pool, and a count partner is re-drawn with its
+    noun. A value the user locked on the Entity node is kept, and the kind and
+    the type are left to the constraint pass, because re-drawing either here
+    would strand every field it scopes.
+    """
+    identity = {KIND_FIELD, type_field(pack)}
+    for name in pack.entity_fields:
+        path = slot_path(slot, name)
+        value = state.get(path)
+        definition = address_of.get(path)
+        if value is None or name in chosen or definition is None:
+            continue
+        if not definition.tag_scoped or name in identity:
+            continue
+        scope = _scope_for(pack, state, path)
+        if value not in pool_for(pack, name, scope):
+            # A foreign or user-supplied value: the filter is not what excludes it.
+            continue
+        if value in filtered_pool(pack, name, scope, scene_filter):
+            continue
+        state[path] = _draw(rng, pack, definition, scope, scene_filter)
+        partner = pack.counts.get(name)
+        partner_path = slot_path(slot, partner) if partner else None
+        partner_def = address_of.get(partner_path) if partner_path else None
+        if partner_def is not None and partner not in chosen:
+            state[partner_path] = (
+                _draw(rng, pack, partner_def, _scope_for(pack, state, partner_path), scene_filter)
+                if state[path] is not None else None
+            )
+
+
 def _warn_masked_locks(
     pack: GenrePack,
     state: Mapping[str, str | None],
@@ -980,6 +1031,25 @@ def _banned_by_state(
     return banned, reasons
 
 
+def _required_targets(
+    pack: GenrePack, state: Mapping[str, str | None], slots: int
+) -> "set[str]":
+    """Every address a triggered ``require`` rule names as its target.
+
+    ``_banned_by_state`` turns a requirement into the exclusion of its
+    complement, which is exactly right for a field that holds a value and says
+    nothing about a field that holds none. This is the other half: the targets
+    that must hold one of the required values, empty or not.
+    """
+    required: set[str] = set()
+    for rule, slot, pair in _rule_bindings(pack, slots):
+        if rule.type != RULE_REQUIRE or not rule.requires_field:
+            continue
+        if state.get(bind_address(rule.field, slot, pair)) in rule.triggers:
+            required.add(bind_address(rule.requires_field, slot, pair))
+    return required
+
+
 def _apply_constraints(
     rng: random.Random,
     pack: GenrePack,
@@ -999,11 +1069,24 @@ def _apply_constraints(
     nulled: set[str] = set()
     for _ in range(MAX_CONSTRAINT_PASSES):
         banned, reasons = _banned_by_state(pack, state, address_of, scene_filter, slots)
+        required = _required_targets(pack, state, slots)
 
         changed = False
-        for target, forbidden in banned.items():
+        # A requirement whose allowed set is the whole pool bans nothing, and
+        # still has an empty target to fill. Banned targets keep their order, so
+        # a scene no requirement touches draws exactly as it did.
+        for target in [*banned, *sorted(required - set(banned))]:
+            forbidden = banned.get(target, set())
             current = state.get(target)
-            if current is None or current not in forbidden:
+            if current is None:
+                # An exclusion has nothing to remove from an empty field, but a
+                # requirement is unmet by one: a creature "wreathed in creeping
+                # ivy" with no condition drawn is a live creature standing in
+                # ivy. Fill it from the allowed values -- unless the user chose
+                # the emptiness, which a locked path records.
+                if target not in required or target in locked_paths:
+                    continue
+            elif current not in forbidden:
                 continue
             if target in locked_paths:
                 # The user named this value. It wins, and the rule's reason is
@@ -1026,9 +1109,16 @@ def _apply_constraints(
                 forbidden = forbidden | _control_values_ruled_out_by_state(
                     pack, definition.base, state, locked_paths, definition.slot
                 )
+            if current is None:
+                # Filling a requirement: the field may not go unsaid again.
+                definition = dataclasses.replace(definition, omission_weight=0.0)
             replacement = _draw(
                 rng, pack, definition, _scope_for(pack, state, target), scene_filter, forbidden
             )
+            if replacement is None and current is None:
+                # No allowed value in this scope: the requirement cannot be met,
+                # and re-drawing an empty field every pass would never settle.
+                continue
             state[target] = replacement
             if replacement is None:
                 nulled.add(target)
@@ -1221,6 +1311,10 @@ def generate_scene(
     wired_entities = dict(wired_entities or {})
     warnings: list[str] = []
     overridden: list[str] = []
+    # The node hands over the label it shows ("No gore"); every draw below reads
+    # the filter it applies. ``_meta`` keeps the label, which is what was chosen.
+    filter_label = scene_filter
+    scene_filter = canonical_scene_filter(pack, scene_filter)
 
     # The *resolution* set, not the widget list: a supporting slot has fewer
     # widgets but the same fields, and a constraint rule must reach a field no
@@ -1329,6 +1423,7 @@ def generate_scene(
                 if name in chosen:
                     locked_paths.add(path)
                     locked_here.add(name)
+            _mask_drawn_wired_values(rng, pack, state, address_of, slot, chosen, scene_filter)
             if lost:
                 overridden.extend(lost)
                 message = (
@@ -1505,7 +1600,7 @@ def generate_scene(
         "genre": pack.slug,
         "schema_version": JSON_SCHEMA_VERSION,
         "redrawn_fields": redrawn,
-        "filter_applied": scene_filter,
+        "filter_applied": filter_label,
         "overridden_fields": overridden,
         "warnings": warnings,
         # Which context sentence pattern the scene drew. Recorded so the

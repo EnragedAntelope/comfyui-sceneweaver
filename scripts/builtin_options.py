@@ -186,7 +186,7 @@ def main(argv: "list[str] | None" = None) -> int:
     parser.add_argument("fields", nargs="*", help="fields to list; default is all")
     parser.add_argument("--kind", help="narrow to one kind's pool")
     parser.add_argument("--pack", default=DEFAULT_PACK,
-                        help="genre pack slug: scifi (default) or fantasy")
+                        help="genre pack slug: scifi (default), fantasy or horror")
     parser.add_argument("--unresolved", action="store_true",
                         help="list assignments the evaluator declined to resolve")
     args = parser.parse_args(argv)

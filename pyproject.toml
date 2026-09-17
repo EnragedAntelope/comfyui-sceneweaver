@@ -1,11 +1,11 @@
 [project]
 name = "comfyui-sceneweaver"
 version = "0.5.0"
-description = "One click, one whole coherent scene: the place, what is standing in it, and what it is doing - written as prose a text encoder can follow, where every detail agrees with every other one. A multi-genre scene engine: sci-fi (alien creatures, spacefarers, mechs, starships, stations, wrecks, worlds) and fantasy (dragons, mythic beasts, giants, goblins, centaurs, elves, undead, golems, castles, airships), each drawn across a full morphology, with entities that wire across genres. Every field independently lockable."
+description = "One click, one whole coherent scene: the place, what is standing in it, and what it is doing - written as prose a text encoder can follow, where every detail agrees with every other one. A multi-genre scene engine: sci-fi (alien creatures, spacefarers, mechs, starships, stations, wrecks, worlds) fantasy (dragons, mythic beasts, giants, goblins, centaurs, elves, undead, golems, castles, airships) and horror (ghouls, vampires, banshees, cryptids, eldritch horrors, cultists, cursed objects, haunted houses, with a gore filter that starts on No gore), each drawn across a full morphology, with entities that wire across genres. Every field independently lockable."
 license = { text = "MIT" }
 readme = "README.md"
 requires-python = ">=3.10"
-keywords = ["comfyui", "scene", "scene generator", "scene builder", "sci-fi", "science fiction", "fantasy", "dragon", "mythic creature", "spaceship", "starship", "alien", "creature", "space", "environment", "prompt", "prompt generator", "randomizer", "random", "wildcard", "constraint", "worldbuilding", "composition"]
+keywords = ["comfyui", "scene", "scene generator", "scene builder", "sci-fi", "science fiction", "fantasy", "dragon", "mythic creature", "horror", "monster", "spaceship", "starship", "alien", "creature", "space", "environment", "prompt", "prompt generator", "randomizer", "random", "wildcard", "constraint", "worldbuilding", "composition"]
 dependencies = []
 
 [[project.authors]]

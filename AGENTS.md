@@ -2,20 +2,24 @@
 
 A ComfyUI V3 custom node pack that generates whole scenes - an environment, one
 entity by default and up to four, and the pairwise relationships between them -
-from lockable dropdowns, as natural-language prose plus structured JSON. Two
-genres ship, sci-fi and fantasy; the data layer is a genre contract, so a genre
-is a data module and two registration lines.
+from lockable dropdowns, as natural-language prose plus structured JSON. Three
+genres ship, sci-fi, fantasy and horror; the data layer is a genre contract, so a
+genre is a data module and two registration lines.
 
 ## Current state
 
-_Last verified: 2026-09-16_
+_Last verified: 2026-09-17_
 
 - **Status:** **public beta.** `main` is v0.4.0 (coherence round XIV, published
-  to the ComfyUI Registry). **v0.5.0, the fantasy pack, is on
-  `tmp/sceneweaver-fantasy`**, awaiting the maintainer's ComfyUI render test
-  before a squashed PR: `data/fantasy.py` plus two registration lines, a
-  `"fantasy"` section in `user_options.json`, and `--pack` on the option reader
-  and the reach audit. No engine or node change. The
+  to the ComfyUI Registry). **v0.5.0 is on `tmp/sceneweaver-fantasy`**, awaiting
+  the maintainer's ComfyUI render test before a squashed PR: the fantasy pack,
+  **round XV** (the 0916-evening sci-fi and 0917 fantasy batches, decisions R1-R9
+  in `docs/architecture.md`) and **the horror pack** (`data/horror.py`, H1-H5).
+  Round XV added contract pieces, each genre-agnostic: validator checks 32
+  (`FALLTHROUGH`) and 33 (`CARRYPART`), `place_stance_blocks`, a `require` rule
+  that fills an empty target, genre filter labels (`scene_filter_labels`), the
+  scene filter reaching a wired entity's drawn values, and a readout cut to the
+  node width. The
   repo is public at `EnragedAntelope/comfyui-sceneweaver`; the full pre-release
   history stays local only, in the `coherence-round-*` and `tmp/*` branches.
   Round XIV: a dead ship is the `wreck` kind and is dead (closed dormant-act
@@ -108,9 +112,10 @@ _Last verified: 2026-09-16_
   coherence audit, the coherence sweep and `ruff` are green; the reach audit is
   not (see Known gaps). Round XIV's decisions D16-D24 and its measurements are
   in `docs/architecture.md` ("Concern audit (round XIV)").
-- **In progress:** the fantasy pack (above), not yet rendered. Horror is the
-  next genre; its design and the maintainer's decisions (gore filter, node pair,
-  time of day) are in `docs/genre-roadmap.md`. Round XIII was driven by a measured gap rather than
+- **In progress:** round XV's fixes and the horror pack are **not yet rendered**;
+  the maintainer's render test decides the next round. `time_of_day` (fantasy and
+  horror) and the fantasy Tone filter are designed in `docs/genre-roadmap.md` and
+  not built. Round XIII was driven by a measured gap rather than
   by a report: on the 2026-09-15 batch `scripts/concern_audit.py` read **0.0%
   flagged** while 44 of 101 rendered images -- 43.6% -- were bad enough that the
   user pulled them out by hand. Every previous round had driven its own frozen
@@ -145,8 +150,14 @@ _Last verified: 2026-09-16_
     payload). A relation is not checked against an entity's state either, so an
     opt-in relation can have a petrified or slumbering entity "hunting" another.
   - The fantasy Tone filter (Any / Whimsical / Heroic / Grim) is designed but not
-    built: it needs named content-tag axes in the contract.
-  - There is no fantasy example workflow; swap the node in a sci-fi graph.
+    built: it needs named content-tag axes in the contract. Horror's gore filter
+    did not: it relabels the existing axis.
+  - A wired Scene Entity's *kind and type* are never masked by the scene filter
+    (a conflict-tagged sci-fi warship wired into a Peaceful scene stays); only its
+    other drawn tag-scoped values are re-drawn (R6).
+  - The horror pack has not been render-tested, and `reach_audit.py --pack horror`
+    still lists a few rare-place situations as never drawn.
+  - There is no fantasy or horror example workflow; swap the node in a sci-fi graph.
   - A world as **scenery** behind a ground-level scene has no placement concept,
     so `celestial body` is excluded from the `planetary surface` kind pool, and
     a world is no longer the subject in `orbit` either: with the camera already
@@ -177,6 +188,7 @@ _Last verified: 2026-09-16_
 | `data/genre.py` | The `GenrePack` contract - genre-agnostic. |
 | `data/scifi.py` | The sci-fi pack. Nothing outside `__init__.py` imports it. |
 | `data/fantasy.py` | The fantasy pack. Situations are authored in buckets (tier, tag, needs, stance, liveness) and every table about them is derived from the registry. |
+| `data/horror.py` | The horror pack, the same bucket shape. Gore is `conflict_only` and the node labels the filter No gore / Any / Gore only. |
 | `data/user_options.py` | Merge hook for a gitignored `user_options.json`. Never run at import. |
 | `engine/` | Pure generation logic. No ComfyUI imports, no genre knowledge. |
 | `nodes/` | Node-class factories. **May not name a genre** (a test greps for it). |
@@ -196,6 +208,7 @@ python -m unittest discover -s tests -t . -v
 pytest tests
 python tests/validate_data.py
 python scripts/reach_audit.py --pack fantasy --seeds 12000
+python scripts/reach_audit.py --pack horror --seeds 12000
 python scripts/sample_distribution.py --seeds 1000
 python scripts/coherence_audit.py --seeds 2000
 python scripts/coherence_sweep.py --gate
@@ -419,3 +432,22 @@ that reads a gitignored file passes locally and fails on a clean checkout.
   overwrote one, so a glider needed nothing of a place and was feasible at the
   bottom of an ocean trench. Grep for a later `update` before concluding a
   declaration is live.
+- **A native subject never falls through to the stranger's pool.** `_default` is
+  what a foreign entity is spoken with; a native type with no key of its own gets
+  it too, silently ("a shrine has a single spear"). Declare an empty pool
+  and `omitted_pools` instead; validator check 32 finds the hole.
+- **What a sentence says is carried must be carriable.** A carry sentence over a
+  pool that holds talons, fists or arms draws a body part held in the hand; made
+  things *have* their parts. Check 33.
+- **A place can forbid a stance outright.** Support is a union, so a seabed with a
+  floor supported rolling; `place_stance_blocks` keeps any body that has the stance
+  out, even at rest. Do not remove the affordance instead -- it starves every
+  legitimate act that needed it.
+- **A requirement is met, not merely not violated.** A `require` rule fills an empty
+  target. Use it when an act needs a state (a stone act needs "petrified") rather
+  than wording the state into the act, which repeats it when the state is drawn.
+- **Traits are added, never merged in a dict literal.** A later `**{...}` for the
+  same key replaces the earlier entry; three sea monsters lost `inherently-vast`
+  that way. Use the pack's `_add_traits`.
+- **A drawn wired value obeys the scene filter.** The Entity node has no filter; a
+  scene that promises "No gore" must mask what the wire drew.

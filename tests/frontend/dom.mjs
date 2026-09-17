@@ -63,6 +63,11 @@ export function recordingContext() {
     fillText(text, x, y) {
       this.calls.push(["fillText", text, x, y]);
     },
+    // A fixed advance per character: enough to prove a line is cut to the node
+    // width without a real font engine.
+    measureText(text) {
+      return { width: String(text).length * 6 };
+    },
     // The painter draws a separator rule above the footer. A double that threw
     // on these would be caught by the extension's own try/catch and the test
     // would see *no* text at all -- a stub gap reported as a drawing bug.

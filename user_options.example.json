@@ -24,14 +24,19 @@
     "Fantasy kind names: dragon, mythic beast, giant-kin, small folk, hybrid folk,",
     "folk, spirit or elemental, undead, construct, structure, vessel, artifact.",
     "",
+    "Horror values go in a 'horror' section. Horror kind names: undead, spirit,",
+    "cryptid, eldritch horror, mortal, cursed object, haunted place.",
+    "",
     "List every built-in value of a field with:",
     "    python scripts/builtin_options.py markings --kind starship",
     "    python scripts/builtin_options.py subkind --kind dragon --pack fantasy",
+    "    python scripts/builtin_options.py subkind --kind cryptid --pack horror",
     "",
     "'tags' is optional and only affects the Scene filter widget. It applies to",
-    "subkind, armament, aperture, situation and relation. A value you do not tag",
-    "is 'neutral' and is drawn under Any, Peaceful and Conflict alike.",
-    "Tags: neutral, peaceful_only, conflict_only.",
+    "subkind, armament, aperture, situation and relation (horror adds condition",
+    "and surface_detail). A value you do not tag is 'neutral' and is drawn under",
+    "every filter setting. Tags: neutral, peaceful_only, conflict_only. In a",
+    "horror section, conflict_only is what 'No gore' hides.",
     "",
     "Three house rules your values should follow, because the engine assumes",
     "them. None is enforced -- your file is yours -- but the console warns:",
@@ -74,6 +79,14 @@
     "pools": {
       "subkind": {
         "mythic beast": ["moon hare"]
+      }
+    }
+  },
+
+  "horror": {
+    "pools": {
+      "subkind": {
+        "cryptid": ["lantern-eyed heron man"]
       }
     }
   }

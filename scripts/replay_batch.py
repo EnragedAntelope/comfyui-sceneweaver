@@ -29,11 +29,22 @@ from concern_flags import flags  # noqa: E402
 from concern_flags_0914 import flags_0914  # noqa: E402
 from concern_flags_0915 import flags_0915  # noqa: E402
 from concern_flags_0916 import flags_0916  # noqa: E402
+from data.fantasy import FANTASY_PACK  # noqa: E402
+from data.horror import HORROR_PACK  # noqa: E402
 from data.scifi import SCIFI_PACK  # noqa: E402
 from engine.scene import generate_entity, generate_scene  # noqa: E402
 from pngmeta import png_text_chunks  # noqa: E402
 
 _CONTROL_KEYS = frozenset({"seed", "scene_filter", "set_all_fields", "entity_count"})
+_PACKS = {"SciFi": SCIFI_PACK, "Fantasy": FANTASY_PACK, "Horror": HORROR_PACK}
+
+
+def _pack(class_type: str):
+    """The genre pack a node class was built from (its class name ends with the genre)."""
+    for suffix, pack in _PACKS.items():
+        if class_type.endswith(suffix):
+            return pack
+    return SCIFI_PACK
 
 
 def _widgets(inputs: dict) -> dict:
@@ -60,13 +71,15 @@ def replay(path: Path) -> "tuple[str, dict] | None":
         link = inputs.get(f"entity_{slot}_in")
         if not isinstance(link, list):
             continue
-        entity_inputs = graph[str(link[0])]["inputs"]
+        entity_node = graph[str(link[0])]
+        entity_inputs = entity_node["inputs"]
         _text, payload = generate_entity(
-            int(entity_inputs["seed"]), SCIFI_PACK, widgets=_widgets(entity_inputs)
+            int(entity_inputs["seed"]), _pack(entity_node["class_type"]),
+            widgets=_widgets(entity_inputs),
         )
         wired[slot] = payload
     return generate_scene(
-        int(inputs["seed"]), SCIFI_PACK,
+        int(inputs["seed"]), _pack(weaver["class_type"]),
         widgets=_widgets(inputs),
         wired_entities=wired,
         scene_filter=inputs.get("scene_filter", "Any"),
@@ -107,7 +120,8 @@ def main(argv: "list[str] | None" = None) -> int:
             if result is None:
                 continue
             text, document = result
-            found = [
+            # The frozen flag lists are sci-fi vocabulary; another genre is replayed unflagged.
+            found = [] if document.get("genre", "scifi") != "scifi" else [
                 n for n in (*flags(SCIFI_PACK, document, text),
                              *flags_0914(SCIFI_PACK, document, text),
                              *flags_0915(SCIFI_PACK, document, text),

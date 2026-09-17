@@ -168,7 +168,7 @@ class BadFileTests(unittest.TestCase):
         self.assertTrue(example.is_file(), "user_options.example.json is not shipped")
         document = json.loads(example.read_text(encoding="utf-8"))
         with self.assertNoLogs("data.user_options", "WARNING"):
-            merged = merge_user_options(SCIFI_PACK, document, sections=("fantasy",))
+            merged = merge_user_options(SCIFI_PACK, document, sections=("fantasy", "horror"))
         self.assertIn("hunter green", pool_for(merged, "primary_color"))
         self.assertIn("running dark past a picket line",
                       merged.pools["situation"]["starship"])

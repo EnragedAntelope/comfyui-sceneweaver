@@ -1325,7 +1325,8 @@ genre fills a slot in the other; only `LABELS` differ.
   itself and overrides only the ones a model draws as something else ("kelpie
   water horse", "brownie hearth sprite", "phoenix firebird").
 * **F4 Underwater affords water only.** The sci-fi trench grants `floor`, which
-  supports walking; in fantasy that put a cave bear on a coral reef.
+  supports walking; in fantasy that put a cave bear on a coral reef. (Sci-fi keeps
+  its seabed floor and blocks rolling there instead -- see R3.)
 * **F5 Weapons are neutral under the scene filter.** A knight keeps a sword in a
   Peaceful scene; the filter reads what is *done* (situations, relations).
 * **F6 A form never repeats its type's head noun, and a cap is the clause count
@@ -1345,3 +1346,108 @@ genre fills a slot in the other; only `LABELS` differ.
 | distinct prompts in the variety run | every one |
 
 The seeded sweep that asserts these is `tests/test_fantasy_pack.py`.
+
+## Round XV: the 0916-evening sci-fi and 0917 fantasy batches
+
+Both batches replayed byte-for-byte (`scripts/replay_batch.py` now picks the pack
+from each node's class name). The images were read one by one; most defects were
+render traps and parts that did not fit the body or the place, and several were
+classes the validator could be taught to find.
+
+### Contract and engine decisions
+
+* **R1 A native subject never speaks the stranger's vocabulary.** Validator check
+  32 (`FALLTHROUGH`): where most native subjects resolve a key of their own, a
+  native subject that falls through to `_default` is a hole. Every fantasy tower
+  and shrine "had a single spear"; the fix is a declared empty pool.
+* **R2 Nothing a carry sentence names is a body part.** Check 33 (`CARRYPART`):
+  "they carry a single hooked talon" drew a harpy holding a talon, and "it carries a
+  pair of hydraulic limbs" a robot holding its arms. Made things now *have* their
+  parts.
+* **R3 A place can block a stance.** `GenrePack.place_stance_blocks`: a body that
+  *has* a blocked stance is kept out of the place entirely, in the stance rules and
+  in type feasibility (`blocked_stances`, `stances_fit`). A wheeled robot at rest on
+  a vent field is still a wheeled robot; removing `floor` instead starved every
+  legitimate seabed act.
+* **R4 A requirement fills an empty target.** A `require` rule used to be the
+  exclusion of its complement, which says nothing to a field left empty by
+  omission. `_required_targets` now draws the target from the allowed values
+  (without omission) unless the user locked it empty. Fantasy uses it so a stone
+  act ("wreathed in creeping ivy") brings the petrified condition with it.
+* **R5 A genre names its own filter.** `scene_filter_labels` maps what the node
+  shows to Any / Peaceful / Conflict, with `scene_filter_default` and an optional
+  tooltip; `canonical_scene_filter` accepts either spelling and `_meta` keeps the
+  label. The shipped labels are a compatibility surface like any dropdown value.
+* **R6 The scene filter reaches a wired entity's drawn values.** The Scene Entity
+  node has no filter, so its random draws passed straight through: a blood-soaked
+  corpse reached a "No gore" scene. A drawn tag-scoped value the filter masks is
+  re-drawn with its count; a value the user locked, and the kind and type, are
+  kept.
+* **R7 The readout is cut to the node's width.** Canvas text is not clipped by the
+  node body; a long warning ran past its right edge.
+
+### Data decisions
+
+* **R8 Sci-fi:** fleet manoeuvres need the derived `aloft` affordance (open space or
+  above the cloud tops), and a grounded starship got landing, lift-off and low-pass
+  acts instead of parking in a ruin field "holding formation"; flight acts declare a
+  flight stance; every part that stood off the hull on a boom, arm, mast, clamp or
+  outrigger left the component pools (solar vanes drew detached panels, outrigger
+  pods drew airliner turbofans, cargo cradles hung boxes on cables); drone- and
+  pod-prey acts became body-only acts (a drone fused to a snout); contexts that drew
+  smokestacks, an airport, pylons or a string of machines were renamed; every moon
+  carries a colour or a ring; a rooted growth needs ground and a bell-bodied swimmer
+  needs the derived `water`; surface detail joined the part lint.
+* **R9 Fantasy:** a giant, a troll, a goblin and a pixie state a measured size
+  (weighted to be voiced most of the time; no comparison objects); contexts are keyed
+  by place; vessel parts are scoped by sailing ship, flying ship and land vehicle and
+  checked against `keel`, `stern` and `sails` features; ships need `navigable` water
+  and wheels need `open-ground`; a relic rests on something and a monument is set
+  amid something; spirits keep to their domain; bow and blade acts carry weapon-class
+  traits; a new thing is never decaying; a plain bear, wolf, boar, turtle or spider
+  body was given a silhouette that is not the Earth animal. A later `**{...}` entry in
+  a dict literal had silently replaced `inherently-vast` on the kraken, the leviathan
+  and the giant sea turtle; traits are now added, never merged by literal.
+
+### Round XV, measured
+
+| measure | before | after |
+|---|---|---|
+| sci-fi wired scenes with any sweep class (`coherence_sweep.py`) | 5.4% | 5.1% |
+| sci-fi unwired scenes with any sweep class | 5.0% | 4.8% |
+| repeated sentence leads, 300 scenes (sci-fi / fantasy / horror) | 0 / 183 / -- | 0 / 0 / 0 |
+| fantasy giant-kin with no size stated | 76% | 29% |
+| fantasy small folk with no size stated | 70% | 22% |
+| fantasy distinct contexts drawn (3000 scenes) | 58 | 130 |
+| wired "blood-soaked" horror corpses kept under No gore | 382 of 382 | 0 |
+
+Variety was compared against the branch start (`distinct` and Shannon entropy per
+field per kind, 3000 scenes per path). Sci-fi gained entropy in all but one field
+(starship armament, slightly more often unsaid). Fantasy gained in most; the fields
+that lost entropy kept every distinct value and lost it to intended placement --
+ships and wagons keep to water and roads, spirits to their domains, and a tower no
+longer carries a weapon. The fantasy context and scale omission weights were lowered
+so smaller place-keyed pools and type-scoped scale did not simply say less.
+
+## The horror pack (0.5.0)
+
+`data/horror.py` is the third genre, built on the fantasy module's shape: buckets,
+closed liveness, the shared field keys. It needed the R5 filter labels and nothing
+else from the contract.
+
+### Decisions
+
+* **H1 Gore is the filter's conflict end.** Graphic situations, conditions, surface
+  details, apertures and weapons are tagged `conflict_only`; the node shows "No
+  gore" (default), "Any" and "Gore only". `tests/test_horror_pack.py` holds "No gore"
+  to zero graphic values on both paths.
+* **H2 Stillness is priced up.** `TIER_WEIGHTS` favour idle acts more than the other
+  genres, and every kind has place-neutral acts of standing, watching and waiting.
+* **H3 Liveness inverts for the dead.** A walking corpse is live; `DORMANT_ACTS` is
+  what a thing at rest does -- lying in its coffin, gathering dust, rotting quietly
+  into the ground.
+* **H4 Placement is declared per kind.** A cursed object belongs in a room, a tomb
+  or under water; a haunted place under open sky.
+* **H5 Content guidelines** from `docs/genre-roadmap.md`: no real people or
+  tragedies, no mental illness as a monster, no living religious or cultural figure
+  as a monster, no trademarks, no child in peril.

@@ -674,25 +674,31 @@ class ArchetypeShapeTests(unittest.TestCase):
 
     def test_no_entity_repeats_a_sentence_lead(self) -> None:
         """``It carries ... It carries ...`` was in the corpus; the caps make
-        it unreachable, and this is what keeps it unreachable."""
-        for seed in range(150):
-            _text, document = generate_scene(seed, SCIFI_PACK, entity_count=1)
-            for record in document["entities"]:
-                entity = ResolvedEntity(
-                    index=record["index"],
-                    source=record["source"],
-                    genre=record["genre"],
-                    fields={n: record.get(n) for n in SCIFI_PACK.entity_fields},
-                    situation=record.get("situation"),
-                )
-                rendered = render_entity(entity, SCIFI_PACK)
-                leads = [
-                    " ".join(sentence.split()[:3])
-                    for sentence in rendered.split(". ")
-                    if sentence.strip()
-                ]
-                with self.subTest(seed=seed, index=record["index"]):
-                    self.assertEqual(len(leads), len(set(leads)), rendered)
+        it unreachable, and this is what keeps it unreachable. Every genre: the
+        fantasy creature said "It has a ... It has a ..." in most scenes until
+        round XV, because only the sci-fi pack was checked."""
+        from data.fantasy import FANTASY_PACK
+        from data.horror import HORROR_PACK
+
+        for pack in (SCIFI_PACK, FANTASY_PACK, HORROR_PACK):
+            for seed in range(150):
+                _text, document = generate_scene(seed, pack, entity_count=1)
+                for record in document["entities"]:
+                    entity = ResolvedEntity(
+                        index=record["index"],
+                        source=record["source"],
+                        genre=record["genre"],
+                        fields={n: record.get(n) for n in pack.entity_fields},
+                        situation=record.get("situation"),
+                    )
+                    rendered = render_entity(entity, pack)
+                    leads = [
+                        " ".join(sentence.split()[:3])
+                        for sentence in rendered.split(". ")
+                        if sentence.strip()
+                    ]
+                    with self.subTest(pack=pack.slug, seed=seed, index=record["index"]):
+                        self.assertEqual(len(leads), len(set(leads)), rendered)
 
     def test_a_phenomenon_never_wears_a_solid_surface_part(self) -> None:
         from data.genre import pool_for as genre_pool_for
@@ -1060,8 +1066,11 @@ class ContextTests(unittest.TestCase):
 def _supported_stances(environment: str) -> frozenset[str]:
     """Every stance the place's affordances support, read off the pack."""
     supported: set[str] = set()
-    for affordance in affordances_of(SCIFI_PACK, environment):
+    affordances = affordances_of(SCIFI_PACK, environment)
+    for affordance in affordances:
         supported |= set(SCIFI_PACK.place_stances.get(affordance, ()))
+    for affordance in affordances:
+        supported -= set(SCIFI_PACK.place_stance_blocks.get(affordance, ()))
     return frozenset(supported)
 
 

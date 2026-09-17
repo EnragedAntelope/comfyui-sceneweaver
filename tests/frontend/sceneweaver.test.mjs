@@ -519,6 +519,23 @@ test("a run's two lines are stored and drawn inside the node footer", async () =
   );
 });
 
+test("a readout line wider than the node is cut to the node's width", async () => {
+  const node = await createNode(EXTENSION, SCENE_NODE);
+  const type = node.__type;
+  const warning = "slot 1's wired entity has no kind, so slot 1 draws its own subject";
+
+  type.prototype.onExecuted.call(node, { text: ["short", "also short", warning] });
+  node.size[0] = 200;
+
+  const ctx = recordingContext();
+  type.prototype.onDrawForeground.call(node, ctx);
+  const [, , drawn] = ctx.texts;
+  assert.ok(drawn.endsWith("..."), `expected a cut line, got ${JSON.stringify(drawn)}`);
+  assert.ok(warning.startsWith(drawn.slice(0, -3)), "the cut keeps the start of the line");
+  assert.ok(ctx.measureText(drawn).width <= node.size[0] - 16, "the cut line fits the node");
+  assert.deepEqual(ctx.texts.slice(0, 2), ["short", "also short"], "a line that fits is untouched");
+});
+
 test("the node reserves footer height only once a run has reported", async () => {
   const node = await createNode(EXTENSION, SCENE_NODE);
   const type = node.__type;

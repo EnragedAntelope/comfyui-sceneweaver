@@ -54,10 +54,11 @@ if str(_ROOT) not in sys.path:
 
 from data import genre as G  # noqa: E402
 from data.fantasy import FANTASY_PACK  # noqa: E402
+from data.horror import HORROR_PACK  # noqa: E402
 from data.scifi import SCIFI_PACK  # noqa: E402
 
 #: Every shipped pack. ``main`` validates each; ``validate`` still takes one.
-PACKS = (SCIFI_PACK, FANTASY_PACK)
+PACKS = (SCIFI_PACK, FANTASY_PACK, HORROR_PACK)
 from engine.grammar import (  # noqa: E402
     count_phrase,
     head_is_plural,
@@ -914,6 +915,97 @@ def check_shadowed_values(pack: G.GenrePack, report: Report) -> None:
                 "resolves any of them",
             )
 
+def check_stranger_fallthrough(pack: G.GenrePack, report: Report) -> None:
+    """32. A native subject never speaks the stranger's vocabulary.
+
+    A field's ``_default`` pool is what a subject gets when no key on its scope
+    chain matches. Where most native subjects resolve a key of their own, that
+    default is stranger vocabulary -- the words for a foreign-genre entity -- and
+    a native subject that falls through to it is a hole, not a choice: every
+    fantasy tower, shrine and windmill "had a single spear", because only
+    fortifications declared defences. Where most subjects share the default (a
+    palette), it is the pack's own vocabulary and falling through is correct.
+    A field the subject's archetype omits is never spoken and is exempt.
+    """
+    type_name = G.type_field(pack)
+    for field_name, spec in pack.entity_fields.items():
+        by_key = pack.pools.get(field_name) or {}
+        if G.POOL_DEFAULT_KEY not in by_key or len(by_key) < 2:
+            continue
+        if spec.count_partner and spec.renders_with:
+            continue
+        if not ({G.KIND_FIELD, type_name} & set(spec.scope)):
+            continue
+        fallen: list[str] = []
+        subjects = 0
+        for kind, value in _subjects(pack):
+            scope = {G.KIND_FIELD: kind}
+            if type_name and value is not None:
+                scope[type_name] = value
+            archetype = G.archetype_for(pack, scope)
+            if archetype is not None and field_name in archetype.omits:
+                continue
+            subjects += 1
+            first = next((k for k in G.scope_keys(pack, spec, scope) if k in by_key), None)
+            if first == G.POOL_DEFAULT_KEY:
+                fallen.append(value or kind)
+        if subjects and len(fallen) * 2 < subjects:
+            for name in fallen:
+                report.fail(
+                    "FALLTHROUGH",
+                    f"{field_name}: native subject {name!r} resolves only the stranger pool "
+                    f"{by_key[G.POOL_DEFAULT_KEY]!r}; give its group a pool (an empty "
+                    "tuple, declared in omitted_pools, when it has none)",
+                )
+
+
+#: Head nouns that name a part of a body. English, not genre vocabulary: a
+#: "horn" is left out because a hunting horn is carried.
+_BODY_PART_HEADS = frozenset({
+    "arm", "barb", "beak", "claw", "fang", "fist", "hoof", "jaw", "limb", "mandible",
+    "paw", "pincer", "spike", "stinger", "tail", "talon", "tentacle", "tooth", "tusk", "wing",
+})
+_CARRY_RE = re.compile(r"\bcarr(?:y|ies)\b")
+_SLOT_RE = re.compile(r"\{([a-z_, ]+)\}")
+
+
+def check_carried_body_parts(pack: G.GenrePack, report: Report) -> None:
+    """33. Nothing a sentence says is *carried* is part of the body.
+
+    "They carry a single hooked talon" drew a harpy holding a talon, and "it
+    carries a single iron-bladed arm" drew a gargoyle holding a broom. A part a
+    body grows is *had*; a pool spoken through a carry sentence must hold only
+    things a hand can hold.
+    """
+    type_name = G.type_field(pack)
+    seen: set[tuple[str, str]] = set()
+    for kind, value in _subjects(pack):
+        scope = {G.KIND_FIELD: kind}
+        if type_name and value is not None:
+            scope[type_name] = value
+        archetype = G.archetype_for(pack, scope)
+        if archetype is None:
+            continue
+        carried = {
+            name.strip()
+            for sentence in archetype.sentences if _CARRY_RE.search(sentence.text)
+            for group in _SLOT_RE.findall(sentence.text)
+            for name in group.split(",")
+        }
+        for field_name in sorted(carried & set(pack.entity_fields)):
+            if field_name in archetype.omits:
+                continue
+            for option in G.pool_for(pack, field_name, scope):
+                head = option.split(" of ")[0].split()[-1].lower()
+                if head.rstrip("s") in _BODY_PART_HEADS and (field_name, option) not in seen:
+                    seen.add((field_name, option))
+                    report.fail(
+                        "CARRYPART",
+                        f"{field_name}: {option!r} is a body part, spoken as carried by "
+                        f"{value or kind!r}; move it to a field the body has",
+                    )
+
+
 def check_spoken_completeness(pack: G.GenrePack, report: Report) -> None:
     """16. A subkind of an apposition-free kind must carry a spoken form."""
     spoken = pack.spoken.get("subkind", {})
@@ -981,6 +1073,8 @@ CHECKS = (
     check_spoken_completeness,
     check_tier_coverage,
     check_shadowed_values,
+    check_stranger_fallthrough,
+    check_carried_body_parts,
 )
 
 

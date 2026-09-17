@@ -32,6 +32,7 @@ _LOG = logging.getLogger(__name__)
 try:
     from .data.genre import ENTITY_NODE_SLOTS, SCENE_NODE_SLOTS
     from .data.fantasy import FANTASY_PACK as _FANTASY_BUILTINS
+    from .data.horror import HORROR_PACK as _HORROR_BUILTINS
     from .data.scifi import SCIFI_PACK as _SCIFI_BUILTINS
     from .data.user_options import apply_user_options
     from .nodes.frontend import register_routes
@@ -40,6 +41,7 @@ try:
 except ImportError:  # pragma: no cover -- standalone/test context
     from data.genre import ENTITY_NODE_SLOTS, SCENE_NODE_SLOTS
     from data.fantasy import FANTASY_PACK as _FANTASY_BUILTINS
+    from data.horror import HORROR_PACK as _HORROR_BUILTINS
     from data.scifi import SCIFI_PACK as _SCIFI_BUILTINS
     from data.user_options import apply_user_options
     from nodes.frontend import register_routes
@@ -57,9 +59,10 @@ except ImportError:  # pragma: no cover -- standalone/test context
 # (`feedback-generator-cannot-leak-user-data`). scripts/builtin_options.py is
 # the ast-based reader that such a script uses instead.
 #: The top-level pools/tags are sci-fi's; every other genre has its own section.
-_GENRE_SECTIONS = ("fantasy",)
+_GENRE_SECTIONS = ("fantasy", "horror")
 SCIFI_PACK = apply_user_options(_SCIFI_BUILTINS, sections=_GENRE_SECTIONS)
 FANTASY_PACK = apply_user_options(_FANTASY_BUILTINS, section="fantasy")
+HORROR_PACK = apply_user_options(_HORROR_BUILTINS, section="horror")
 
 # --- Genre registration -----------------------------------------------------
 # Two lines per genre. A second genre adds its own data/<genre>.py and two more.
@@ -67,6 +70,8 @@ SceneEntitySciFi = build_entity_node(SCIFI_PACK)
 SceneWeaverSciFi = build_scene_node(SCIFI_PACK)
 SceneEntityFantasy = build_entity_node(FANTASY_PACK)
 SceneWeaverFantasy = build_scene_node(FANTASY_PACK)
+SceneEntityHorror = build_entity_node(HORROR_PACK)
+SceneWeaverHorror = build_scene_node(HORROR_PACK)
 
 #: Which pack, at which slot count, each registered node id was built from. The
 #: frontend route reads this to serve per-kind labels and kind-scoped pools; it
@@ -76,6 +81,8 @@ NODE_PACKS = {
     "SceneEntitySciFi": (SCIFI_PACK, ENTITY_NODE_SLOTS),
     "SceneWeaverFantasy": (FANTASY_PACK, SCENE_NODE_SLOTS),
     "SceneEntityFantasy": (FANTASY_PACK, ENTITY_NODE_SLOTS),
+    "SceneWeaverHorror": (HORROR_PACK, SCENE_NODE_SLOTS),
+    "SceneEntityHorror": (HORROR_PACK, ENTITY_NODE_SLOTS),
 }
 
 #: Serves js/sceneweaver.js its label and pool data. No-op without a ComfyUI
@@ -96,6 +103,8 @@ __all__ = [
     "SceneEntitySciFi",
     "SceneWeaverFantasy",
     "SceneEntityFantasy",
+    "SceneWeaverHorror",
+    "SceneEntityHorror",
 ]
 
 
@@ -103,7 +112,10 @@ class SceneWeaverExtension(ComfyExtension):
     """Registers the SceneWeaver node pack with ComfyUI."""
 
     async def get_node_list(self) -> list[type[io.ComfyNode]]:
-        return [SceneWeaverSciFi, SceneEntitySciFi, SceneWeaverFantasy, SceneEntityFantasy]
+        return [
+            SceneWeaverSciFi, SceneEntitySciFi, SceneWeaverFantasy, SceneEntityFantasy,
+            SceneWeaverHorror, SceneEntityHorror,
+        ]
 
 
 async def comfy_entrypoint() -> SceneWeaverExtension:
