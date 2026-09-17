@@ -28,6 +28,7 @@ for _entry in (str(_ROOT), str(_ROOT / "scripts")):
 from concern_flags import flags  # noqa: E402
 from concern_flags_0914 import flags_0914  # noqa: E402
 from concern_flags_0915 import flags_0915  # noqa: E402
+from concern_flags_0916 import flags_0916  # noqa: E402
 from data.scifi import SCIFI_PACK  # noqa: E402
 from engine.scene import generate_entity, generate_scene  # noqa: E402
 from pngmeta import png_text_chunks  # noqa: E402
@@ -109,7 +110,8 @@ def main(argv: "list[str] | None" = None) -> int:
             found = [
                 n for n in (*flags(SCIFI_PACK, document, text),
                              *flags_0914(SCIFI_PACK, document, text),
-                             *flags_0915(SCIFI_PACK, document, text))
+                             *flags_0915(SCIFI_PACK, document, text),
+                             *flags_0916(SCIFI_PACK, document, text))
                 if not n.startswith("info-")
             ]
             totals[label] += 1

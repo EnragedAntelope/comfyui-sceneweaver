@@ -1128,9 +1128,9 @@ class ContextSentenceTests(unittest.TestCase):
     """The context sentence is a set of openers, not one tic."""
 
     _OPENERS = (
-        "Beyond it,", "Beyond them,", "stands further back", "Further off,",
-        "lies behind", "In the distance,", "catches the light",
-        "far edge of the frame",
+        "Beyond it,", "Beyond them,", "Behind it is", "Behind them is",
+        "is visible behind", "catches the light", "The background shows",
+        "In the distance,", "Further back,", "Far behind",
     )
 
     def test_the_context_sentence_varies_across_openers(self) -> None:

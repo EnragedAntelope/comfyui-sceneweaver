@@ -334,6 +334,21 @@ class EveryCheckFiresTests(unittest.TestCase):
         )
         self.assertIn("PARTFIT", {line.split()[0] for line in validate(pack).failures})
 
+    def test_a_context_sentence_with_a_stance_verb_is_caught(self) -> None:
+        """Round XIV: a framing verb is forced onto every context value."""
+        prose = dataclasses.replace(
+            SCIFI_PACK.prose,
+            context_sentences=SCIFI_PACK.prose.context_sentences
+            + (G.Sentence(text="{a_context} crowds in close behind {pronoun_object}."),),
+        )
+        pack = dataclasses.replace(SCIFI_PACK, prose=prose)
+        self.assertIn("CONTEXTSTANCE", {line.split()[0] for line in validate(pack).failures})
+
+    def test_the_shipped_context_sentences_carry_no_stance_verb(self) -> None:
+        self.assertNotIn(
+            "CONTEXTSTANCE", {line.split()[0] for line in validate(SCIFI_PACK).failures}
+        )
+
 class TheSplitRuleIsProvenBothWaysTests(unittest.TestCase):
     """The plan names both directions by name. Neither alone proves the rule."""
 

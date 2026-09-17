@@ -58,7 +58,7 @@ _BUILT_SCENERY = (
 #: Robot forms with no legs, so a leg appendage on one is bolted to nothing.
 _LEGLESS_FORMS = (
     "serpentine segmented chassis", "tracked chassis", "boxy utility chassis",
-    "gantry-armed loader frame", "hovering disc chassis", "spherical drone body",
+    "twin-armed hauler frame", "hovering disc chassis", "spherical drone body",
     "wheeled drone body",
 )
 
@@ -260,7 +260,7 @@ CONCERNS: tuple[Concern, ...] = (
         "a wreck glows with an array of neon ports",
         lambda r, d, t: r.get("emitter_count") in (
             "a ring of", "a dozen", "rows of", "banks of", "a constellation of", "eight", "six")
-        or r.get("emitter_color") in ("magenta", "neon pink", "plasma pink", "signal green",
+        or r.get("emitter_color") in ("magenta", "hot pink", "plasma pink", "signal green",
                                       "soft magenta", "acid green"),
         widgets={"entity1_kind": "wreck"},
     ),
@@ -569,6 +569,124 @@ CONCERNS: tuple[Concern, ...] = (
         lambda r, d, t: "helmet" not in t.lower(),
         widgets={"environment": "high polar orbit", "entity1_kind": "spacefarer",
                  "entity1_subkind": "tusked mercenary"},
+    ),
+    # --- Round XIV: the 2026-09-16 batch ---
+    *(
+        Concern(
+            f"a {kind} is abandoned, derelict, crashed or breached instead of being a wreck",
+            lambda r, d, t: said(r, "condition") in (
+                "abandoned", "derelict", "crashed", "breached"),
+            widgets={"entity1_kind": kind},
+        )
+        for kind in ("starship", "robot or mech", "surface vehicle", "space station")
+    ),
+    Concern(
+        "a wreck shows lit emitters or a live act (engines firing, sparks, fire)",
+        lambda r, d, t: bool(r.get("emitters")) or bool(
+            re.search(r"\b(spark\w*|fire|smouldering|firing|thrusters?)\b", said(r, "situation"))),
+        widgets={"entity1_kind": "wreck"},
+    ),
+    Concern(
+        "a wreck carries cables or boxes that read as plugged in",
+        lambda r, d, t: bool(re.search(
+            r"\b(conduits?|cables?|junction box\w*|scanner housings?|detector housings?"
+            r"|ammunition cassettes?)\b",
+            " ".join(said(r, n) for n in ("appendages", "extras", "sensors", "armament")))),
+        widgets={"entity1_kind": "wreck"},
+    ),
+    Concern(
+        "a context sentence imposes a stance on its context",
+        lambda r, d, t: bool(re.search(
+            r"crowds in close|stands further back|\bstands\.|\blies\.|further off,", t.lower())),
+    ),
+    Concern(
+        "a creature inside a hull goes for a craft",
+        lambda r, d, t: bool(re.search(
+            r"\b(drones?|pods?|hulls?|shuttlecraft|probes?)\b", said(r, "situation"))),
+        widgets={"environment": "cockpit interior", "entity1_kind": "alien creature"},
+    ),
+    Concern(
+        "a tiny or small creature takes a craft",
+        lambda r, d, t: said(r, "scale") in ("tiny", "small") and bool(re.search(
+            r"\b(drones?|pods?|shuttlecraft|probes?|whole hull|across a hull)\b",
+            said(r, "situation"))),
+        widgets={"environment": "frozen methane flats", "entity1_kind": "alien creature"},
+    ),
+    Concern(
+        "a creature is drawn over a craft at a place where nothing falls",
+        lambda r, d, t: said(r, "situation") == "tearing into a fallen hull",
+        widgets={"environment": "lagrange point station cluster",
+                 "entity1_kind": "alien creature"},
+    ),
+    Concern(
+        "an arachnoid or insectoid wears an Earth arthropod shell",
+        lambda r, d, t: said(r, "material") in ("chitinous carapace", "keratinous plate"),
+        widgets={"entity1_kind": "alien creature", "entity1_subkind": "arachnoid"},
+    ),
+    Concern(
+        "a creature carries sail, boom or gimbal rigging",
+        lambda r, d, t: bool(re.search(r"\b(sail\w*|booms?|gimbal\w*)\b", t.lower())),
+        widgets={"entity1_kind": "alien creature", "entity1_subkind": "void grazer"},
+    ),
+    Concern(
+        "a crew works calmly beside a creature",
+        lambda r, d, t: "crew" in (d.get("context") or ""),
+        widgets={"environment": "station docking ring interior",
+                 "entity1_kind": "alien creature"},
+    ),
+    Concern(
+        "an android bears a cockpit hatch",
+        lambda r, d, t: "cockpit" in said(r, "aperture"),
+        widgets={"entity1_kind": "robot or mech", "entity1_subkind": "android"},
+    ),
+    Concern(
+        "a droid breaks itself apart with no cause in the frame",
+        lambda r, d, t: bool(re.search(
+            r"\b(spark\w*|severed|shower of parts|losing a|shorting|hip joint|bursting)\b",
+            said(r, "situation"))),
+        widgets={"entity1_kind": "robot or mech", "entity1_subkind": "android"},
+    ),
+    Concern(
+        "a machine catches fire in a hangar",
+        lambda r, d, t: bool(re.search(r"\b(fire|burning|igniting|smouldering)\b",
+                                       said(r, "situation"))),
+        widgets={"environment": "spacecraft hangar deck", "entity1_kind": "surface vehicle"},
+    ),
+    Concern(
+        "a person eats or shares a meal",
+        lambda r, d, t: bool(re.search(r"\b(meal|food|feast|eating)\b", t.lower())),
+        widgets={"environment": "hydrothermal vent field of a water world",
+                 "entity1_kind": "spacefarer"},
+    ),
+    Concern(
+        "a person's gear or act says patch or stitching",
+        lambda r, d, t: bool(re.search(r"\b(patch kit|patched|stitching|patchwork)\b",
+                                       t.lower())),
+        widgets={"entity1_kind": "spacefarer"},
+    ),
+    Concern(
+        "a mining machine is spoken as construction equipment",
+        lambda r, d, t: bool(re.search(r"\b(loader|breaker arms?|booms?)\b", t.lower())),
+        widgets={"entity1_kind": "robot or mech", "entity1_subkind": "mining loader"},
+    ),
+    Concern(
+        "a station shows exhaust, vents or welding lights",
+        lambda r, d, t: bool(re.search(r"\b(thrusters?|vents?|welding|grilles?|seams?)\b",
+                                       said(r, "emitters"))),
+        widgets={"entity1_kind": "space station"},
+    ),
+    Concern(
+        "a starship shows exhaust while its act already describes a plume",
+        lambda r, d, t: bool(re.search(r"\b(plume|sheath|long burn|stuck open)\b",
+                                       said(r, "situation")))
+        and bool(re.search(r"\b(thrusters?|nozzles?|torch|exhaust|nacelles?|vents?)\b",
+                           said(r, "emitters"))),
+        widgets={"entity1_kind": "starship"},
+    ),
+    Concern(
+        "a deep-space scene trails frozen vapour",
+        lambda r, d, t: "frozen vapour" in t.lower(),
+        widgets={"environment": "emission nebula"},
     ),
 )
 

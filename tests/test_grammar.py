@@ -297,7 +297,7 @@ class MassNounTests(unittest.TestCase):
                 self.assertEqual(with_article_if_singular(phrase), phrase)
 
     def test_a_singular_count_head_still_takes_its_article(self) -> None:
-        for phrase in ("panel-line grid", "welded patchwork"):
+        for phrase in ("panel-line grid", "welded repair seam"):
             with self.subTest(phrase=phrase):
                 self.assertTrue(with_article_if_singular(phrase).startswith(("a ", "an ")))
 

@@ -111,6 +111,13 @@ exact steps:
     anything it is not told floats. The part lint is what stops a component
     pool -- keyed by kind -- from bolting a track onto a drop pod; both are
     explained in "Round XII decisions" below.
+11. Declare the **liveness and scale relations** (round XIV): a closed list of
+    dormant acts with `powered-act` derived for every other situation, an
+    `emissive` trait on every emitter, and the relative-scale pairs (a small
+    body cannot take a craft, an indoor creature cannot cross an outer hull).
+    Keep every pool a **literal** in the pack module -- a pool appended after
+    its declaration is invisible to `scripts/builtin_options.py`. The content
+    brainstorm for fantasy and horror is `docs/genre-roadmap.md`.
 
 **What a new genre inherits, and what it must author.** Nothing in the engine
 learns a genre, so the polish round's grammar and scope machinery are free to a
@@ -1233,3 +1240,58 @@ scene drawn from the pack's own pools carries the class.
 Measured with `python scripts/concern_audit.py --seeds 1500` on both paths and
 `python scripts/reach_audit.py --seeds 12000 --path both`; the remainder is
 `info-claw-*` and `info-fire-situation`, reported and never gated.
+
+## Concern audit (round XIV)
+
+The 916 batch was replayed byte-for-byte from `main` (all 32 prompts matched) and
+every frozen `concern_flags*` list read 0 of 32. The defects were relationships
+between fields that each read fine alone, so the round started by adding
+*shape* classes to `scripts/coherence_sweep.py` and measuring them, then wrote the
+frozen list `scripts/concern_flags_0916.py` for regression.
+
+### Round XIV decisions
+
+* **D16 A dead ship is the `wreck` kind.** `abandoned`, `derelict`, `crashed` and
+  `breached` left the made-thing condition pool; they bought "a crashed colony
+  ship riding a re-entry sheath in orbit". Every wreck subkind carries `inactive`.
+* **D17 Liveness is a closed list.** `DORMANT_ACTS` in the pack names what a thing
+  with no power, crew or intent can be doing; every other situation is derived
+  `powered-act`. The two hand-kept `powered-act` lists it replaced silently
+  passed every act nobody remembered to tag. A new situation is live until it is
+  declared dormant, so the safe default is the one that needs no memory.
+* **D18 A dead thing shows no light.** Every emitter value is derived `emissive`
+  and conflicts with `inactive`; the wreck archetype `omits` emitters outright.
+  The validator's part and body lints skip a subject whose archetype omits the
+  field (`_reach(..., honour_omits=True)`); the shadowed-value check does not.
+* **D19 A craft is prey only for something big, outside.** `craft-prey` conflicts
+  with `small-scale` and with `interior-place` (derived from the interior band);
+  `outer-hull-act` (a creature crossing a hull) conflicts with both too.
+* **D20 One thrust source.** `plume-act` (an act that describes its own exhaust)
+  stands and an `exhaust-emitter` gives way, so the emitter draws a light.
+* **D21 A context framing names where, never how.** The context sentences carry no
+  stance verb, and validator check 31 (`CONTEXTSTANCE`) fails one that does.
+* **D22 No open fire, no uncaused breakage.** Combustion acts left the pack except
+  atmospheric re-entry and a wreck burning as it falls through a cloud deck; a
+  machine no longer loses a limb or sparks apart with nothing in the frame.
+* **D23 Variety is kept by adding.** Every pool a rule thinned was measured against
+  `main` (distinct values and entropy per field and per kind) and given legible
+  replacements rather than a relaxed floor.
+* **D24 A pool is a literal.** Additions are named tuples declared before
+  `SITUATION_POOLS` and concatenated inside it, because `scripts/builtin_options.py`
+  resolves pools with `ast` and cannot see a later subscript assignment.
+
+### Round XIV, measured
+
+| measure | before | after |
+|---|---|---|
+| wired scenes with any sweep class (`coherence_sweep.py`) | 50.0% | 5.4% |
+| unwired scenes with any sweep class | 49.7% | 5.0% |
+| context sentence imposes a stance verb | 26.7% | 0 |
+| a dead thing lit or acting | 19.0% | 0.1% |
+| the 916 batch caught by `concern_flags_0916.py` (same seeds replayed) | 28/32 | 0/32 |
+| distinct prompts in the variety comparison | unchanged | unchanged |
+
+`reach_audit.py --gate` reports a few rare-but-feasible situations as never drawn
+on **both** `main` and this round (a drone at a trench vent, a station at a
+scaffold): the audit samples, and a value confined to a rare place and a rare kind
+can miss a 12000-scene run. It is a maintainer instrument, not a CI gate.
