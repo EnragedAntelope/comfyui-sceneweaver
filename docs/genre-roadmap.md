@@ -1,9 +1,10 @@
 # SceneWeaver - genre roadmap: fantasy and horror
 
-**Status: design brainstorm. Nothing here is implemented.** Sci-fi is the only
-shipped genre. This document collects what the fantasy and horror packs could
-contain and, more importantly, how each idea maps onto machinery the sci-fi pack
-already proved, so implementation is authoring rather than engine work.
+**Status: fantasy is built** (`data/fantasy.py`, the Fantasy node pair, v0.5.0 on
+a temp branch; see "The fantasy pack" in `docs/architecture.md`). **Horror is not
+started.** The Tone filter, cross-genre traits in the payload and `time_of_day`
+are still designs. This document keeps the content brainstorm and the decisions
+behind both packs, and how each idea maps onto machinery the sci-fi pack proved.
 
 The step-by-step build checklist lives in `docs/architecture.md` ("How to add a
 fantasy genre, concretely"). This file does not repeat it; it supplies the

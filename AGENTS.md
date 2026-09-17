@@ -2,16 +2,20 @@
 
 A ComfyUI V3 custom node pack that generates whole scenes - an environment, one
 entity by default and up to four, and the pairwise relationships between them -
-from lockable dropdowns, as natural-language prose plus structured JSON. Sci-fi
-ships first; the data layer is a genre contract so a second genre is a data
-module and two registration lines.
+from lockable dropdowns, as natural-language prose plus structured JSON. Two
+genres ship, sci-fi and fantasy; the data layer is a genre contract, so a genre
+is a data module and two registration lines.
 
 ## Current state
 
 _Last verified: 2026-09-16_
 
-- **Status:** **public beta, v0.4.0** (coherence round XIV), squash-merged to
-  `main` and published to the ComfyUI Registry by the publish workflow. The
+- **Status:** **public beta.** `main` is v0.4.0 (coherence round XIV, published
+  to the ComfyUI Registry). **v0.5.0, the fantasy pack, is on
+  `tmp/sceneweaver-fantasy`**, awaiting the maintainer's ComfyUI render test
+  before a squashed PR: `data/fantasy.py` plus two registration lines, a
+  `"fantasy"` section in `user_options.json`, and `--pack` on the option reader
+  and the reach audit. No engine or node change. The
   repo is public at `EnragedAntelope/comfyui-sceneweaver`; the full pre-release
   history stays local only, in the `coherence-round-*` and `tmp/*` branches.
   Round XIV: a dead ship is the `wreck` kind and is dead (closed dormant-act
@@ -104,9 +108,9 @@ _Last verified: 2026-09-16_
   coherence audit, the coherence sweep and `ruff` are green; the reach audit is
   not (see Known gaps). Round XIV's decisions D16-D24 and its measurements are
   in `docs/architecture.md` ("Concern audit (round XIV)").
-- **In progress:** nothing in code. The fantasy and horror packs are a design
-  brainstorm with recorded decisions in `docs/genre-roadmap.md`, not started;
-  round XIV has not yet been checked against a fresh rendered batch. Round XIII was driven by a measured gap rather than
+- **In progress:** the fantasy pack (above), not yet rendered. Horror is the
+  next genre; its design and the maintainer's decisions (gore filter, node pair,
+  time of day) are in `docs/genre-roadmap.md`. Round XIII was driven by a measured gap rather than
   by a report: on the 2026-09-15 batch `scripts/concern_audit.py` read **0.0%
   flagged** while 44 of 101 rendered images -- 43.6% -- were bad enough that the
   user pulled them out by hand. Every previous round had driven its own frozen
@@ -136,13 +140,13 @@ _Last verified: 2026-09-16_
     been opened in ComfyUI and its positional `widgets_values` were one short
     of the live `widget_order`. A replacement must be **exported from a running
     instance**, never hand-written.
-  - Sci-fi is the only genre. The `GenrePack` seam is built and verified against
-    a throwaway fixture pack (`tests/test_genre_seam.py`), including
-    `detail_cap` / `detail_priority`, `motifs` and the cross-genre direction; a
-    concrete "how to add fantasy" checklist lives in `docs/architecture.md` and
-    the fantasy/horror content brainstorm in `docs/genre-roadmap.md`, but no
-    second genre exists yet. Cross-genre trait conflicts still fail open (the
-    roadmap proposes carrying traits in the payload).
+  - Cross-genre trait conflicts still fail open: a wired foreign entity carries
+    no traits into the host scene (the roadmap proposes carrying them in the
+    payload). A relation is not checked against an entity's state either, so an
+    opt-in relation can have a petrified or slumbering entity "hunting" another.
+  - The fantasy Tone filter (Any / Whimsical / Heroic / Grim) is designed but not
+    built: it needs named content-tag axes in the contract.
+  - There is no fantasy example workflow; swap the node in a sci-fi graph.
   - A world as **scenery** behind a ground-level scene has no placement concept,
     so `celestial body` is excluded from the `planetary surface` kind pool, and
     a world is no longer the subject in `orbit` either: with the camera already
@@ -172,6 +176,7 @@ _Last verified: 2026-09-16_
 | `__init__.py` | V3 entrypoint. **The only place a concrete genre is named.** |
 | `data/genre.py` | The `GenrePack` contract - genre-agnostic. |
 | `data/scifi.py` | The sci-fi pack. Nothing outside `__init__.py` imports it. |
+| `data/fantasy.py` | The fantasy pack. Situations are authored in buckets (tier, tag, needs, stance, liveness) and every table about them is derived from the registry. |
 | `data/user_options.py` | Merge hook for a gitignored `user_options.json`. Never run at import. |
 | `engine/` | Pure generation logic. No ComfyUI imports, no genre knowledge. |
 | `nodes/` | Node-class factories. **May not name a genre** (a test greps for it). |
@@ -190,6 +195,7 @@ _Last verified: 2026-09-16_
 python -m unittest discover -s tests -t . -v
 pytest tests
 python tests/validate_data.py
+python scripts/reach_audit.py --pack fantasy --seeds 12000
 python scripts/sample_distribution.py --seeds 1000
 python scripts/coherence_audit.py --seeds 2000
 python scripts/coherence_sweep.py --gate
@@ -395,6 +401,19 @@ that reads a gitignored file passes locally and fails on a clean checkout.
   floor failure is fixed by authoring, never by lowering the floor.
 - **A context framing names where, never how.** "A ladder crowds in close" was a
   template's verb forced onto a value; validator check 31 fails a stance verb.
+- **A situation belongs to one bucket** (fantasy). A bucket is a tuple whose
+  values share a tier, a filter tag, the needs, the stances and whether a
+  dormant or sleeping thing can do them; `_BUCKETS` derives every table from it
+  and the module refuses to import if a situation has no bucket or two
+  disagreeing ones. Add a value to the right bucket, never to a derived table.
+- **A form never repeats its type's head noun.** "square keep" on a "ruined keep"
+  is silenced by the engine's repeat guard every time, so the form is dead.
+- **An archetype's cap is the clause count plus two.** The head modifiers (scale,
+  condition) are subtracted from `detail_cap`, and any field below the resulting
+  line that is not in the rotation is never spoken. `reach_audit.py --pack`
+  finds it.
+- **Underwater affords water only.** A place that also grants `floor` lets a
+  walking bear stroll the reef.
 - **A table applied later wins.** `VALUE_NEEDS["subkind"].update({...})` over
   `_TYPES_NEEDING_NOTHING` runs after the per-value entries and silently
   overwrote one, so a glider needed nothing of a place and was feasible at the

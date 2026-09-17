@@ -167,7 +167,11 @@ def main(argv: "list[str] | None" = None) -> int:
     parser.add_argument("--path", choices=("wired", "unwired", "both"), default="both")
     parser.add_argument("--gate", action="store_true")
     parser.add_argument("--explain", default="", metavar="VALUE")
+    parser.add_argument("--pack", choices=("scifi", "fantasy"), default="scifi")
     args = parser.parse_args(argv)
+    if args.pack == "fantasy":
+        global P
+        from data.fantasy import FANTASY_PACK as P  # noqa: PLW0603
     logging.getLogger("sceneweaver").setLevel(logging.ERROR)
     if args.explain:
         return _explain(args.explain)

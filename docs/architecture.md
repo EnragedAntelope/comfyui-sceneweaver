@@ -1295,3 +1295,53 @@ frozen list `scripts/concern_flags_0916.py` for regression.
 on **both** `main` and this round (a drone at a trench vent, a station at a
 scaffold): the audit samples, and a value confined to a rare place and a rare kind
 can miss a 12000-scene run. It is a maintainer instrument, not a CI gate.
+
+## The fantasy pack (0.5.0)
+
+`data/fantasy.py` is the second genre and the first real test of the seam: it
+needed one data module, two registration lines in `__init__.py`, a `"fantasy"`
+section in `user_options.json`, and a `--pack` option on two maintainer
+scripts. Nothing under `engine/` or `nodes/` changed, and the frontend decorates
+the new nodes from the same route payload.
+
+It keeps the sci-fi field keys and their widget order, so an entity of either
+genre fills a slot in the other; only `LABELS` differ.
+
+### Decisions
+
+* **F1 Situations are authored in buckets.** A bucket is one tuple whose values
+  share a tier, a filter tag, the place they need, the stance they take, and
+  whether a dormant or a sleeping thing can be doing them. `_BUCKETS` derives
+  `SITUATION_TIERS`, the tags, `value_needs`, `value_stances`, `DORMANT_ACTS`,
+  `SLEEP_ACTS`, `powered-act`, `waking-act` and `violent-act`. A situation is
+  declared once, and the module refuses to import one with no bucket. Pools
+  concatenate buckets as literals, so the ast option reader still sees them.
+* **F2 Two closed liveness lists.** A petrified, ruined, wrecked or dormant thing
+  draws only `DORMANT_ACTS`; a slumbering one only `SLEEP_ACTS`. Every emitter is
+  `emissive` and conflicts with `inactive`.
+* **F3 Every type has a spoken form.** Check 16 asks each type of an
+  apposition-free kind to say its category. A fantasy type almost always names
+  itself ("frost troll", "stone golem"), so the pack declares every type as
+  itself and overrides only the ones a model draws as something else ("kelpie
+  water horse", "brownie hearth sprite", "phoenix firebird").
+* **F4 Underwater affords water only.** The sci-fi trench grants `floor`, which
+  supports walking; in fantasy that put a cave bear on a coral reef.
+* **F5 Weapons are neutral under the scene filter.** A knight keeps a sword in a
+  Peaceful scene; the filter reads what is *done* (situations, relations).
+* **F6 A form never repeats its type's head noun, and a cap is the clause count
+  plus two.** Both were found by `scripts/reach_audit.py --pack fantasy`: a
+  "square keep" on a "ruined keep" is silenced by the repeat guard, and the two
+  head modifiers come off `detail_cap` before the allowance is spent.
+
+### Measured (3000 scenes per path, seeded)
+
+| measure | result |
+|---|---|
+| validator findings (`python tests/validate_data.py`) | 0 |
+| a petrified, ruined or sleeping subject acting | 0 |
+| a body placed where its form cannot stand | 0 |
+| fire under water, a huge thing indoors, a civilian fighting | 0 |
+| anachronism, stance verb, rendering or negation word in the prose | 0 |
+| distinct prompts in the variety run | every one |
+
+The seeded sweep that asserts these is `tests/test_fantasy_pack.py`.

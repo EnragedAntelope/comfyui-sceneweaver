@@ -35,9 +35,14 @@ from typing import Any
 
 _ROOT = Path(__file__).resolve().parent.parent
 
-#: Parsed in order, so ``data/scifi.py`` can resolve the constants it imports
-#: from ``data/genre.py`` without either module being executed.
-_SOURCES = ("data/genre.py", "data/scifi.py")
+#: Parsed in order, so a pack module can resolve the constants it imports from
+#: ``data/genre.py`` without either module being executed. The pack is named by
+#: its slug: ``data/<slug>.py``.
+DEFAULT_PACK = "scifi"
+
+
+def _sources(pack: str) -> tuple[str, ...]:
+    return ("data/genre.py", f"data/{pack}.py")
 
 #: Sentinel for an expression the evaluator declines to resolve. Distinct from
 #: ``None``, which is a value a module can legitimately bind.
@@ -134,35 +139,39 @@ class _Evaluator:
         return UNRESOLVED
 
 
-def read_pack(root: Path = _ROOT) -> _Evaluator:
+def read_pack(root: Path = _ROOT, pack: str = DEFAULT_PACK) -> _Evaluator:
     """Parse the data modules and return the resolved top-level environment."""
     evaluator = _Evaluator()
-    for relative in _SOURCES:
+    for relative in _sources(pack):
         evaluator.load(root / relative)
     return evaluator
 
 
-def builtin_pools(root: Path = _ROOT) -> dict[str, dict[str, tuple[str, ...]]]:
-    """``{field: {kind: (values, ...)}}`` as committed in ``data/scifi.py``.
+def builtin_pools(
+    root: Path = _ROOT, pack: str = DEFAULT_PACK
+) -> dict[str, dict[str, tuple[str, ...]]]:
+    """``{field: {kind: (values, ...)}}`` as committed in ``data/<pack>.py``.
 
     Never includes anything from ``user_options.json`` -- there is no code here
     that reads it.
     """
-    pools = read_pack(root).env.get("POOLS")
+    pools = read_pack(root, pack).env.get("POOLS")
     if pools is UNRESOLVED or not isinstance(pools, dict):
         raise SystemExit(
             "could not resolve POOLS from the source. The evaluator understands "
             "literals, earlier names, + concatenation, *unpacking and constant "
-            "subscripts; something in data/scifi.py now needs more than that. "
+            "subscripts; something in the pack module now needs more than that. "
             "Widen the evaluator -- do not fall back to importing the module."
         )
     return {field: {kind: tuple(values) for kind, values in by_kind.items()}
             for field, by_kind in pools.items()}
 
 
-def builtin_values(field: str, kind: str | None = None, root: Path = _ROOT) -> tuple[str, ...]:
+def builtin_values(
+    field: str, kind: str | None = None, root: Path = _ROOT, pack: str = DEFAULT_PACK
+) -> tuple[str, ...]:
     """Every built-in value of ``field``, optionally narrowed to one ``kind``."""
-    by_kind = builtin_pools(root).get(field, {})
+    by_kind = builtin_pools(root, pack).get(field, {})
     if kind is not None:
         return by_kind.get(kind, by_kind.get("_default", ()))
     seen: dict[str, None] = {}
@@ -176,23 +185,25 @@ def main(argv: "list[str] | None" = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("fields", nargs="*", help="fields to list; default is all")
     parser.add_argument("--kind", help="narrow to one kind's pool")
+    parser.add_argument("--pack", default=DEFAULT_PACK,
+                        help="genre pack slug: scifi (default) or fantasy")
     parser.add_argument("--unresolved", action="store_true",
                         help="list assignments the evaluator declined to resolve")
     args = parser.parse_args(argv)
 
     if args.unresolved:
-        evaluator = read_pack()
+        evaluator = read_pack(pack=args.pack)
         for line in evaluator.unresolved:
             print(line)
         return 0
 
-    pools = builtin_pools()
+    pools = builtin_pools(pack=args.pack)
     fields = args.fields or sorted(pools)
     for field in fields:
         if field not in pools:
             print(f"unknown field {field!r}", file=sys.stderr)
             return 2
-        values = builtin_values(field, args.kind)
+        values = builtin_values(field, args.kind, pack=args.pack)
         print(f"{field}{f'[{args.kind}]' if args.kind else ''}  ({len(values)})")
         for value in values:
             print(f"    {value}")

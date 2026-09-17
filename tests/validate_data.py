@@ -53,7 +53,11 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from data import genre as G  # noqa: E402
+from data.fantasy import FANTASY_PACK  # noqa: E402
 from data.scifi import SCIFI_PACK  # noqa: E402
+
+#: Every shipped pack. ``main`` validates each; ``validate`` still takes one.
+PACKS = (SCIFI_PACK, FANTASY_PACK)
 from engine.grammar import (  # noqa: E402
     count_phrase,
     head_is_plural,
@@ -994,8 +998,12 @@ def validate(pack: G.GenrePack = SCIFI_PACK) -> Report:
 
 
 def main(argv: "list[str] | None" = None) -> int:
-    report = validate()
-    print(f"validate_data -- {SCIFI_PACK.display} pack ({SCIFI_PACK.slug})")
+    return max(_main_for(pack) for pack in PACKS)
+
+
+def _main_for(pack: G.GenrePack) -> int:
+    report = validate(pack)
+    print(f"validate_data -- {pack.display} pack ({pack.slug})")
     for key in sorted(report.numbers):
         print(f"  {key:<22} {report.numbers[key]}")
     total = report.numbers.get("situation_values", 0)
