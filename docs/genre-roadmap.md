@@ -62,9 +62,9 @@ contract work it needs:
 
 | Control | Genre | Values | Maps to | Contract work |
 |---|---|---|---|---|
-| `time_of_day` (scene) | horror, fantasy | dusk, night, pre-dawn, overcast day, full moon | a place fact, not rendering: it grants or removes `sunlight` / `moonlight` / `dark` affordances | a scene field that contributes affordances (today only `environment` does) |
-| `tone` (scene filter) | fantasy | Any, Whimsical, Heroic, Grim | content tags | generalise `tags` from one axis to named axes |
-| `intensity` (scene filter) | horror | Unsettling (default), Overt, Graphic | content tags, second axis | same as above; default must be the mildest |
+| `time_of_day` (scene) | horror, fantasy | Random (default), day, dusk, night, pre-dawn, full moon | a place fact, not rendering: it grants `sunlight`, `moonlight` or `dark`, so a vampire is drawn at night and a troll turns to stone at dawn | a scene field that contributes affordances (today only `environment` does) |
+| `tone` (scene filter) | fantasy | Any (default), Whimsical, Heroic, Grim | content tags | generalise `tags` from one axis to named axes |
+| `gore` (scene filter) | horror | No gore (default), Any, Gore only | content tags, second axis, the same shape as sci-fi's Peaceful / Conflict | same as above |
 | `rider` / relation roles | fantasy | riding, carrying, guarding, hunting | `relation_roles`, `kind_capabilities` | none; declared data |
 
 The existing `scene_filter` (Any / Peaceful / Conflict) keeps working as it is.
@@ -166,7 +166,7 @@ screen.
   does now. Darkness enters as a *place fact* (`time_of_day`, an unlit room).
 * **Never negate.** "A ghost with no shadow" draws a shadow. Say "translucent" or
   "lit from within".
-* **Intensity defaults to the mildest level.** Graphic content is opt-in.
+* **Gore is a filter, off by default.** `No gore` / `Any` / `Gore only`, the same shape as sci-fi's Peaceful / Conflict: graphic content is fully in scope and one click away, but a first run never surprises anyone.
 * **Content guidelines.** No real people or real tragedies; no stigmatising
   mental illness (no "asylum patient" as a monster); no real living religious or
   cultural figures as monsters (no "skinwalker"); no trademarks ("spirit board",
@@ -255,13 +255,27 @@ failing open.
 | 0 | Contract prep in sci-fi: shared trait lexicon, traits in the payload, optional named tag axes | sci-fi gates green, a fixture pack in `tests/test_genre_seam.py` proves a foreign trait fires |
 | 1 | Fantasy vertical slice: mythic beast, giant-kin, small folk, folk; wilds, underground, settlement bands; creature, figure, structure and default archetypes | validator, sweep and reach audit green on the new pack |
 | 2 | Fantasy breadth: the full creature matrix of section 3.2, situations with tiers, a render-trap review from a real batch | a replayed batch carries no new class |
-| 3 | Horror pack, reusing creature, figure and diffuse archetypes; `time_of_day`; intensity filter | same gates, mildest intensity by default |
+| 3 | Horror pack, reusing creature, figure and diffuse archetypes; `time_of_day`; gore filter | same gates, No gore by default |
 | 4 | Cross-genre polish: a gorgon in a station, a sci-fi drone in a crypt | the wired path sweep is as clean as the unwired one |
 
-## 8. Open questions for the maintainer
+## 8. Decisions (maintainer, 2026-09-16)
 
-1. Fantasy default tone: heroic, grim, or no default (Any)?
-2. Horror: is graphic content ever in scope, or does intensity stop at "overt"?
-3. Two packs (fantasy, horror) sharing duplicated undead literals, or one "dark
-   fantasy" overlap pack later?
-4. Should `time_of_day` be added to sci-fi too, so all three genres share it?
+1. **Fantasy tone is a choice, not a fixed voice.** A `tone` filter (Any,
+   Whimsical, Heroic, Grim) defaults to **Any**, so an untouched node draws
+   across every tone and nothing has to be picked up front.
+2. **Horror gore is an option.** A `gore` filter (No gore, Any, Gore only)
+   mirrors Peaceful / Conflict; it defaults to No gore.
+3. **Separate node pairs, one pack.** Scene Weaver - Fantasy / Scene Entity -
+   Fantasy and Scene Weaver - Horror / Scene Entity - Horror ship inside this node
+   pack, beside the sci-fi pair. This is the shape the genre seam was built for: a
+   genre dropdown on one node cannot work, because ComfyUI fixes a node's widgets
+   at registration and a saved workflow stores them by position. The shared field
+   schema (section 2) is what makes the separate nodes interoperate.
+4. **`time_of_day` goes to fantasy and horror, not sci-fi.** Its value is
+   coherence, not lighting: it decides which acts and creatures fit (a vampire at
+   night, a troll turning to stone at dawn, a werewolf under a full moon), and a
+   user can pin "night" for a whole batch. It defaults to Random so it adds
+   variety rather than narrowing it. Sci-fi does not need it: most sci-fi places
+   have no day at all, and the places that do already carry `sunlight`. Its one
+   risk is a clash with a style prefix ("golden hour" against "night"), which the
+   README will call out.
