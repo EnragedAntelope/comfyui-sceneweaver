@@ -8,7 +8,7 @@ genre is a data module and two registration lines.
 
 ## Current state
 
-_Last verified: 2026-09-17_
+_Last verified: 2026-09-20_
 
 - **Status:** **public beta.** `main` is v0.4.0 (coherence round XIV, published
   to the ComfyUI Registry). **v0.5.0 is on `tmp/sceneweaver-fantasy`**, awaiting
@@ -112,25 +112,67 @@ _Last verified: 2026-09-17_
   coherence audit, the coherence sweep and `ruff` are green; the reach audit is
   not (see Known gaps). Round XIV's decisions D16-D24 and its measurements are
   in `docs/architecture.md` ("Concern audit (round XIV)").
-- **In progress:** round XV's fixes and the horror pack are **not yet rendered**;
-  the maintainer's render test decides the next round. `time_of_day` (fantasy and
-  horror) and the fantasy Tone filter are designed in `docs/genre-roadmap.md` and
-  not built. Round XIII was driven by a measured gap rather than
-  by a report: on the 2026-09-15 batch `scripts/concern_audit.py` read **0.0%
-  flagged** while 44 of 101 rendered images -- 43.6% -- were bad enough that the
-  user pulled them out by hand. Every previous round had driven its own frozen
-  flag list to zero and generalised nothing, so the round's first deliverable is
-  `scripts/coherence_sweep.py`: classes shaped as *kinds* of incoherence, reading
-  the pack's own declarations where they exist. It measured **37.3%** of 3000
-  scenes at the start of the round and **5.2%** at the end, every class inside
-  its ceiling. `scripts/concern_audit.py` still reports 0.0% on both paths and
-  `scripts/reach_audit.py --gate` still reports every non-exempt value drawn.
+- **In progress:** **round XVI** (2026-09-20, still on
+  `tmp/sceneweaver-fantasy`) responds to the maintainer's render test of round
+  XV/the horror pack: 162 images pulled by hand from a mixed sci-fi/fantasy/
+  horror batch. It found four **genre-agnostic mechanism gaps**, not data
+  mistakes, and fixed each once rather than per value:
+  1. **A rotation-budget bug in `engine/budget.py`**: when a fixed-head field
+     went unsaid, its freed allowance kept drawing *additional* rotation
+     candidates past `detail_rotation_slots`, so a subject could speak three
+     or four "extra" details against a declared cap of one or two -- the
+     courier with three boarding-tube launchers and six telescope panels, an
+     asteroid that always spoke an emitter and an appendage together. Fixed by
+     capping the draw at `reserved = min(slots, allowance)`.
+  2. **A constraint-solver gap in `engine/scene.py::_apply_constraints`**: the
+     round-XIII "re-offer what a rule emptied" step filled a nulled field
+     without re-checking it against fields that had already settled while it
+     read `None` -- a place re-offered `"boarded-up"` (inactive) landed next
+     to an already-fixed powered-act situation. Fixed with a bounded (3x)
+     outer retry that re-enters the fixed point whenever a re-offer changes
+     something. Both were verified pre-existing (zero hits on `main` before
+     this round; the round's own pool-size edits shifted RNG draws enough to
+     expose them) and swept clean across all three packs afterward.
+  3. A render-trap class beyond single nouns: a **substance-adjective** reads
+     as the substance, detached from its noun ("forked tongue" drew a table
+     fork, "furled banner" drew fur fringe, "water-stained" drew dripping
+     water off a dry chair). The two reported instances are renamed; there is
+     no automated check for the class yet (`FOREIGN_NOUNS` is anachronism-
+     scoped and would false-positive on "fur"/"fork" used correctly
+     elsewhere) -- flagged in memory as a genre-authoring review habit.
+  4. **A doll's-eyes fallthrough** in horror's `EMITTER_POOLS["cursed
+     object"]` reached the `furnishing` subkind (a chair, a clock) because it
+     had no key of its own -- the same "stranger fall-through" shape round XV
+     fixed in a different pool, now with an empty-key override.
+
+  Also this round: horror's `figure` carry-clause matched fantasy/sci-fi's
+  2-field pattern (was 3, near-guaranteed at once); a hospital-band extra
+  scoped to the wrong undead eras; a place/spirit water-vs-submerged
+  contradiction, gated on horror's existing `air` token; deposit-condition
+  cold-gating ported to horror (had none) and completed in fantasy; a
+  windmill scoped out of explicitly funerary environments; resting-surface
+  values (a velvet cushion, a display case) gated to indoor/dry places in
+  both fantasy and horror; a wrist-congestion trait conflict in sci-fi
+  (a sensor gauntlet and a magnetic grapple both localise to the hand); an
+  asteroid emitter pool split off from the planet-scale volcanic vocabulary
+  it fell through to; and a ground-vehicle vocabulary pass (the recurring
+  "modern-day craft" report) that renamed the handful of unambiguous
+  present-day terms and added repulsor/energy-weapon values, net wider than
+  before. Horror's gore filter -- 9 `"c"`-tagged situations and ~11 values
+  before this round -- is roughly tripled on both counts, genuinely graphic
+  (dismemberment, exposed organs) rather than merely implied, still fully
+  hidden by "No gore".
+
+  `time_of_day` (fantasy and horror) and the fantasy Tone filter are designed
+  in `docs/genre-roadmap.md` and not built.
 - **Known gaps:**
-  - `scripts/reach_audit.py --gate` **fails on `main` (0.3.0) and on round XIV**
-    with a handful of never-drawn situations that are feasible but confined to a
-    rare place and a rare kind (a drone at a trench vent). It samples; it is a
-    maintainer instrument and CI does not run it. Round XIII's note calling it
-    green was measured on a different seed.
+  - `scripts/reach_audit.py --gate` **fails on `main` (0.3.0) and on every
+    round since**, including this one, with a handful of never-drawn values
+    confined to a rare place-and-kind (or place-and-subkind) combination -- a
+    drone at a trench vent, a rail-driver turret on a vehicle subkind a
+    12000-seed sample didn't happen to sample. It samples; it is a maintainer
+    instrument and CI does not run it. Round XIII's note calling it green was
+    measured on a different seed.
   - Round XIV renamed or removed dropdown values; a saved workflow that locked
     one reports "value not in list". Release notes live in commit messages,
     never in the README (maintainer's rule).
@@ -155,8 +197,13 @@ _Last verified: 2026-09-17_
   - A wired Scene Entity's *kind and type* are never masked by the scene filter
     (a conflict-tagged sci-fi warship wired into a Peaceful scene stays); only its
     other drawn tag-scoped values are re-drawn (R6).
-  - The horror pack has not been render-tested, and `reach_audit.py --pack horror`
-    still lists a few rare-place situations as never drawn.
+  - Round XVI is the horror pack's first render test (162 images from a mixed
+    batch); `reach_audit.py --pack horror` still lists a few rare-place
+    situations as never drawn. Round XVI's fixes are themselves **not yet
+    render-tested** - the maintainer's next render pass decides round XVII.
+  - The substance-adjective render-trap class (item 3 above) has no automated
+    check; a genre author has to catch it by eye until a narrower signal than
+    "contains a common English word" is found.
   - There is no fantasy or horror example workflow; swap the node in a sci-fi graph.
   - A world as **scenery** behind a ground-level scene has no placement concept,
     so `celestial body` is excluded from the `planetary surface` kind pool, and

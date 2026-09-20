@@ -648,13 +648,16 @@ MARKINGS_POOLS: dict[str, tuple[str, ...]] = {
 SURFACE_DETAIL_POOLS: dict[str, tuple[str, ...]] = {
     POOL_DEFAULT_KEY: ("cracked finish", "thick dust"),
     "undead": ("grave dirt in every crease", "split grey skin", "clumps of wet earth",
-               "dripping fresh blood", "exposed ribs"),
+               "dripping fresh blood", "exposed ribs", "torn-open gut wound",
+               "glistening exposed muscle"),
     "skeletal dead": ("cobwebbed joints", "cracked yellowed bone", "clinging grave dirt"),
     "spirit": ("frayed translucent edges", "slowly dripping water"),
-    "cryptid": ("old gouged scars", "cracked peeling skin", "caked dried mud"),
+    "cryptid": ("old gouged scars", "cracked peeling skin", "caked dried mud",
+                "fresh claw-mark gashes"),
     "cursed beast": ("burrs matted into the fur", "old gouged scars", "blood-matted fur around the muzzle"),
     "effigy": ("straw poking through the seams", "crow-pecked burlap"),
-    "eldritch horror": ("glistening slime", "weeping sores", "barnacle-like growths"),
+    "eldritch horror": ("glistening slime", "weeping sores", "barnacle-like growths",
+                        "raw weeping flesh"),
     "mortal": ("mud-caked boots", "rain-soaked clothing", "torn sleeves", "blood-spattered sleeves"),
     "cursed object": ("crazed varnish", "thick dust", "hairline cracks", "faded gilt edges"),
     "haunted place": ("peeling paint", "sagging gutters", "shattered windows", "creeping black mould"),
@@ -710,6 +713,10 @@ EMITTER_POOLS: dict[str, tuple[str, ...]] = {
     "eldritch horror": ("pulsing inner light", "luminous pustule"),
     "mortal": ("hooded lantern", "guttering candle", "handheld torch beam"),
     "cursed object": ("faint inner light", "shining painted eye"),
+    # A doll's or a dummy's face carries painted eyes; a chair, a clock or a
+    # mirror is not a face and should not grow one by falling through to the
+    # kind-level pool above.
+    "furnishing": ("faint inner light",),
     "haunted place": ("lamp in an upstairs window", "flickering porch lamp"),
 }
 
@@ -725,7 +732,8 @@ ARMAMENT_POOLS: dict[str, tuple[str, ...]] = {
     "hollow-eyed stag": ("jagged antler tine",),
     "eldritch horror": ("barbed stinger", "hooked talon"),
     "cult": ("ritual dagger", "curved sacrificial knife", "rusted cleaver"),
-    "stalker": ("butcher's cleaver", "wood axe", "rusted machete", "iron chain whip", "sickle"),
+    "stalker": ("butcher's cleaver", "wood axe", "rusted machete", "iron chain whip", "sickle",
+               "gore-slicked axe"),
     "occultist": ("bone-handled knife", "iron cane"),
     "survivor": ("fire axe", "shotgun", "iron crowbar", "wooden stake"),
     "village priest": ("silver crucifix", "wooden stake"),
@@ -749,7 +757,7 @@ SENSOR_POOLS: dict[str, tuple[str, ...]] = {
 
 APERTURE_POOLS: dict[str, tuple[str, ...]] = {
     POOL_DEFAULT_KEY: ("gaping mouth", "hinged lid"),
-    "undead": ("slack gaping jaw", "lipless grin", "blood-smeared mouth"),
+    "undead": ("slack gaping jaw", "lipless grin", "blood-smeared mouth", "gore-clotted maw"),
     "bloodsucker": ("fanged smile", "blood-smeared mouth"),
     "spirit": ("silently screaming mouth", "veiled face"),
     "cryptid": ("wide lipless mouth", "needle-toothed mouth"),
@@ -771,7 +779,13 @@ APERTURE_POOLS: dict[str, tuple[str, ...]] = {
 
 EXTRAS_POOLS: dict[str, tuple[str, ...]] = {
     POOL_DEFAULT_KEY: ("iron key", "tattered ribbon"),
-    "undead": ("hospital identity band", "tangle of grave roots", "rusted shackle"),
+    # "hospital identity band" used to sit here and reach every undead -- a
+    # medieval catacomb dweller, a bog body, a drowned sailor -- asserting a
+    # specific modern-hospital backstory none of those places support. No
+    # context/era token exists to re-scope it safely, so it is dropped and
+    # replaced in kind, not merely removed.
+    "undead": ("tarnished signet ring", "scrap of burial linen", "tangle of grave roots",
+               "rusted shackle"),
     "spirit": ("wilted bouquet", "tarnished locket"),
     "cryptid": ("tangle of snagged cloth", "trail of muddy prints"),
     "cursed beast": ("broken chain collar", "tangle of snagged cloth"),
@@ -779,7 +793,12 @@ EXTRAS_POOLS: dict[str, tuple[str, ...]] = {
     "mortal": ("ring of old iron keys", "coil of wire", "leather satchel", "burlap sack"),
     "survivor": ("flashlight", "hunting rifle", "first aid kit", "crumpled map"),
     "occultist": ("leather-bound grimoire", "bundle of dried herbs", "bird skull charm"),
-    "cursed object": ("velvet-lined case", "dusty shelf", "carved side table", "child-sized chair"),
+    # "velvet-lined case" and its furnished siblings used to reach an object
+    # in a reed marsh or on the floor of a flooded church -- gated below to
+    # an indoor, dry place (VALUE_NEEDS). "dusty ledge" is place-neutral and
+    # keeps outdoor/underwater cursed objects a surface to rest on.
+    "cursed object": ("velvet-lined case", "dusty shelf", "carved side table", "child-sized chair",
+                      "dusty ledge"),
     "furnishing": ("peeling floral wallpaper", "wall of stained plaster", "row of warped floorboards"),
     "haunted place": ("overgrown garden gate", "crooked picket fence", "tangle of dead rose bushes"),
     "dwelling": ("rusted swing on the porch", "overgrown garden gate", "crooked picket fence"),
@@ -806,7 +825,9 @@ CONDITION_POOLS: dict[str, tuple[str, ...]] = {
     "eldritch horror": ("newly awakened", "ancient", "writhing", "slumbering"),
     "mortal": ("exhausted", "wild-eyed", "wounded", "grim", "blood-soaked", "rain-soaked"),
     "survivor": ("exhausted", "wild-eyed", "wounded", "grim", "rain-soaked"),
-    "cursed object": ("antique", "cracked", "water-stained", "scorched", "dormant"),
+    # "water-stained" rendered as literal water dripping off a dry chair --
+    # the same substance-word-collision class as "forked"/"furled".
+    "cursed object": ("antique", "cracked", "damp-blotched", "scorched", "dormant"),
     "haunted place": ("abandoned", "boarded-up", "fire-gutted", "overgrown", "sagging"),
 }
 
@@ -910,7 +931,7 @@ CARDINALITY: dict[str, dict[str, str]] = {
             "rusted cleaver", "wood axe", "sickle", "iron crowbar", "ritual dagger",
             "curved sacrificial knife", "butcher's cleaver", "rusted machete", "iron chain whip",
             "bone-handled knife", "iron cane", "fire axe", "shotgun", "wooden stake",
-            "silver crucifix",
+            "silver crucifix", "gore-slicked axe",
         )),
         ("a paired arm", (
             "jagged antler tine", "hooked claw", "yellowed fang", "hooked talon")),
@@ -947,7 +968,9 @@ _S_DEAD_EV = (
 )
 _S_DEAD_EV_GORE = (
     "feeding hunched over a fresh kill", "tearing into raw meat with its teeth",
-    "dragging a bloodied body by one ankle",
+    "dragging a bloodied body by one ankle", "tearing a strip of flesh loose with its teeth",
+    "clawing open its own stitched-shut abdomen", "dragging a trail of spilled entrails behind it",
+    "cracking open a ribcage with both hands",
 )
 _S_DEAD_ACT = (
     "swaying on its feet", "dragging one foot as it walks", "turning its head at an unnatural angle",
@@ -955,7 +978,10 @@ _S_DEAD_ACT = (
     "moaning with its jaw hanging slack", "shuffling in a slow circle",
     "flexing its stiff grey fingers",
 )
-_S_DEAD_ACT_GORE = ("picking at a loose strip of its own skin",)
+_S_DEAD_ACT_GORE = (
+    "picking at a loose strip of its own skin", "worrying a flap of rotted skin with broken nails",
+    "picking maggots from a gaping wound",
+)
 _S_DEAD_IDLE = ("standing motionless with its back turned", "staring at nothing", "swaying in place")
 _S_DEAD_ACT_WALLS = (
     "clawing at a boarded-up window", "scratching slowly at a door",
@@ -980,7 +1006,10 @@ _S_VAMPIRE_ACT_ANY = (
     "standing with its cloak spread wide",
 )
 _S_VAMPIRE_IDLE = ("gazing with a cold unblinking stare",)
-_S_VAMPIRE_EV_GORE = ("wiping blood from its lips", "feeding at a pale throat")
+_S_VAMPIRE_EV_GORE = (
+    "wiping blood from its lips", "feeding at a pale throat",
+    "tearing open a throat in a spray of blood", "draining a body dry with a wet gurgling sound",
+)
 _S_VAMPIRE_EV_ANY = (
     "lunging with bared fangs", "sweeping its cloak aside", "vanishing in a swirl of its cloak",
     "seizing a wrist in an iron grip", "springing forward with inhuman speed",
@@ -1035,6 +1064,8 @@ _S_CRYPTID_LIFE = (
 _S_BEAST_EV = ("rearing up with a howl", "snarling as it springs")
 _S_BEAST_EV_GORE = (
     "gnawing on a bloodied bone", "dragging a torn carcass", "shaking a limp body in its jaws",
+    "disembowelling a carcass with one raking claw",
+    "cracking a ribcage open to get at the organs inside", "shaking a body until a limb tears free",
 )
 _S_BEAST_ACT = ("baring its teeth in a silent snarl", "licking its muzzle slowly")
 _S_CRAWLER_ACT = ("crawling along the ceiling", "scuttling backwards on all fours")
@@ -1050,7 +1081,11 @@ _S_ELDRITCH_EV = (
     "opening a dozen eyes at once", "lashing out with a barbed limb",
     "bursting upward with a shriek",
 )
-_S_ELDRITCH_EV_GORE = ("swallowing a struggling victim whole", "trailing strips of torn flesh")
+_S_ELDRITCH_EV_GORE = (
+    "swallowing a struggling victim whole", "trailing strips of torn flesh",
+    "pulling a body apart at the joints", "sinking rows of teeth into a still-twitching torso",
+    "leaving a trail of half-digested remains",
+)
 _S_ELDRITCH_ACT = (
     "pulsing slowly as its eyes open one by one", "reaching out with groping tendrils",
     "oozing slowly forward", "turning every eye toward the viewer",
@@ -1071,6 +1106,8 @@ _S_MORTAL_EV = (
 )
 _S_MORTAL_EV_GORE = (
     "wiping a bloodied blade clean", "dragging a bloodied sack", "sharpening a stained cleaver",
+    "hacking through a limb with three heavy strokes", "gutting a carcass strung up on a hook",
+    "carving a symbol into bare flesh", "dragging a disembowelled body by its ankles",
 )
 _S_MORTAL_ACT = (
     "standing silently and watching", "tilting their head slowly", "chanting under their breath",
@@ -1612,6 +1649,31 @@ _SUBKIND_NEEDS: dict[str, frozenset[str]] = {
 VALUE_NEEDS: dict[str, dict[str, frozenset[str]]] = {
     SITUATION_FIELD: dict(_SITUATION_NEEDS),
     "subkind": _SUBKIND_NEEDS,
+    # "Dripping" asserts the subject is out of the water it dripped from; a
+    # spirit or a corpse already ``submerged`` should not also be dripping.
+    # ``air`` is horror's own derived "not submerged" token (see
+    # ``PLACE_AFFORDANCES`` below).
+    "surface_detail": {
+        "slowly dripping water": frozenset({"air"}),
+        "dripping fresh blood": frozenset({"air"}),
+    },
+    # Round XIV's deposit-condition rule (scifi.py) never reached horror:
+    # vegetation overtaking a place needs a place that can grow it. Horror
+    # has no frost/ice *condition* value to gate (unlike scifi/fantasy) --
+    # its cold-only content is already gated at the situation level
+    # (``_S_ELDRITCH_DORMANT`` needs ``_COLD``).
+    "condition": {
+        "overgrown": _LIFE,
+    },
+    # A cursed object's furnished resting surfaces (velvet, a display case, a
+    # dusty shelf) presume an indoor, dry room; a reed marsh and a flooded
+    # church nave are neither. "dusty ledge" is left ungated on purpose.
+    "extras": {
+        "velvet-lined case": _WALLS | frozenset({"air"}),
+        "dusty shelf": _WALLS | frozenset({"air"}),
+        "carved side table": _WALLS | frozenset({"air"}),
+        "child-sized chair": _WALLS | frozenset({"air"}),
+    },
 }
 
 DEFAULT_NEEDS: dict[str, dict[str, frozenset[str]]] = {
@@ -1664,6 +1726,12 @@ _add_traits(SITUATION_FIELD, {
     v: ("violent-act",) for v, code in _SITUATION_TAG_CODES.items() if code == "c"
 })
 _add_traits("subkind", {"village priest": ("pacifist-role",)})
+# A windmill belongs to a farm, not a graveyard -- "rotting windmill" appeared
+# in a sunken churchyard and among grave markers. Scope it out of the four
+# explicitly funerary environments only; it stays free everywhere else
+# (a lake shore, the wilds).
+_add_traits(ENVIRONMENT_FIELD, {v: ("funerary-place",) for v in _ENV_GRAVES})
+_add_traits("subkind", {"rotting windmill": ("rural-landmark",)})
 
 TRAIT_CONFLICTS: tuple[tuple[str, str], ...] = (
     ("inactive", "powered-act"),
@@ -1671,6 +1739,7 @@ TRAIT_CONFLICTS: tuple[tuple[str, str], ...] = (
     ("bare-bone", "flesh-intact"),
     ("interior-place", "large-scale"),
     ("pacifist-role", "violent-act"),
+    ("funerary-place", "rural-landmark"),
 )
 TRAIT_REASONS: dict[str, str] = {
     "inactive|powered-act": "a thing at rest does not act",
@@ -1678,6 +1747,7 @@ TRAIT_REASONS: dict[str, str] = {
     "bare-bone|flesh-intact": "a skeleton has no flesh to rot",
     "interior-place|large-scale": "a room cannot hold something huge",
     "pacifist-role|violent-act": "a priest does not kill",
+    "funerary-place|rural-landmark": "a windmill belongs to a farm, not a graveyard",
 }
 
 
@@ -1686,12 +1756,16 @@ def _tag_code(code: str) -> str:
 
 
 #: Graphic values outside the situations. "No gore" hides every one of them.
+#: Round XVI: stepped up substantially -- "Gore only" read as barely
+#: different from "Any" with 9 situations and ~11 values behind it. Both are
+#: now roughly tripled.
 _GORE = {
     "condition": ("blood-soaked",),
     "surface_detail": ("dripping fresh blood", "exposed ribs", "blood-matted fur around the muzzle",
-                       "weeping sores", "blood-spattered sleeves"),
-    "aperture": ("blood-smeared mouth", "cracked bleeding lips"),
-    "armament": ("butcher's cleaver", "curved sacrificial knife"),
+                       "weeping sores", "blood-spattered sleeves", "torn-open gut wound",
+                       "glistening exposed muscle", "fresh claw-mark gashes", "raw weeping flesh"),
+    "aperture": ("blood-smeared mouth", "cracked bleeding lips", "gore-clotted maw"),
+    "armament": ("butcher's cleaver", "curved sacrificial knife", "gore-slicked axe"),
 }
 _RELATION_CONFLICT = frozenset({
     "stalking", "hunting", "attacking", "cornering",
@@ -1879,10 +1953,15 @@ ARCHETYPES: dict[str, Archetype] = {
         omits=frozenset({"scale"}),
         detail_cap=10,
         templates={"material": "{a_value}"},
-        detail_priority=("form", "subkind", "material", "primary_color", "aperture", "armament",
-                         "extras"),
+        detail_priority=("form", "subkind", "material", "primary_color", "aperture", "armament"),
+        # Round XVI: ``extras`` moved out of the fixed head and into rotation,
+        # alongside ``emitters`` -- both used to be near-guaranteed on every
+        # figure, so a survivor drew a weapon, a lantern and a first-aid kit in
+        # the same clause. They now compete for the same rotation slots as
+        # fantasy and sci-fi already do, and ``emitters`` gets its own
+        # sentence instead of piling into "carry" -- fantasy's exact pattern.
         detail_rotation_slots=2,
-        detail_rotation={"emitters": 1.0, "appendages": 0.8, "surface_detail": 0.8,
+        detail_rotation={"emitters": 1.0, "extras": 1.0, "appendages": 0.8, "surface_detail": 0.8,
                          "markings": 0.6, "sensors": 0.5, "accent_color": 0.4},
         sentences=(
             Sentence(text="{subject} {copula} {situation}."),
@@ -1893,10 +1972,10 @@ ARCHETYPES: dict[str, Archetype] = {
             Sentence(text="{possessive} clothing is {primary_color}."),
             Sentence(text="{pronoun} show {surface_detail}."),
             Sentence(text="{possessive} clothing bears {markings, accent_color}."),
-            Sentence(text="{pronoun} carry {armament, emitters, extras}."),
+            Sentence(text="{pronoun} carry {armament, extras}."),
             Sentence(text="{pronoun} wear {appendages}."),
             Sentence(text="{possessive} features include {sensors}."),
-            Sentence(text="{pronoun} show {aperture}."),
+            Sentence(text="{pronoun} show {emitters, aperture}."),
         ),
         **_THEY,
     ),

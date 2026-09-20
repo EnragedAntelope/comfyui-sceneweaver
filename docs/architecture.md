@@ -1451,3 +1451,144 @@ else from the contract.
 * **H5 Content guidelines** from `docs/genre-roadmap.md`: no real people or
   tragedies, no mental illness as a monster, no living religious or cultural figure
   as a monster, no trademarks, no child in peril.
+
+## Round XVI: the 0917-afternoon concerns batch
+
+162 images pulled by hand from a mixed sci-fi/fantasy/horror batch, the
+horror pack's first render test. Four defects traced to mechanism gaps
+rather than data mistakes.
+
+### Two pre-existing engine defects, exposed by this round's own data edits
+
+Both measured zero hits on `main` before this round; a pool-size change
+anywhere shifts the RNG draw sequence for everything drawn after it in the
+same seed, and this round's edits (mostly narrower pools, per
+`variety-is-kept-by-adding`, replaced before removed) happened to shift far
+enough to reach code paths the old distribution never touched. Neither is a
+new risk this round introduced on top of the shared engine - both were
+already reachable on every genre, this round's data changes just made them
+visible.
+
+* **X1 A rotation slot is a count, not a share of unspent allowance.**
+  `engine/budget.py`: when a fixed-head field went unsaid, the surplus
+  allowance kept drawing *additional* rotation candidates one at a time until
+  the whole remaining budget was spent on rotation, against a declared
+  `detail_rotation_slots` of one or two. A courier grew three boarding-tube
+  launchers and six telescope panels; an asteroid's `world` archetype (fixed
+  head includes both `appendages` and `emitters`) always spoke an emitter
+  *and* an appendage together. The draw now stops at
+  `reserved = min(slots, allowance)`; a reserved slot nothing could fill
+  still falls back to the core order, unchanged.
+
+  Two sci-fi archetypes (`object`, `structure`) turned out to rely on the old
+  spillover to satisfy `test_every_entity_speaks_a_component_clause`: their
+  rotation pool mixed genuine component fields (`appendages`/`emitters`/
+  `armament`/`sensors`/`aperture`/`extras`) with decorative ones
+  (`markings`/`accent_color`/`surface_detail`), sharing one slot, so a
+  decorative field could legally win it outright and leave the archetype
+  with no component spoken. Moved the decorative fields into the fixed head
+  (`object`'s cap already had headroom; `structure`'s cap rose from 8 to 11,
+  matching the three fields added to its fixed list - never about speaking
+  *more*, only about which field a lone rotation slot could spend itself on).
+* **X2 A re-offered value is not re-validated.** `engine/scene.py`, the round
+  XIII "re-offer what a rule emptied" step (`_apply_constraints`): it fills a
+  field the fixed point nulled, once, after the fixed point has already
+  settled - so a value re-offered late can conflict with a field that
+  settled earlier, while the target still read `None` and excluded nothing.
+  A haunted place's `condition` re-offered as `"boarded-up"` (the `inactive`
+  trait) landed next to an already-fixed `situation` carrying `powered-act`
+  ("shuddering as something moves inside"), a combination the
+  `inactive|powered-act` trait conflict already forbids and normally
+  prevents. Fixed with a bounded (3x) outer retry around the fixed point +
+  re-offer pair: whenever a re-offer actually changes something, the fixed
+  point gets one more pass to catch and redraw whatever it now conflicts
+  with, using its own existing exclusion logic.
+
+### Genre-agnostic patterns, fixed once each
+
+* **X3 A doll's eyes reach a chair.** `EMITTER_POOLS["cursed object"]`
+  (horror) held a painted-eye value at the kind level; the `furnishing`
+  subkind (a mirror, a clock, a rocking chair) had no key of its own and fell
+  through to it. Same shape as round XV's `FALLTHROUGH` (check 32), a
+  different pool; fixed with an empty-key override, the same trick
+  `SENSOR_POOLS["furnishing"]` already used.
+* **X4 A substance-adjective renders as the substance.** Beyond a bare noun
+  ("tether" draws a chain), a hyphenated adjective whose head is a substance
+  noun can detach and render literally: "forked tongue" drew a table fork,
+  "furled banner" drew fur fringe, "water-stained" (a condition on a cursed
+  chair) drew dripping water off a dry floor. The three instances found are
+  renamed (cloven tongue, rolled banner, damp-blotched). No automated check
+  exists for the class: `FOREIGN_NOUNS` is anachronism-scoped and "fur"/
+  "fork" are correct, common fantasy/horror words everywhere else in the
+  pack (bear fur, a table fork used correctly); adding them would fail
+  validation on every legitimate use. Left as a review habit for new content
+  until a narrower signal is found.
+
+### Per-genre
+
+* **Horror:** the `figure` carry-clause joined three fields
+  (`{armament, emitters, extras}`, near-guaranteed together) where fantasy
+  and sci-fi join two and speak `emitters` in its own sentence; matched.
+  `EXTRAS_POOLS["undead"]`'s hospital-band value asserted a modern death and
+  reached medieval catacombs and sunken ships alike; dropped and replaced in
+  kind (no era/context need token exists to re-scope it safely). A spirit or
+  corpse already `submerged` could also be `"slowly dripping water"` or
+  `"dripping fresh blood"`; gated both to horror's existing derived `air`
+  ("not submerged") token. `VALUE_NEEDS["condition"]` was empty; added
+  `overgrown` -> `life` (round XIV's scifi deposit-condition pattern, ported;
+  horror has no frost/ice *condition* value to gate the way scifi/fantasy
+  do - its cold-only content is already situation-gated). `"rotting
+  windmill"` reached a churchyard and a field of grave markers; a
+  `funerary-place`/`rural-landmark` trait conflict scopes it out of the four
+  explicitly funerary environments only. `EXTRAS_POOLS["cursed object"]`'s
+  furnished resting surfaces (a display case, a dusty shelf) reached a reed
+  marsh and a flooded church nave; gated to `{structure, air}`, with a
+  place-neutral surface added to keep outdoor/underwater objects a place to
+  rest. Gore roughly tripled: 9 `"c"`-tagged situations and ~11 `_GORE`
+  values before this round; ~29 situations (undead's own situation count
+  went from ~15 to 43 total) and ~9 `_GORE` values after, genuinely graphic
+  (dismemberment, exposed organs, disembowelment) rather than merely
+  implied, tiered `event` where `TIER_WEIGHTS` rewards it, still fully
+  hidden by "No gore".
+* **Fantasy:** the same resting-surface gating applied to `EXTRAS_POOLS
+  ["relic"]` (a velvet cushion, a silk-draped table); the stone/altar
+  surfaces stay place-neutral, already fine outdoors and underwater.
+  `"forked tongue"` -> `"flicking a cloven tongue"` (X4). Deposit-condition
+  gating completed: `"overgrown"` -> `life` alongside the existing
+  `"frost-rimed"` -> `cold`.
+* **Sci-fi:** `"small body"` (asteroid/comet) fell through to `"celestial
+  body"`'s planet-scale volcanic vocabulary (`volcanic vent`, `lava
+  fissure`, `geyser vent` on a bare rock) - given its own pool, outgassing/
+  sublimation language only, and `"dust plume vent"` dropped the word
+  `"vent"` specifically (`"dust plume"`), which read as an engine port on a
+  natural body. `"sensor gauntlet"` (a worn sensor) and `"magnetic grapple"`
+  (a carried extra) both localise to a spacefarer's hand; a figure drawing
+  both fused into one wrist. Shared a `hand-mounted` trait across the two
+  fields rather than reword either value - `"magnetic grapple"` is also the
+  noun in the established `"latching onto a hull with magnetic grapples"`
+  situation, unaffected. Ground vehicles read as present-day military/
+  utility hardware (the recurring report): renamed the handful of terms with
+  no futuristic reading at all (`pintle-mounted gun`, `intake grille`,
+  `driver hatch`, `rear cargo door`, `front`/`tail beacon bar`, `angled
+  glacis armour plate`, `cargo bed`) and added repulsor/energy-weapon values
+  across form, appendages, emitters, armament and aperture - net wider, not
+  narrower. Discovered mid-edit: a ground vehicle's `form` and `appendages`
+  are scoped entirely through locomotion sub-groups (`wheeled/tracked`,
+  `hovering`, `flying`, `lander`, `underwater`, `legged`); the kind-level
+  pool is dead weight for those two fields, the same `SHADOWED` shape as X3
+  in a different field, caught by the validator and moved to the sub-group
+  that actually resolves.
+
+### Round XVI, measured
+
+Every check in "Build and test" (`AGENTS.md`) is green, including
+`coherence_sweep.py --gate` on both paths, `sample_distribution.py` (no
+kind/scale/motif ceiling breached), and `coherence_audit.py` (every
+archetype's clause-per-scene mean stayed within its pre-round shape;
+`structure`'s cap increase to 11 lands exactly at its own measured p95, not
+above it). `reach_audit.py --gate` reports the same class of gap as every
+prior round - a handful of values confined to a rare place-and-kind or
+place-and-subkind combination a 12000-seed sample did not happen to draw,
+including two of this round's own new sci-fi armament values; not a
+structural gap (the validator's `SHADOWED` check, which is exhaustive, not
+sampled, passed clean).

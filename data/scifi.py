@@ -1173,8 +1173,15 @@ FORM_POOLS: dict[str, tuple[str, ...]] = {
                        "articulated cargo crawler chassis", "open-frame six-wheeled rover chassis",
                        "articulated segmented crawler", "articulated two-section body",
                        "low wedge chassis", "twin-hull hauler frame"),
-    "hovering":       ("low skimmer hull", "teardrop hover hull"),
-    "flying":         ("blunt gravlift wedge", "flat lifting-body gravlift hull"),
+    # Round XVI: only two of these read as unambiguously futuristic (skimmer,
+    # gravlift/re-entry forms), so the ground-vehicle silhouette leaned
+    # present-day. Three more repulsor forms added here and to "flying" --
+    # not to "wheeled/tracked", since a tracked vehicle is not itself an
+    # anachronism, only the automotive *parts* elsewhere in the pool were.
+    "hovering":       ("low skimmer hull", "teardrop hover hull", "twin-pod repulsor hull",
+                       "articulated repulsor-skirt hull", "plated hover-pallet chassis"),
+    "flying":         ("blunt gravlift wedge", "flat lifting-body gravlift hull",
+                       "faceted anti-grav wedge"),
     "lander":         ("blunt re-entry capsule", "squat lander with splayed legs",
                        "bulbous pressurised cabin"),
     "underwater":     ("cylindrical submersible hull",),
@@ -1630,23 +1637,24 @@ APPENDAGE_POOLS: dict[str, tuple[str, ...]] = {
     "surface vehicle": (
         "articulated arm", "folding ramp", "roof sensor pod",
         "heavy drill arm", "stabiliser fin", "hinged fin panel",
-        "regolith scraper plate", "sample drill arm", "angled glacis armour plate",
-        "rear engine cowling",
+        "regolith scraper plate", "sample drill arm", "angled deflector plate",
+        "rear engine cowling", "repulsor stabiliser vane",
     ),
     "wheeled/tracked": (
         "articulated arm", "folding ramp", "heavy drill arm",
-        "regolith scraper plate", "angled glacis armour plate", "rear engine cowling",
+        "regolith scraper plate", "angled deflector plate", "rear engine cowling",
         "sample drill arm", "roof sensor pod",
     ),
     "hovering": ("stabiliser fin", "hinged fin panel", "rear engine cowling",
-                 "roof sensor pod"),
-    "flying": ("stabiliser fin", "hinged fin panel", "roof sensor pod"),
-    "lander": ("folding ramp", "angled glacis armour plate", "articulated arm",
+                 "roof sensor pod", "repulsor stabiliser vane"),
+    "flying": ("stabiliser fin", "hinged fin panel", "roof sensor pod",
+               "repulsor stabiliser vane"),
+    "lander": ("folding ramp", "angled deflector plate", "articulated arm",
                "roof sensor pod"),
     "underwater": ("articulated arm", "stabiliser fin", "sample drill arm",
                    "ballast tank blister"),
     "legged": ("articulated arm", "heavy drill arm", "roof sensor pod",
-               "angled glacis armour plate", "sample drill arm"),
+               "angled deflector plate", "sample drill arm"),
     "wreck": (
         "snapped spar", "hanging hull-skin strip", "torn hull flap",
         "torn engine mount", "sheared fin", "exposed hull frame",
@@ -1707,8 +1715,14 @@ EMITTER_POOLS: dict[str, tuple[str, ...]] = {
         "volcanic vent", "lava fissure", "geyser vent", "cryovolcanic plume vent",
         "auroral band", "auroral curtain", "dust plume vent",
     ),
+    # A bare asteroid/comet is not volcanically active -- it fell through to
+    # "celestial body"'s planet-scale vocabulary below and grew "volcanic
+    # vent"/"lava fissure"/"geyser vent", which read as engine ports punched
+    # in a rock. This is its own pool now: outgassing and sublimation only,
+    # and "vent" itself is dropped from the plain dust plume, which is the one
+    # value most often mistaken for a drive exhaust.
     "small body": (
-        "dust plume vent", "sublimating ice fissure",
+        "dust plume", "sublimating ice fissure", "outgassing plume", "sunward tail streamer",
     ),
     "celestial body": (
         "volcanic vent", "plasma jet", "auroral band", "lava fissure",
@@ -1751,23 +1765,26 @@ EMITTER_POOLS: dict[str, tuple[str, ...]] = {
         "pulsing node", "discharge spire", "halo crown", "resonance filament",
         "seam beacon", "pulsing corona", "emissive glyph band",
     ),
+    # "front/tail beacon bar" read as a headlight/tail-light light bar -- the
+    # single most literal automotive tell in the pool. Renamed to an energy
+    # trace rather than a lamp.
     "surface vehicle": (
-        "front beacon bar", "tail beacon bar", "beacon strip",
+        "forward ion-trace strip", "aft ion-trace strip", "beacon strip",
         "battery cell window", "reactor vent", "arc discharge coil",
         "arc welding port", "hover skirt emitter",
     ),
-    "wheeled/tracked": ("front beacon bar", "tail beacon bar", "beacon strip",
+    "wheeled/tracked": ("forward ion-trace strip", "aft ion-trace strip", "beacon strip",
                         "battery cell window", "reactor vent",
                         "arc discharge coil", "arc welding port"),
-    "legged": ("front beacon bar", "beacon strip", "battery cell window",
+    "legged": ("forward ion-trace strip", "beacon strip", "battery cell window",
                "reactor vent", "arc discharge coil"),
-    "hovering": ("hover skirt emitter", "thruster vent", "front beacon bar",
+    "hovering": ("hover skirt emitter", "thruster vent", "forward ion-trace strip",
                  "beacon strip", "battery cell window"),
     "flying": ("drive thruster nozzle", "thruster vent", "drive plume vent",
                "beacon strip", "reactor vent"),
     "lander": ("drive thruster nozzle", "drive plume vent", "thruster vent",
                "beacon strip", "battery cell window"),
-    "underwater": ("front beacon bar", "beacon strip", "battery cell window",
+    "underwater": ("forward ion-trace strip", "beacon strip", "battery cell window",
                    "propulsor ring vent"),
     # Same five bodies: plasma jets and auroral bands, never volcanic vents, lava
     # fissures or geyser vents.
@@ -1839,12 +1856,15 @@ ARMAMENT_POOLS: dict[str, tuple[str, ...]] = {
                       "flame projector", "vibro-saw blade"),
     "static unit": ("arm-mounted repeater", "shoulder cannon", "stun emitter",
                     "needle gun mount", "wrist blade"),
+    # "particle repeater mount" names a specific real mounting hardware with no
+    # futuristic reading at all; the pool otherwise had no energy weapon.
     "surface vehicle": (
-        "pintle-mounted gun", "roof turret", "rocket rack",
+        "particle repeater mount", "roof turret", "rocket rack",
         "forward autocannon", "mine-clearing roller", "armoured ram plate",
-        "hull-mounted repeater", "grenade launcher",
+        "hull-mounted repeater", "grenade launcher", "rail-driver turret",
+        "plasma coil cannon",
     ),
-    "hovering": ("pintle-mounted gun", "hull-mounted repeater", "grenade launcher",
+    "hovering": ("particle repeater mount", "hull-mounted repeater", "grenade launcher",
                  "rocket rack"),
     "legged": ("roof turret", "rocket rack", "forward autocannon",
                "hull-mounted repeater", "grenade launcher"),
@@ -2026,10 +2046,13 @@ APERTURE_POOLS: dict[str, tuple[str, ...]] = {
         "yawning fissure",
         "keyed opening", "radial vent slot", "hollow aperture",
     ),
+    # "driver hatch" (a person named "driver" is an automotive role), "intake
+    # grille" (a car radiator grille) and "rear cargo door" (a delivery-van
+    # part) read as present-day; renamed without changing what they mean.
     "surface vehicle": (
-        "cabin canopy", "rear ramp", "driver hatch", "cargo maw",
-        "intake grille", "gun port", "glazed viewport band", "side door portal",
-        "roof hatch", "engine intake port", "rear cargo door",
+        "cabin canopy", "rear ramp", "pilot hatch", "cargo maw",
+        "intake vane", "gun port", "glazed viewport band", "side door portal",
+        "roof hatch", "engine intake port", "aft cargo hatch",
     ),
     "wreck": (
         "torn hull breach", "gaping bay door", "shattered viewport",
@@ -2123,22 +2146,22 @@ EXTRAS_POOLS: dict[str, tuple[str, ...]] = {
         "hovering plinth", "engraved band", "orbiting shell",
     ),
     "surface vehicle": (
-        "roof sensor dome", "cargo bed", "dust filter intake", "fuel cell pack",
+        "roof sensor dome", "cargo pallet mount", "dust filter intake", "fuel cell pack",
         "armoured crew cab", "sample collection hatch", "external air scrubber",
         "rooftop antenna fin", "sonar dome", "drill rig",
     ),
-    "wheeled/tracked": ("roof sensor dome", "cargo bed", "fuel cell pack",
+    "wheeled/tracked": ("roof sensor dome", "cargo pallet mount", "fuel cell pack",
                         "dust filter intake", "armoured crew cab", "drill rig",
                         "sample collection hatch", "external air scrubber"),
-    "hovering": ("roof sensor dome", "cargo bed", "fuel cell pack",
+    "hovering": ("roof sensor dome", "cargo pallet mount", "fuel cell pack",
                  "rooftop antenna fin", "armoured crew cab"),
     "flying": ("roof sensor dome", "fuel cell pack", "rooftop antenna fin",
                "dust filter intake", "armoured crew cab"),
-    "lander": ("fuel cell pack", "roof sensor dome", "cargo bed",
+    "lander": ("fuel cell pack", "roof sensor dome", "cargo pallet mount",
                "sample collection hatch", "external air scrubber"),
     "underwater": ("sample collection hatch", "fuel cell pack", "sonar dome",
                    "external air scrubber"),
-    "legged": ("drill rig", "cargo bed", "roof sensor dome", "fuel cell pack",
+    "legged": ("drill rig", "cargo pallet mount", "roof sensor dome", "fuel cell pack",
                "sample collection hatch"),
     "wreck": (
         "spilled cargo scatter", "torn bulkhead section", "half-buried engine bell",
@@ -2575,7 +2598,7 @@ def _cardinality(*groups: tuple[str, tuple[str, ...]]) -> dict[str, str]:
 _CARDINALITY_APPENDAGES = _cardinality(
     ("a lone part", (
         "stepped command tower", "ventral armour blade", "armoured sensor prow",
-        "angled glacis armour plate", "rear engine cowling", "docking collar ring",
+        "angled deflector plate", "rear engine cowling", "docking collar ring",
         "accretion arc", "anchoring base flange", "dorsal armour ridge",
         "drifting debris cluster", "dust lane", "dust tail", "equatorial band",
         "filter stalk", "folding ramp", "grapple line spool", "ion tail",
@@ -2592,6 +2615,7 @@ _CARDINALITY_APPENDAGES = _cardinality(
         "magnetic boot", "membranous wing", "muscular flipper", "nacelle pylon", "paddle fin",
         "plasma welding head", "sample drill arm", "sampling probe arm", "shield mount arm",
         "spiral fluke",
+        "repulsor stabiliser vane",
         "sponson pod", "stabiliser fin", "stabiliser outrigger", "swept fin",
         "telescoping manipulator", "tool harness arm", "tool turret arm",
         "ventral stabiliser fin", "welding torch arm",
@@ -2641,8 +2665,8 @@ _CARDINALITY_EMITTERS = _cardinality(
         "pulsing energy halo", "radiant core", "radiant core aperture",
     )),
     ("a matched pair", (
-        "auroral band", "auroral curtain", "front beacon bar", "lightning band",
-        "plasma jet", "radiant polar jet", "tail beacon bar",
+        "auroral band", "auroral curtain", "forward ion-trace strip", "lightning band",
+        "plasma jet", "radiant polar jet", "aft ion-trace strip",
     )),
     ("a worn fitting", (
         "backpack thruster vent", "boot magnet ring", "chest indicator panel",
@@ -2667,7 +2691,7 @@ _CARDINALITY_EMITTERS = _cardinality(
         "signal mast beacon", "docking guide light", "antenna tip beacon",
         "hangar mouth light bar",
         "storm discharge arc", "sublimating ice fissure", "tidal stream arc",
-        "volcanic vent",
+        "volcanic vent", "dust plume", "outgassing plume", "sunward tail streamer",
     )),
     ("a body row", (
         "bioluminescent organ", "ember-hot fissure",
@@ -2706,7 +2730,8 @@ _CARDINALITY_ARMAMENT = _cardinality(
         "grenade launcher", "hull-mounted repeater", "micro-missile cell",
         "mine dispenser", "missile pod",
         "missile rack", "mounted cannon", "needle gun mount", "particle beam cannon",
-        "pintle-mounted gun", "plasma cannon", "raking talon", "rocket rack",
+        "particle repeater mount", "plasma cannon", "plasma coil cannon",
+        "rail-driver turret", "raking talon", "rocket rack",
         "serrated mandible", "shoulder cannon", "stun emitter", "vibro-saw blade",
         "weapon pod", "whip lash tendril", "wrist blade",
     )),
@@ -5651,9 +5676,13 @@ _VEHICLE_FORM_STANCES: dict[str, frozenset[str]] = {
     "low wedge chassis": _STANCE_WHEEL,
     "low skimmer hull": _STANCE_HOVER,
     "teardrop hover hull": _STANCE_HOVER,
+    "twin-pod repulsor hull": _STANCE_HOVER,
+    "articulated repulsor-skirt hull": _STANCE_HOVER,
+    "plated hover-pallet chassis": _STANCE_HOVER,
     "walker leg frame": _STANCE_WALK,
     "six-legged walker frame": _STANCE_WALK,
     "blunt gravlift wedge": _STANCE_WING,
+    "faceted anti-grav wedge": _STANCE_WING,
     "bulbous pressurised cabin": _STANCE_WING,
     "cylindrical submersible hull": _STANCE_SWIM,
     "blunt re-entry capsule": _STANCE_WING,
@@ -7051,15 +7080,22 @@ ARCHETYPES: dict[str, Archetype] = {
     # because a station's sentence plan is the obvious next thing to diverge.
     "structure": Archetype(
         head_phrase=_SELF_NAMING_HEAD,
-        detail_cap=8,
+        # Round XVI: ``surface_detail``/``markings``/``accent_color`` moved out
+        # of rotation and into the fixed head (see "object" below for why),
+        # which added three fields to what the fixed head always tries to
+        # speak. The cap rises by the same three, so a station keeps
+        # everything it always used to say -- this was never about a station
+        # saying *more*, only about which single field a solitary rotation
+        # slot was allowed to spend itself on.
+        detail_cap=11,
         detail_priority=(
             "form", "subkind", "material", "primary_color", "scale", "emitters",
-            "condition",
+            "condition", "surface_detail", "markings", "accent_color",
         ),
         detail_rotation_slots=1,
         detail_rotation={
             "appendages": 1.0, "extras": 1.0, "aperture": 0.8, "sensors": 0.6,
-            "surface_detail": 0.6, "markings": 0.5, "armament": 0.4, "accent_color": 0.3,
+            "armament": 0.4,
         },
         sentences=(
             Sentence(text="{subject} {copula} {situation}."),
@@ -7293,14 +7329,17 @@ ARCHETYPES: dict[str, Archetype] = {
         head_phrase=_SELF_NAMING_HEAD,
         omits=frozenset({"armament", "sensors"}),
         detail_cap=9,
+        # Round XVI: ``markings``/``accent_color`` moved out of rotation and
+        # into the fixed head, for the same reason as the "structure"
+        # archetype above -- they used to be able to win the single rotation
+        # slot outright and leave an alien artifact with no component spoken.
         detail_priority=(
             "form", "subkind", "material", "primary_color", "emitters",
-            "surface_detail",
+            "surface_detail", "markings", "accent_color",
         ),
         detail_rotation_slots=1,
         detail_rotation={
-            "aperture": 1.0, "extras": 1.0, "markings": 0.8, "appendages": 0.6,
-            "accent_color": 0.3,
+            "aperture": 1.0, "extras": 1.0, "appendages": 0.6,
         },
         sentences=(
             Sentence(text="{subject} {copula} {situation}."),
@@ -8809,6 +8848,24 @@ _TRAIT_REASONS.update({
     "outer-hull-act|small-scale": "a small creature cannot cover a whole hull",
     "plume-act|exhaust-emitter": "a hull that is already burning its drive shows one plume",
     "creature-subject|crew-scenery": "a crew does not work calmly beside a creature",
+})
+
+# ---------------------------------------------------------------------------
+# Round XVI -- the 0917-afternoon batch
+# ---------------------------------------------------------------------------
+
+# "sensor gauntlet" (a worn sensor) and "magnetic grapple" (a carried extra)
+# both localise to the hand/wrist; a spacefarer who draws both at once fused
+# into one clunky mechanical claw. They are fine individually -- only their
+# co-occurrence is the defect -- so this shares one trait across two fields
+# rather than rewording either value.
+_add_traits("sensors", {"sensor gauntlet": ("hand-mounted",)})
+_add_traits("extras", {"magnetic grapple": ("hand-mounted",)})
+TRAIT_CONFLICTS = TRAIT_CONFLICTS + (
+    ("hand-mounted", "hand-mounted"),
+)
+_TRAIT_REASONS.update({
+    "hand-mounted|hand-mounted": "a hand can carry a gauntlet or a grapple, not both at once",
 })
 
 

@@ -1389,13 +1389,18 @@ EXTRAS_POOLS: dict[str, tuple[str, ...]] = {
     "undead": ("rusted manacle", "tattered banner", "clinging grave dirt"),
     "construct": ("chain leash", "moss mantle", "carved rune plate"),
     "structure": ("hanging banner", "courtyard well", "row of stone gargoyles"),
-    "sailing ship": ("furled banner", "cargo of barrels", "ship's boat", "iron anchor"),
-    "flying ship": ("furled banner", "cargo of barrels", "hanging sandbag ballast"),
-    "land vehicle": ("furled banner", "cargo of barrels", "lashed-down travel trunks"),
+    # "furled" (rolled up) rendered as literal fur fringe on the banners --
+    # the same substance-word-collision class as "forked" tongue -> fork.
+    "sailing ship": ("rolled banner", "cargo of barrels", "ship's boat", "iron anchor"),
+    "flying ship": ("rolled banner", "cargo of barrels", "hanging sandbag ballast"),
+    "land vehicle": ("rolled banner", "cargo of barrels", "lashed-down travel trunks"),
     # What the object rests on or stands among, spoken as such: "bears a carved
-    # pedestal" left a small relic floating in the air.
+    # pedestal" left a small relic floating in the air. "velvet cushion" and
+    # "silk-draped table" are indoor/furnished surfaces -- gated below
+    # (VALUE_NEEDS) so an hourglass no longer rests on a velvet cushion in a
+    # reed marsh; the stone/plinth surfaces stay place-neutral.
     "relic": ("velvet cushion", "carved stone pedestal", "moss-covered altar stone",
-              "iron-bound plinth", "silk-draped table"),
+              "iron-bound plinth", "silk-draped table", "flat standing stone"),
     "monument": ("ring of old offerings", "carpet of thick moss", "scatter of melted candle stubs",
                  "circle of trampled earth"),
 }
@@ -1651,7 +1656,7 @@ _S_DRAGON_EV_AIR = (
 _S_DRAGON_EV_COLD = ("exhaling a blast of freezing breath",)
 _S_DRAGON_EV = ("roaring with its jaws flung wide", "rising to its full height")
 _S_DRAGON_ACT = (
-    "stretching its long neck", "sniffing the air with flared nostrils", "flicking a forked tongue",
+    "stretching its long neck", "sniffing the air with flared nostrils", "flicking a cloven tongue",
     "trailing a curl of smoke from its nostrils", "baring a row of long teeth",
     "staring down at something far below", "swinging its head slowly from side to side",
     "shifting its great weight",
@@ -2891,7 +2896,14 @@ _SUBKIND_NEEDS: dict[str, frozenset[str]] = {
 VALUE_NEEDS: dict[str, dict[str, frozenset[str]]] = {
     SITUATION_FIELD: dict(_SITUATION_NEEDS),
     "subkind": _SUBKIND_NEEDS,
-    "condition": {"frost-rimed": _COLD},
+    "condition": {"frost-rimed": _COLD, "overgrown": _LIFE},
+    # A relic's furnished resting surfaces presume an indoor, dry room; a reed
+    # marsh and a flooded temple are neither. The stone/altar surfaces stay
+    # ungated on purpose -- they already read fine outdoors and underwater.
+    "extras": {
+        "velvet cushion": _WALLS | _AIR,
+        "silk-draped table": _WALLS | _AIR,
+    },
     # A context shared by places of different kinds takes the union of their key
     # defaults, which no single place may afford; these say what they really need.
     CONTEXT_FIELD: {
