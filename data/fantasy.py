@@ -114,7 +114,7 @@ SCALE_WEIGHTS: dict[str, float] = {
 
 #: Small counts are the readable case; a collective on every part reads as an inventory.
 COUNT_WEIGHTS: dict[str, float] = {
-    "a dozen": 0.35, "a crown of": 0.5, "a ring of": 0.6, "a cluster of": 0.6,
+    "a dozen": 0.35, "a ring of": 0.6, "a cluster of": 0.6,
     "a fan of": 0.6,
 }
 
@@ -1164,7 +1164,7 @@ APPENDAGE_POOLS: dict[str, tuple[str, ...]] = {
     "silver stag": ("branching antler", "short tail"),
     "pegasus": ("feathered wing", "flowing tail"),
     "hippogriff": ("feathered wing", "taloned foreleg"),
-    "winged beast": ("broad wing", "tail plume", "feather crest", "taloned foot"),
+    "winged beast": ("broad wing", "tail plume", "plumed crest", "taloned foot"),
     "manticore": ("scorpion tail", "bat wing", "shaggy mane"),
     "chimera": ("goat head", "serpent tail", "shaggy mane"),
     "sphinx": ("feathered wing", "braided mane"),
@@ -1484,7 +1484,7 @@ SCALE_POOLS: dict[str, tuple[str, ...]] = {
 
 COUNT_POOL: tuple[str, ...] = (
     "a single", "a pair of", "three", "four", "six", "eight", "a dozen", "a ring of",
-    "a cluster of", "a fan of", "a crown of",
+    "a cluster of", "a fan of",
 )
 
 CARDINALITY_COUNTS: dict[str, tuple[str, ...]] = {
@@ -1495,7 +1495,10 @@ CARDINALITY_COUNTS: dict[str, tuple[str, ...]] = {
     "a body row": ("a single", "a pair of", "three", "four", "six", "a cluster of", "a fan of"),
     "an array": ("a pair of", "three", "four", "six", "eight", "a dozen", "a ring of",
                  "a cluster of"),
-    "a crown": ("three", "six", "eight", "a crown of"),
+    # "a crown of" read as a literal jewelled headpiece (a gorgon in an
+    # actual crown), the render-trap-word class -- "a ring of" says the same
+    # arrangement without the object noun.
+    "a crown": ("three", "six", "eight", "a ring of"),
     "a hand weapon": ("a single",),
     "a paired arm": ("a single", "a pair of"),
 }
@@ -1530,7 +1533,7 @@ CARDINALITY: dict[str, dict[str, str]] = {
         ("a lone part", (
             "long braided hair", "carved capstone", "worn stone base", "tall mast",
             "carved finial", "spiral horn", "flowing tail", "flowing mane", "weed-tangled mane",
-            "short tail", "tail plume", "feather crest", "scorpion tail", "shaggy mane",
+            "short tail", "tail plume", "plumed crest", "scorpion tail", "shaggy mane",
             "goat head", "serpent tail", "braided mane", "hackled mane", "long tail",
             "bristle crest", "crested spine", "armoured tail", "leafy crown", "finned tail",
             "ridged tail", "matted hair tangle", "heavy brow ridge", "braided beard",

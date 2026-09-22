@@ -1717,3 +1717,125 @@ six fixes; the two packs' pre-existing gaps are unchanged, see above). The
 word-frequency sweep is new maintainer tooling for this round only
 (`.omo/`-equivalent throwaway script, not committed) - a permanent per-pack
 `sample_distribution.py` is future work, not built this round.
+
+## Round XVIII: the 922-concern batch
+
+22 images from a mixed fantasy/horror render test of round XVII (no sci-fi in
+this batch). Six confirmed defects, all data-only, horror and fantasy only -
+sci-fi untouched, including where the same pattern was found in its own
+pools with no render evidence behind it (see "Investigated, not changed").
+
+### Findings and fixes
+
+* **XVIII1 Emitters and aperture shared one clause, in all six horror
+  archetypes.** `Sentence(text="{pronoun} bears {emitters, aperture}.")`
+  (and its `show`/`features`-adjacent siblings) joined a light source and a
+  mouth or opening in one "X and Y" clause everywhere: `dead`, `spirit`,
+  `creature`, `figure`, `object`, `furnishing`, `place`, and the stranger
+  fallback. Confirmed in render: a flesh mass's "single cold-white pulsing
+  inner light and a ring-shaped toothed maw" drew a glowing mouth - the
+  light read as coming from the opening beside it. A ghost's "single
+  sickly-green cold spectral flame" (meant as a body glow) read as a torch
+  held in an outstretched hand for the same reason - the maintainer's
+  "things are on fire strangely" and "floating candle" reports. Split into
+  two sentences everywhere (`"{pronoun} glimmers with {emitters}."` /
+  `"{pronoun} bears {aperture}."`, pronoun/verb form matched per archetype),
+  so a light is never grammatically anchored to an opening. Same two
+  fields, two sentences instead of one - no field lost, no `detail_cap`
+  change.
+* **XVIII2 "lantern amber" still collided on the one pool round XVII left
+  literal.** Round XVII kept `"lantern amber"` on horror's `mortal`
+  emitter-colour override, reasoning it was safe paired with the
+  `"hooded lantern"` emitter value - missed that a colour and an emitter are
+  drawn independently of each other, so it landed on `"guttering candle"`
+  just as often, and a possessed villager's "lantern amber guttering
+  candle" rendered as a second, literal lantern beside the candle. Unified
+  to `"warm amber"` everywhere; the object-noun colour no longer exists
+  anywhere in the pack.
+* **XVIII3 "a crown of" render-trap word, confirmed in render:** "a writhing
+  thing beneath the ice... unfurling a crown of tentacles" drew an octopus
+  wearing a literal jewelled crown. Removed the phrase from both packs'
+  cardinality-count vocabulary - the `"a crown"` class now offers
+  `"a cluster of"` (horror) / `"a ring of"` (fantasy), both already-safe
+  words used elsewhere in the same pack - and from the one hardcoded
+  situation string that used it outside the count system
+  (`"unfurling a crown of tentacles"` -> `"unfurling a writhing mass of
+  tentacles"`). Horror's `"tentacle-crowned body"` form value carried the
+  same risk as a bare adjective; renamed `"tentacle-topped body"`. Sci-fi
+  has its own `"halo crown"` / `"sensor crown"` part names at a higher word
+  share than either genre now carries - left untouched, see below.
+* **XVIII4 "thing beneath the ice" could only ever be drawn somewhere with
+  no ice.** Its only declared need was `cold`, and `"snowbound pine
+  woods"` was the *only* cold place in the whole pack - one with no water
+  affordance at all. Every single draw of this subkind therefore landed in
+  a place with nothing to be beneath (confirmed in render: the octopus
+  above stood in snowy pine woods, no ice or water in sight). Added `water`
+  to its need and a new place, `"frozen lake bed"`
+  (`submerged`, `floor`, `dark`, `cold`), so the subkind finally has
+  somewhere its own name is true - `variety-is-kept-by-adding` again: a
+  place added, not a subkind removed.
+* **XVIII5 "flooded church nave" fought its own staging suffix.** The
+  `underwater` band appends `", deep underwater"` to every place in it;
+  "flooded" reads as shallow and walkable, so the sentence asked for a
+  knee-deep nave and a fully submerged one at once - the maintainer's
+  "strange double-underwater issues" report, and the same place that drew
+  attention across two rounds now (round XVI's flesh mass, round XVII's
+  apparition). Renamed to `"drowned church nave"`, consistent with its two
+  band-mates (`"murky lake bottom"`, `"sunken ship hold"`, both already
+  unambiguous). It was also the only underwater place with no per-place
+  affordance override, so nothing else about it changed.
+* **XVIII6 A single "feather crest" rendered as one stray feather.**
+  Correctly classified `"a lone part"` (a bird has one crest), but "feather
+  crest" reads as "one feather," not "a crest made of feathers" - the
+  maintainer's "bird with a weird head feather" report on a phoenix.
+  Renamed to `"plumed crest"`, same cardinality, no count change.
+
+### Investigated, not changed
+
+* **The fantasy/horror `armament, extras` "carry" join** (two fields, one
+  clause) is the round-XVI baseline every genre already matches, not a new
+  defect - checked all three genres for any surviving three-field join
+  (the shape round XVI fixed) and found none. The "holding too much"
+  report traced mostly to XVIII1: an emitter reading as an *extra* held
+  object on top of what was actually in the carry clause.
+* **"Ship on land":** the only instance in this batch was a wrecked sky
+  galleon explicitly `"lying broken on a hillside"` - a dormant act,
+  correctly grounded. No live (non-wreck) vessel drawn off its required
+  affordance was found.
+* **"Random eyes":** every instance found was a `"cluster of...eyes"` /
+  `"bulging staring eyes"` on an eldritch-horror or amalgam kind, where a
+  scattered many-eyed face is the intended Lovecraftian read, not a defect.
+  No occurrence found on a kind where it would be incoherent.
+* **"Wet bony coverings":** no separate textual cause isolated; the most
+  likely contributor (a skeletal or drowned kind staged in the
+  self-contradictory "flooded church nave") is addressed by XVIII5.
+* **"Floating chalice":** no carry pool anywhere places a chalice in a
+  figure's hands; the only "chalice" in the pack is the `jewelled chalice`
+  relic subkind, itself a whole entity, already staged by round XVI's
+  resting-surface fix. Most likely the same render class as the
+  floating-candle finding (XVIII1) rather than a separate defect - not
+  independently reproduced in this batch.
+* **Sci-fi's own `{emitters, aperture}`-family joins** (nine archetypes,
+  some joining up to five fields at once) are structurally the same shape
+  as XVIII1 and could in principle suffer the same read. Left untouched:
+  zero reported instances against sci-fi in either concern batch, sci-fi's
+  apertures are mostly mechanical (vents, hatches) where a nearby glow is
+  often literally correct rather than a misread, and it is the most
+  mature, most heavily tested pack in the repo - editing it on
+  pattern-matching alone, with no render evidence, is exactly the
+  cross-pack risk the maintainer asked to avoid. Revisit only if a sci-fi
+  render ever shows the same conflation.
+
+### Round XVIII, measured
+
+Full `unittest`/`pytest` suite green (670 tests, 131192 subtests).
+`reach_audit.py --pack horror/fantasy --gate` reports the identical
+pre-existing gap as round XVII (confirmed unchanged by this round's edits) -
+no new never-drawn value from any of the six fixes above, including the new
+`"frozen lake bed"` place and the renamed `"drowned church nave"`. The
+word-frequency sweep (2000 seeds/pack, same throwaway script as round XVII):
+horror's `"lantern"` share fell further, 6.5% -> 4.1% (`"guttering candle"`
+no longer doubles as a lantern); `"crown"` fell to 1.4% in horror and 2.1% in
+fantasy, both now free of the render-trap phrase entirely (remaining hits
+are literal worn/held crowns - a lich's `"iron crown"`, a relic that *is* a
+`"jewelled crown"` - which are correct).

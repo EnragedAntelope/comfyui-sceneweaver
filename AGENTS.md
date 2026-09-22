@@ -225,8 +225,40 @@ _Last verified: 2026-09-22_
     full-pool diversification pass, left for a dedicated round); "odd
     protrusions" and "incoherent spraying" had no single traceable cause
     this round. Full findings, each with its measured before/after, are in
-    `docs/architecture.md` ("Round XVII: the 921-concern batch"). **Not yet
-    render-tested** - awaiting the maintainer's next ComfyUI pass.
+    `docs/architecture.md` ("Round XVII: the 921-concern batch").
+  - **Round XVIII** (2026-09-22, still on `tmp/sceneweaver-fantasy`) is the
+    maintainer's render test of round XVII: 22 images from a mixed
+    fantasy/horror batch (no sci-fi this time). Six more fixes, still
+    horror and fantasy only, no engine change: emitters and aperture shared
+    one clause in all six horror archetypes ("bears a flame and a mouth"),
+    which read as the light glowing out of the opening beside it - split
+    into two sentences everywhere, fixing the maintainer's "glow in a
+    mouth," "floating candle" and "things on fire strangely" reports at
+    once. Round XVII's `"lantern amber"` fix was incomplete: it survived on
+    horror's `mortal` colour override and still collided with
+    `"guttering candle"` (colour and emitter draw independently) - unified
+    to `"warm amber"` everywhere, no exceptions left. `"a crown of"` was a
+    render-trap word confirmed in render (an octopus wearing a literal
+    jewelled crown for "unfurling a crown of tentacles") - removed from
+    both packs' count vocabulary and the one hardcoded situation string
+    that used it outside the count system; sci-fi's own unrelated
+    `"halo crown"` / `"sensor crown"` part names, a different and correct
+    usage with no report against them, were left alone. Horror's `"thing
+    beneath the ice"` needed only `cold`, and the only cold place in the
+    pack had no water at all, so it always rendered with nothing to be
+    beneath - added a `water` need and a new place, `"frozen lake bed"`.
+    `"flooded church nave"` (horror) fought its own `", deep underwater"`
+    staging suffix - "flooded" reads shallow, the suffix reads full
+    submersion - renamed to `"drowned church nave"`, the maintainer's
+    "double-underwater" report. A phoenix's single `"feather crest"` read
+    as one stray feather; renamed `"plumed crest"`, same count. "Holding
+    too much" traced mostly to the emitters/aperture fix above, not a new
+    carry-clause defect (checked all three genres, found none); "ship on
+    land," "random eyes," "wet bony coverings" and "floating chalice" were
+    each investigated and found either already-coherent or not
+    independently traceable this round. Full findings are in
+    `docs/architecture.md` ("Round XVIII: the 922-concern batch"). **Not
+    yet render-tested** - awaiting the maintainer's next ComfyUI pass.
   - The substance-adjective render-trap class (item 3 above) has no automated
     check; a genre author has to catch it by eye until a narrower signal than
     "contains a common English word" is found.

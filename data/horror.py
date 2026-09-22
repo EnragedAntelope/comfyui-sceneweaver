@@ -101,7 +101,7 @@ SCALE_WEIGHTS: dict[str, float] = {
 }
 
 COUNT_WEIGHTS: dict[str, float] = {
-    "a dozen": 0.35, "a cluster of": 0.6, "a crown of": 0.4,
+    "a dozen": 0.35, "a cluster of": 0.6,
 }
 
 #: A thing at rest is the quiet frame horror is good at; weighted so it stays an
@@ -304,9 +304,13 @@ _ENV_WATERSIDE = (
     "flooded quarry edge",
 )
 _ENV_UNDERWATER = (
-    "flooded church nave",
+    # "flooded" reads as shallow and walkable, which fights the band's own
+    # ", deep underwater" staging suffix -- a diver at knee height and a
+    # diver at full submersion are two different images at once.
+    "drowned church nave",
     "murky lake bottom",
     "sunken ship hold",
+    "frozen lake bed",
 )
 _ENV_TOWN = (
     "empty small-town main street",
@@ -523,7 +527,7 @@ FORM_POOLS: dict[str, tuple[str, ...]] = {
     "crawler": ("pale long-limbed crawling body", "spindly backwards-bent body"),
     "effigy": ("sagging stuffed body on a post", "lanky stitched body"),
     # eldritch horror
-    "tentacled horror": ("writhing tentacled mass", "towering tentacle-crowned body"),
+    "tentacled horror": ("writhing tentacled mass", "towering tentacle-topped body"),
     "many-eyed horror": ("bulging eye-studded mass", "quivering heap of staring flesh"),
     "amalgam": ("lurching body of fused limbs", "towering knot of bone and sinew"),
     # mortal
@@ -623,11 +627,12 @@ EMITTER_COLOR_POOL: tuple[str, ...] = (
 )
 EMITTER_COLOR_POOLS: dict[str, tuple[str, ...]] = {
     POOL_DEFAULT_KEY: EMITTER_COLOR_POOL,
-    # A lantern or a candle burns the colour of a flame. "lantern amber" is only
-    # safe here, paired with a real lantern emitter -- on the default pool
-    # (spirit, undead, cursed object...) it drew a literal floating lantern
-    # object instead of an amber glow, the colour-names-that-are-objects class.
-    "mortal": ("lantern amber", "cold white"),
+    # A colour and its emitter are drawn independently, so "lantern amber"
+    # still collided even here: it landed on "guttering candle" as often as
+    # on "hooded lantern", and a mortal figure grew a second, literal lantern
+    # object instead of a candle glowing amber. "warm amber" is safe with
+    # any of the three mortal emitters.
+    "mortal": ("warm amber", "cold white"),
 }
 
 
@@ -857,7 +862,6 @@ SCALE_POOLS: dict[str, tuple[str, ...]] = {
 
 COUNT_POOL: tuple[str, ...] = (
     "a single", "a pair of", "three", "four", "six", "eight", "a dozen", "a cluster of",
-    "a crown of",
 )
 
 CARDINALITY_COUNTS: dict[str, tuple[str, ...]] = {
@@ -867,7 +871,10 @@ CARDINALITY_COUNTS: dict[str, tuple[str, ...]] = {
     "a limb set": ("a single", "a pair of", "three", "four", "six", "eight"),
     "a body row": ("a single", "a pair of", "three", "four", "six", "a cluster of"),
     "an array": ("a pair of", "three", "four", "six", "eight", "a dozen", "a cluster of"),
-    "a crown": ("three", "six", "eight", "a crown of"),
+    # "a crown of" read as a literal jewelled headpiece (a crowned octopus),
+    # the render-trap-word class -- "a cluster of" says the same arrangement
+    # without the object noun.
+    "a crown": ("three", "six", "eight", "a cluster of"),
     "a hand weapon": ("a single",),
     "a paired arm": ("a single", "a pair of"),
 }
@@ -1084,7 +1091,9 @@ _S_WATCHER_ACT_SKY = ("spreading its wings against the sky",)
 
 # --- eldritch horrors ---
 _S_ELDRITCH_EV = (
-    "unfurling a crown of tentacles", "splitting open to reveal rows of teeth",
+    # "crown" reads as a literal jewelled headpiece, not "arranged in a ring" --
+    # rendered as a royal crown perched on a tentacled creature.
+    "unfurling a writhing mass of tentacles", "splitting open to reveal rows of teeth",
     "dragging itself forward on countless limbs", "surging forward in a wet heave",
     "opening a dozen eyes at once", "lashing out with a barbed limb",
     "bursting upward with a shriek",
@@ -1542,6 +1551,7 @@ PLACE_AFFORDANCES: dict[str, frozenset[str]] = {
     "cave strewn with bones": frozenset({"ground", "floor", "dark"}),
     "crypt beneath a chapel": frozenset({"floor", "structure", "dark", "grave"}),
     "catacomb ossuary": frozenset({"floor", "structure", "dark", "grave"}),
+    "frozen lake bed": frozenset({"submerged", "floor", "dark", "cold"}),
 }
 _AIR_EXCLUDED = frozenset({"submerged"})
 _WATER_SOURCES = frozenset({"shoreline", "submerged"})
@@ -1636,7 +1646,9 @@ _SUBKIND_NEEDS: dict[str, frozenset[str]] = {
     "drowned revenant": frozenset({"water"}),
     "waterlogged corpse": frozenset({"water"}),
     "bog lurker": frozenset({"water"}),
-    "thing beneath the ice": frozenset({"cold"}),
+    # Needs an actual frozen surface to be beneath, not just a cold place --
+    # "cold" alone let it draw in a snowy forest with no ice in sight.
+    "thing beneath the ice": frozenset({"cold", "water"}),
     "living scarecrow": frozenset({"ground"}),
     "stitched straw man": frozenset({"ground"}),
     "hollow-eyed stag": frozenset({"ground", "life"}),
@@ -1908,7 +1920,11 @@ ARCHETYPES: dict[str, Archetype] = {
             Sentence(text="{pronoun} shows {surface_detail}."),
             Sentence(text="{pronoun} features {appendages, sensors, extras}."),
             Sentence(text="{pronoun} carries {armament}."),
-            Sentence(text="{pronoun} bears {emitters, aperture}."),
+            # Split for the same reason as the spirit and creature archetypes
+            # below: joined, an emitter read as glowing out of the aperture
+            # beside it (a jaw with light spilling from it, not a lit eye).
+            Sentence(text="{pronoun} glimmers with {emitters}."),
+            Sentence(text="{pronoun} bears {aperture}."),
             Sentence(text="{pronoun} {pronoun_copula} marked with {markings, accent_color}."),
         ),
     ),
@@ -1930,7 +1946,12 @@ ARCHETYPES: dict[str, Archetype] = {
             Sentence(text="{pronoun} shows {surface_detail}."),
             Sentence(text="{pronoun} features {appendages}."),
             Sentence(text="{pronoun} clutches {extras}."),
-            Sentence(text="{pronoun} bears {emitters, aperture}."),
+            # emitters and aperture used to share one clause ("bears a flame
+            # and a mouth"), which read as the light coming from the mouth --
+            # a glowing maw where none was drawn. Split so a light source is
+            # never grammatically anchored to an opening.
+            Sentence(text="{pronoun} glimmers with {emitters}."),
+            Sentence(text="{pronoun} bears {aperture}."),
             Sentence(text="{pronoun} {pronoun_copula} marked with {markings, accent_color}."),
         ),
     ),
@@ -1951,7 +1972,10 @@ ARCHETYPES: dict[str, Archetype] = {
             Sentence(text="{pronoun} {pronoun_copula} {primary_color}."),
             Sentence(text="{pronoun} shows {surface_detail}."),
             Sentence(text="{pronoun} features {appendages, armament, sensors, extras}."),
-            Sentence(text="{pronoun} bears {emitters, aperture}."),
+            # Split for the same reason as the spirit archetype above: joined,
+            # an inner light read as glowing out of the maw beside it.
+            Sentence(text="{pronoun} glimmers with {emitters}."),
+            Sentence(text="{pronoun} bears {aperture}."),
             Sentence(text="{pronoun} {pronoun_copula} marked with {markings, accent_color}."),
         ),
     ),
@@ -1983,7 +2007,11 @@ ARCHETYPES: dict[str, Archetype] = {
             Sentence(text="{pronoun} carry {armament, extras}."),
             Sentence(text="{pronoun} wear {appendages}."),
             Sentence(text="{possessive} features include {sensors}."),
-            Sentence(text="{pronoun} show {emitters, aperture}."),
+            # Split, the same reason as the other archetypes below: joined,
+            # a held light (a candle, a lantern) read as glowing out of the
+            # mouth beside it instead of held in the hand.
+            Sentence(text="{pronoun} glimmer with {emitters}."),
+            Sentence(text="{pronoun} show {aperture}."),
         ),
         **_THEY,
     ),
@@ -2007,7 +2035,8 @@ ARCHETYPES: dict[str, Archetype] = {
             Sentence(text="{pronoun} shows {surface_detail}."),
             Sentence(text="{pronoun} {pronoun_copula} marked with {markings, accent_color}."),
             Sentence(text="{pronoun} has {sensors, appendages}."),
-            Sentence(text="{pronoun} bears {emitters, aperture}."),
+            Sentence(text="{pronoun} glimmers with {emitters}."),
+            Sentence(text="{pronoun} bears {aperture}."),
         ),
     ),
     # A mirror, a portrait, a clock: a furnishing in its room.
@@ -2030,7 +2059,8 @@ ARCHETYPES: dict[str, Archetype] = {
             Sentence(text="{pronoun} shows {surface_detail}."),
             Sentence(text="{pronoun} {pronoun_copula} marked with {markings, accent_color}."),
             Sentence(text="{pronoun} has {sensors, appendages}."),
-            Sentence(text="{pronoun} bears {emitters, aperture}."),
+            Sentence(text="{pronoun} glimmers with {emitters}."),
+            Sentence(text="{pronoun} bears {aperture}."),
         ),
     ),
     # A house, a chapel, a ride: a silhouette.
@@ -2051,7 +2081,8 @@ ARCHETYPES: dict[str, Archetype] = {
             Sentence(text="{possessive} walls are {primary_color}."),
             Sentence(text="{pronoun} shows {surface_detail}."),
             Sentence(text="{pronoun} features {appendages, extras}."),
-            Sentence(text="{pronoun} bears {emitters, aperture}."),
+            Sentence(text="{pronoun} glimmers with {emitters}."),
+            Sentence(text="{pronoun} bears {aperture}."),
             Sentence(text="{pronoun} {pronoun_copula} marked with {markings, accent_color}."),
         ),
     ),
@@ -2070,7 +2101,8 @@ ARCHETYPES: dict[str, Archetype] = {
             Sentence(text="{pronoun} shows {surface_detail}."),
             Sentence(text="{pronoun} {pronoun_copula} marked with {markings, accent_color}."),
             Sentence(text="{pronoun} features {appendages, armament, sensors, extras}."),
-            Sentence(text="{pronoun} bears {emitters, aperture}."),
+            Sentence(text="{pronoun} glimmers with {emitters}."),
+            Sentence(text="{pronoun} bears {aperture}."),
         ),
     ),
 }
