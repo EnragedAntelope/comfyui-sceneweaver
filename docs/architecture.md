@@ -1592,3 +1592,128 @@ place-and-subkind combination a 12000-seed sample did not happen to draw,
 including two of this round's own new sci-fi armament values; not a
 structural gap (the validator's `SHADOWED` check, which is exhaustive, not
 sampled, passed clean).
+
+## Round XVII: the 921-concern batch
+
+27 images the maintainer flagged by hand from a mixed sci-fi/fantasy/horror
+render test of round XVI, plus (new this round) a plain word/environment
+frequency sweep (2000 seeds per pack, `doc["environment"]` and a lowercased
+`text` substring count) run to turn "too many X" reports into a number
+instead of an impression - the same instrument class `sample_distribution.py`
+already is for sci-fi, applied ad hoc to all three packs since a dedicated
+per-pack version does not exist yet (left for a future round; see Known gaps
+in `AGENTS.md`).
+
+### Findings and fixes
+
+* **XVII1 A colour name that is an object, in horror's shared emitter-colour
+  pool.** `EMITTER_COLOR_POOLS["_default"]` (horror) carried `"lantern
+  amber"` - correct on `mortal`, where the emitter itself is a literal
+  lantern, but the same default pool backs `spirit`, `undead`, `cryptid`,
+  `eldritch horror`, `cursed object` and `haunted place` too, where the
+  emitter is `"pale inner light"` or `"cold spectral flame"`. "Lantern amber"
+  on an apparition read as a literal floating lantern rather than an amber
+  glow - the `colour-names-that-are-objects` class (round XI: "dusty rose",
+  "brick red"), missed because the value is genuinely correct on one of its
+  seven consumers. Renamed the default to `"warm amber"`; `mortal`'s own
+  override keeps the literal value. Measured: the share of horror scenes
+  containing the word "lantern" fell from 12.7% to 6.5% (2000-seed sweep,
+  seed 4242) - this also answers the maintainer's separate "too many lanterns
+  overall" report.
+* **XVII2 A kind-level pool key reached all three landmark subkinds.**
+  `APPENDAGE_POOLS["landmark"]` (horror) held `("rusted access ladder",
+  "broken sail")` at the kind level; `lonely lighthouse`, `rotting windmill`
+  and `rusted water tower` are its three subkinds, none with an override of
+  their own, so a lighthouse and a water tower both grew a windmill's sail.
+  Same shape as round XVI's X3 and the ground-vehicle `form`/`appendages`
+  finding: a kind-level default is a trap for every subkind that never
+  declared its own. Split into three subkind entries; `"broken sail"` stays
+  on `rotting windmill` only.
+* **XVII3 "Passenger" reads as a present-day airliner.** A `ghost starliner`
+  wreck (spoken `"ghost passenger-starship wreck"`) rendered as a crashed
+  commercial jet fuselage - a magenta paint stripe and window rows on a
+  tube-shaped hull in a desert, the standard "airliner crash" prior a
+  diffusion model reaches for on sight of "passenger" plus a tube hull. This
+  is the literal example `AGENTS.md`'s own review rule already named ("a
+  ghost passenger liner, a wreck" is not safe, because "wreck" names no
+  medium) - the pack had drifted from its own stated rule without anyone
+  reverifying the one live value it applied to. Renamed both spoken forms
+  that carried it: `"ghost starliner"` -> `"ghost liner-starship wreck"`,
+  and the live (non-wreck) `"starliner"` subkind -> `"interstellar liner
+  starship"`. Measured: the share of sci-fi scenes containing "passenger"
+  fell from 1.4% to 0% (2000-seed sweep).
+* **XVII4 The one "door" in a pool of hatches.** `APERTURE_POOLS["surface
+  vehicle"]` (sci-fi) - the same pool round XVI's ground-vehicle pass already
+  renamed for modern-day readings - still had `"side door portal"` sitting
+  among `"cabin canopy"`, `"pilot hatch"`, `"roof hatch"`, `"aft cargo
+  hatch"`: the only value in the list that says door instead of hatch/vane/
+  maw/port/canopy. On a submersible (`underwater` locomotion, staged "deep
+  underwater") it read as a literal door opening onto open ocean. Renamed to
+  `"side hull hatch"`, matching the pool's own naming convention.
+* **XVII5 A standard on a bare skeleton.** `EXTRAS_POOLS["undead"]`
+  (fantasy) - carried, not worn - held `("rusted manacle", "tattered
+  banner", "clinging grave dirt")` at the kind level, reaching every
+  `walking dead` subkind including the `lich`: a solitary undead spellcaster
+  carrying a banner with no army in frame read as a flag lashed to a
+  skeleton. Narrowed the kind default (dropped the banner, added
+  `"bone-carved talisman"`) and gave the two subkinds that plausibly lead
+  troops, `skeleton warrior` and `death knight`, their own entry that keeps
+  it - the same subkind-override shape as XVII2, applied before it shipped
+  rather than after a report.
+* **XVII6 A flying ship's situations were mostly altitude-neutral.**
+  `SITUATION_POOLS["flying ship"]` (fantasy) = the shared `_S_VESSEL_CORE`
+  (~17 situations written for a ship on water: "trailing a long banner",
+  "carrying a crowd of cheering passengers", "riding low under a heavy
+  load") plus `_S_AIRSHIP_EV_SKY`/`_S_AIRSHIP_ACT_SKY` (4 situations with an
+  explicit altitude cue). A flying cloud skiff whose draw landed in the
+  shared pool - better than 4-in-1 odds - carried no signal that it was
+  aloft at all, and rendered as a boat docked in the mangrove fen it was
+  staged in. Per `variety-is-kept-by-adding`, did not trim the shared pool
+  (still correct wherever a sailing ship draws it); added six more
+  sky-specific situations instead (`"banking hard around a spire of rock"`,
+  `"venting steam as it climbs"`, `"casting"`-free wording throughout - an
+  early draft's `"casting a long shadow over the ground below"` tripped both
+  the rendering denylist on `"shadow"` and the affordance lint on an
+  undeclared `"ground"` need, replaced with `"climbing steadily into open
+  sky"`), moving the ratio from roughly 4:1 to roughly 2:1.
+
+### Investigated, not changed
+
+* **"Too many motel scenes" (horror).** Measured at 3.5% of horror scenes by
+  environment share (2000-seed sweep) - within noise of the ~29-place pool's
+  uniform ~3.4% expectation. No structural weighting found; not a
+  reproducible bias, so left alone rather than cut on an impression (the
+  same caution `variety-is-kept-by-adding` asks for in the other direction).
+* **"Too much octopus" (sci-fi and horror).** No pool anywhere contains the
+  word; the read comes from several `alien creature` body-plan groups
+  (`tentacular`, `amorphous`, `radial form`, `mimic body`, `symbiotic body`,
+  `void dweller`, `filter swarm`) each defaulting to tentacle/sucker/frond
+  appendages, concentrated into water scenes by the `cephalopod` archetype's
+  existing (and correct) water-only gate. A real fix is diversifying each
+  body-plan group's non-tentacle appendage options (claw, fin, spine, wing
+  are already vocabulary elsewhere in the same pack) - a full-pool pass in
+  the shape of round XVI's ground-vehicle fix, not a spot rename, and left
+  for a dedicated round rather than forced here.
+* **"Very odd protrusions" / "stuff sprayed incoherently".** Plausible
+  render-time effects of long multi-part alien anatomy lists and
+  action+tool combinations (a foam sprayer sealing a hull breach); no single
+  traceable pool value found this round. Flagged for the maintainer's next
+  batch rather than guessed at.
+* **"Door open underwater".** One plausible source addressed by XVII4; no
+  second cause found in this batch.
+* The pre-existing `reach_audit.py --pack horror --gate` and `--pack fantasy
+  --gate` failures (a handful of never-drawn `sensors`/`situation`/
+  `primary_color` values, unrelated fields to every fix above) were
+  confirmed identical on `tmp/sceneweaver-fantasy` before this round's edits
+  (`git stash` + re-run) - pre-existing, not touched.
+
+### Round XVII, measured
+
+Every check in "Build and test" (`AGENTS.md`) is green: the full
+`unittest`/`pytest` suite, both genre validators
+(`test_horror_pack.py`/`test_fantasy_pack.py`), `reach_audit.py --pack
+scifi/fantasy/horror` (no new never-drawn values introduced by this round's
+six fixes; the two packs' pre-existing gaps are unchanged, see above). The
+word-frequency sweep is new maintainer tooling for this round only
+(`.omo/`-equivalent throwaway script, not committed) - a permanent per-pack
+`sample_distribution.py` is future work, not built this round.

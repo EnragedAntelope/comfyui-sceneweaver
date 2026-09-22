@@ -2051,7 +2051,7 @@ APERTURE_POOLS: dict[str, tuple[str, ...]] = {
     # part) read as present-day; renamed without changing what they mean.
     "surface vehicle": (
         "cabin canopy", "rear ramp", "pilot hatch", "cargo maw",
-        "intake vane", "gun port", "glazed viewport band", "side door portal",
+        "intake vane", "gun port", "glazed viewport band", "side hull hatch",
         "roof hatch", "engine intake port", "aft cargo hatch",
     ),
     "wreck": (
@@ -7489,7 +7489,10 @@ _SPOKEN_SUBKIND: dict[str, str] = {
     "survey vessel": "survey starship",
     "ore hauler": "ore-hauling starship",
     "troop transport": "troop-carrier starship",
-    "starliner": "interstellar passenger starship",
+    # "passenger" reads as a present-day commercial airliner, especially
+    # paired with a tube-and-windows hull -- a starliner wreck in a desert
+    # rendered as a crashed jet fuselage.
+    "starliner": "interstellar liner starship",
     "interceptor": "interceptor starfighter",
     "generation ship": "generation starship",
     "hospital ship": "hospital starship",
@@ -7517,7 +7520,7 @@ _SPOKEN_SUBKIND: dict[str, str] = {
     "burnt-out star cruiser": "burnt-out star cruiser wreck",
     "drifting hulk": "drifting starship hulk",
     "stripped void freighter": "stripped cargo starship wreck",
-    "ghost starliner": "ghost passenger-starship wreck",
+    "ghost starliner": "ghost liner-starship wreck",
     "collapsed station spar": "collapsed space-station spar",
     "shattered interceptor": "shattered starfighter wreck",
     "abandoned mining rig": "abandoned asteroid-mining rig",

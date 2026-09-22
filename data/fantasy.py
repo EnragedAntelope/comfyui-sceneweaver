@@ -1386,7 +1386,12 @@ EXTRAS_POOLS: dict[str, tuple[str, ...]] = {
     "faun": ("set of panpipes", "wineskin", "leather satchel"),
     "folk": ("leather satchel", "rolled map", "quiver of arrows", "coin purse", "hooded lantern",
              "chained spellbook", "herb pouch", "lute", "hunting horn", "bedroll"),
-    "undead": ("rusted manacle", "tattered banner", "clinging grave dirt"),
+    # A standard is a martial subkind's item, not every undead's: a lich (a
+    # solitary spellcaster) carrying a banner read as a flag lashed to a bare
+    # skeleton. Kept on the two subkinds that plausibly lead troops.
+    "undead": ("rusted manacle", "clinging grave dirt", "bone-carved talisman"),
+    "skeleton warrior": ("rusted manacle", "tattered banner", "clinging grave dirt"),
+    "death knight": ("rusted manacle", "tattered banner", "clinging grave dirt"),
     "construct": ("chain leash", "moss mantle", "carved rune plate"),
     "structure": ("hanging banner", "courtyard well", "row of stone gargoyles"),
     # "furled" (rolled up) rendered as literal fur fringe on the banners --
@@ -1997,8 +2002,15 @@ _S_SHIP_EV_SHORE = (
 _S_SHIP_EV_SHORE_WAR = ("being boarded by pirates", "loosing a ballista at a pursuing ship")
 _S_SHIP_ACT_SHORE = ("lowering a boat over the side", "gliding into a sheltered cove")
 _S_SHIP_IDLE_DOCK = ("riding at anchor in a sheltered harbour",)
-_S_AIRSHIP_EV_SKY = ("rising through the clouds", "fighting a buffeting wind")
-_S_AIRSHIP_ACT_SKY = ("gliding low over the treetops", "dropping ballast in a stream of sand")
+_S_AIRSHIP_EV_SKY = (
+    "rising through the clouds", "fighting a buffeting wind",
+    "banking hard around a spire of rock", "venting steam as it climbs",
+)
+_S_AIRSHIP_ACT_SKY = (
+    "gliding low over the treetops", "dropping ballast in a stream of sand",
+    "climbing steadily into open sky", "hanging motionless in still air",
+    "cresting a bank of cloud", "skimming just above the canopy",
+)
 _S_CART_ACT_GROUND = ("rumbling along a rutted road", "rolling to a stop at a crossroads")
 _S_CART_EV_GROUND = ("bouncing over rough ground", "stuck axle-deep in mud")
 _S_CART_EV_GROUND_WAR = ("charging headlong across a battlefield",)

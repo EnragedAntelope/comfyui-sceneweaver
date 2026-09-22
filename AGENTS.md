@@ -8,7 +8,7 @@ genre is a data module and two registration lines.
 
 ## Current state
 
-_Last verified: 2026-09-20_
+_Last verified: 2026-09-22_
 
 - **Status:** **public beta.** `main` is v0.4.0 (coherence round XIV, published
   to the ComfyUI Registry). **v0.5.0 is on `tmp/sceneweaver-fantasy`**, awaiting
@@ -199,8 +199,34 @@ _Last verified: 2026-09-20_
     other drawn tag-scoped values are re-drawn (R6).
   - Round XVI is the horror pack's first render test (162 images from a mixed
     batch); `reach_audit.py --pack horror` still lists a few rare-place
-    situations as never drawn. Round XVI's fixes are themselves **not yet
-    render-tested** - the maintainer's next render pass decides round XVII.
+    situations as never drawn (pre-existing on this branch, confirmed via
+    `git stash` in round XVII - not this round's or round XVI's regression).
+  - **Round XVII** (2026-09-22, still on `tmp/sceneweaver-fantasy`) is the
+    maintainer's render test of round XVI: 27 images pulled from a mixed
+    sci-fi/fantasy/horror batch, plus a first cross-pack word/environment
+    frequency sweep. Six fixes, each a scoped pool value or wording change,
+    no engine change: a horror colour-name-that-is-an-object
+    (`"lantern amber"` on a spirit's glow drew a literal floating lantern;
+    measured "lantern" share of horror scenes 12.7% -> 6.5%), a horror
+    kind-level pool leak (a windmill's `"broken sail"` reached its two sibling
+    landmark subkinds too), a sci-fi `"passenger"` wording
+    that read as a crashed airliner (a starliner wreck rendered as a jet
+    fuselage in a desert - the literal example `AGENTS.md`'s own review rule
+    already named; measured "passenger" share of sci-fi scenes 1.4% -> 0%), a
+    sci-fi `"side door portal"` (the one non-hatch value in an otherwise
+    hatch-named pool, on a submersible), a fantasy `lich` inheriting a
+    martial `"tattered banner"` from the shared `undead` kind default, and a
+    fantasy flying ship's situations being 4:1 altitude-neutral against
+    sky-specific, so it rendered grounded (widened the sky-specific pool
+    rather than trimming the shared one, per `variety-is-kept-by-adding`).
+    "Too many motel scenes" measured at 3.5% (within noise of a uniform ~29
+    place pool - not changed); "too much octopus" traced to several alien
+    body-plan groups defaulting to tentacle vocabulary (a real fix is a
+    full-pool diversification pass, left for a dedicated round); "odd
+    protrusions" and "incoherent spraying" had no single traceable cause
+    this round. Full findings, each with its measured before/after, are in
+    `docs/architecture.md` ("Round XVII: the 921-concern batch"). **Not yet
+    render-tested** - awaiting the maintainer's next ComfyUI pass.
   - The substance-adjective render-trap class (item 3 above) has no automated
     check; a genre author has to catch it by eye until a narrower signal than
     "contains a common English word" is found.

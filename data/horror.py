@@ -619,11 +619,14 @@ ACCENT_COLOR_POOL: tuple[str, ...] = (
     "verdigris green", "faded gold", "sickly yellow",
 )
 EMITTER_COLOR_POOL: tuple[str, ...] = (
-    "cold white", "sickly green", "ember red", "pale blue", "lantern amber", "violet",
+    "cold white", "sickly green", "ember red", "pale blue", "warm amber", "violet",
 )
 EMITTER_COLOR_POOLS: dict[str, tuple[str, ...]] = {
     POOL_DEFAULT_KEY: EMITTER_COLOR_POOL,
-    # A lantern or a candle burns the colour of a flame.
+    # A lantern or a candle burns the colour of a flame. "lantern amber" is only
+    # safe here, paired with a real lantern emitter -- on the default pool
+    # (spirit, undead, cursed object...) it drew a literal floating lantern
+    # object instead of an amber glow, the colour-names-that-are-objects class.
     "mortal": ("lantern amber", "cold white"),
 }
 
@@ -702,7 +705,12 @@ APPENDAGE_POOLS: dict[str, tuple[str, ...]] = {
     "dwelling": ("sagging porch", "crooked chimney", "broken shutter", "weathervane"),
     "sacred ruin": ("leaning stone cross", "crumbling spire", "iron-barred gate"),
     "attraction": ("rusted arm of gondolas", "peeling painted clown face"),
-    "landmark": ("rusted access ladder", "broken sail"),
+    # "broken sail" is a windmill part; the bare "landmark" kind key used to
+    # cover all three landmark subkinds, so a lighthouse and a water tower
+    # grew sails too (round-xvi's kind-level-pool-is-a-trap shape).
+    "lonely lighthouse": ("rusted access ladder", "cracked lamp-room glass"),
+    "rotting windmill": ("rusted access ladder", "broken sail"),
+    "rusted water tower": ("rusted access ladder", "corroded support strut"),
 }
 
 EMITTER_POOLS: dict[str, tuple[str, ...]] = {
@@ -900,7 +908,7 @@ CARDINALITY: dict[str, dict[str, str]] = {
             "wide-brimmed hat", "deep hood", "ritual stole", "carved finial", "brass winding key",
             "brass pendulum", "sagging porch", "crooked chimney", "weathervane",
             "rusted arm of gondolas", "peeling painted clown face", "rusted access ladder",
-            "jutting rib",
+            "jutting rib", "cracked lamp-room glass", "corroded support strut",
         )),
         ("a matched pair", (
             "long clawed hand", "pointed ear", "bony hand", "weed-tangled hand",
