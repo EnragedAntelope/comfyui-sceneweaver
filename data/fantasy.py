@@ -808,14 +808,18 @@ FORM_POOLS: dict[str, tuple[str, ...]] = {
     "sprite": ("slender dragonfly-winged build", "moth-winged slight build"),
     "imp": ("bat-winged wiry build", "horned bat-winged build"),
     # hybrid folk
-    "centaur": ("horse body below a human torso", "draught-horse body below a broad human torso"),
+    # Naming the animal half first ("horse body below a human torso") drew a
+    # complete horse, head included, with a human torso separately attached
+    # -- put the human half first, matching the gorgon/naga phrasing that
+    # renders as one fused body.
+    "centaur": ("human torso above a horse's body", "broad human torso above a draught-horse's body"),
     "satyr": ("goat-legged human build", "shaggy goat-legged build"),
     "faun": ("goat-legged human build", "slender goat-legged build"),
     "minotaur": ("bull-headed towering build", "bull-headed brawny build"),
     "gorgon": ("human torso and arms above a coiled serpent tail", "two-legged scaled body"),
     "naga": ("human torso and arms above a long serpent tail",),
     "harpy": ("feather-armed taloned build",),
-    "merfolk": ("long fish tail below a human torso",),
+    "merfolk": ("human torso above a long fish tail",),
     "selkie": ("sleek seal-like build", "lithe seal-skinned build"),
     "dryad": ("slender bark-skinned build", "willowy bark-skinned build"),
     # folk
@@ -1855,7 +1859,9 @@ _S_FOLK_EV_FIRE_CAMP = ("stamping out a campfire",)
 _S_FOLK_ACT_GROUND = ("tracking footprints in the mud", "planting a banner in the earth")
 _S_FOLK_ACT_WALLS = ("vaulting over a low wall", "sitting on a stone stair")
 _S_FOLK_IDLE_LIFE = ("resting against a tree",)
-_S_DWARF_ACT = ("hefting a heavy weapon onto one shoulder", "hammering at a rock face")
+_S_DWARF_ACT = ("hefting a heavy weapon onto one shoulder",)
+#: "Interior" (an apothecary's workshop, a tavern) has no rock face to hammer.
+_S_DWARF_ACT_GROUND = ("hammering at a rock face",)
 _S_ELF_ACT_LIFE = ("loosing arrows from a high branch",)
 _S_ORC_EV_WAR = ("beating a war drum",)
 _S_HALFLING_ACT = ("tiptoeing past a sleeping hound",)
@@ -1905,7 +1911,12 @@ _S_UNDEAD_EV = ("gaping its jaw wide", "shuddering as it rises", "flickering bet
 _S_UNDEAD_ACT = (
     "dragging a rusted chain", "gathering a swirl of dust", "standing sentinel",
     "clutching a tarnished locket", "tilting its head at a sound", "straightening a rusted helm",
-    "trailing tattered burial cloth", "weeping with its face in its hands",
+    "trailing tattered burial cloth",
+    # Was "weeping with its face in its hands" -- both hands are only free
+    # to cover a face if nothing else is drawn into them, and this kind's
+    # archetype keeps armament in the fixed head, so a revenant clawing out
+    # of a coffin with a scythe already in hand needed a third arm.
+    "hunched over in silent grief",
     "reaching for a guttering candle",
 )
 _S_BONES_EV = ("collapsing into a heap of bones and rising again", "turning its skull with a jerk")
@@ -2205,6 +2216,7 @@ _BUCKETS = (
     (_S_FOLK_ACT_WALLS, "activity", "n", _WALLS, _A, ""),
     (_S_FOLK_IDLE_LIFE, "idle", "n", _LIFE, _A, ""),
     (_S_DWARF_ACT, "activity", "n", _A, _A, ""),
+    (_S_DWARF_ACT_GROUND, "activity", "n", _GROUND, _A, ""),
     (_S_ELF_ACT_LIFE, "activity", "c", _LIFE, _A, ""),
     (_S_ORC_EV_WAR, "event", "c", _A, _A, ""),
     (_S_HALFLING_ACT, "activity", "n", _A, _A, ""),
@@ -2409,7 +2421,7 @@ SITUATION_POOLS: dict[str, tuple[str, ...]] = {
     "winged folk": _S_HYBRID_CORE + _S_HARPY_EV_SKY_WAR,
     "tree folk": _S_HYBRID_CORE + _S_DRYAD_EV_LIFE,
     "folk": _S_FOLK_CORE,
-    "dwarf": _S_FOLK_CORE + _S_DWARF_ACT,
+    "dwarf": _S_FOLK_CORE + _S_DWARF_ACT + _S_DWARF_ACT_GROUND,
     "elf": _S_FOLK_CORE + _S_ELF_ACT_LIFE,
     "orc": _S_FOLK_CORE + _S_ORC_EV_WAR,
     "halfling": _S_FOLK_CORE + _S_HALFLING_ACT,
@@ -3086,6 +3098,9 @@ _BLADE_ACTS = (
     "sharpening a blade on a whetstone", "testing the edge of a blade", "sharpening a blade",
     "sharpening a crooked blade", "slashing wildly with a short blade",
     "rallying defenders with a raised blade",
+    # A bow does not "lower" or "brandish" the way a blade does -- a gorgon
+    # carrying a longbow, given this act, rendered holding swords instead.
+    "brandishing a weapon high", "charging with a lowered weapon",
 )
 _add_traits(SITUATION_FIELD, {v: ("bow-act",) for v in _BOW_ACTS})
 _add_traits(SITUATION_FIELD, {v: ("blade-act",) for v in _BLADE_ACTS})

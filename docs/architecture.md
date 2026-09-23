@@ -1990,3 +1990,183 @@ three times and zero after, sourced only from `kraken`/`hippocamp`/
 `kelpie`/`giant sea turtle`/`selkie`/`naga`/`merfolk`; a 6000-seed sweep of
 every scene containing `"guarding a clutch of eggs"` after XIX3 drew it only
 in `life`-affording places, zero times in a settlement.
+
+## Round XX: the 922-concern batch (part 3)
+
+49 images, all three genres, no maintainer-supplied list this time - the
+brief was to scrutinize every image and find what round XIX missed, since
+the maintainer had reported real fixes not holding across rounds. Went
+through all 49 individually rather than sampling. 19 fixes; three are new
+mechanism-level findings (rounds XVII-XIX had established the pattern-vs-
+place-need class - this round found the class extends to hand-occupancy on
+extras and situations, not just armament, and a new "wrong half drawn first"
+class in hybrid-creature form wording), the rest are the same
+declared-need-is-missing shape applied to values that had slipped past three
+prior rounds of the same check.
+
+### Findings and fixes
+
+* **XX1 Round XIX's emitter fix held; round XVIII's request for it did not,
+  and the gap was one field wider than either round scoped.** Re-verified
+  in render: `#00560`/`#00566`/`#00591` (poltergeist, poltergeist, tentacled
+  abomination) all show their glow at the anchored body location, not the
+  mouth - round XIX's fix is confirmed working, not just tested. But
+  `"weeping with its face in its hands"` (fantasy `undead`, horror `dead`,
+  horror `spirit`) and `"cracking open a ribcage with both hands"` (horror
+  `dead`) put both hands to one job while the same entity could also be
+  drawn carrying armament or (for `spirit`, via its own `"{pronoun}
+  clutches {extras}"` sentence) an extra - confirmed in render, `#00534`'s
+  drowned revenant weeping with its face in its hands while also carrying a
+  reaping scythe. Reworded both to postures that need no hands at all
+  (`"hunched over in silent grief"`, `"cracking open a ribcage"` without
+  the hand count) rather than gating them, since a hand-count trait would
+  have meant re-drawing a beloved vivid phrase into a blander fallback most
+  of the time it fired.
+* **XX2 The maintainer flagged the replacement wording itself before it
+  shipped.** The first draft of XX1's fix, `"shoulders shaking with a
+  silent sob"`, describes motion a still frame cannot show. Replaced with
+  `"hunched over in silent grief"` - a posture, not a motion.
+* **XX3 Hand-occupancy (round XIX) was scoped to armament; extras and
+  situations needed it too.** Empirically swept (5000 seeds/pack): horror's
+  `spirit` kind still produced `"weeping with its face in its hands"` +
+  `"clutches a tarnished locket"` (fixed by XX1's reword) and five
+  `_S_SURVIVOR_ACT`/`_S_SURVIVOR_WALLS` situations
+  (`"checking a hunting rifle with shaking hands"`, `"loading shells into a
+  shotgun"`, `"clutching a first aid kit to their chest"`, `"bandaging a
+  bleeding arm"`, `"barricading a door"`) produced a hunting-rifle-handling
+  pose alongside an independently-drawn hand-held emitter (a lantern, a
+  torch beam) - confirmed in render, "loading shells into a shotgun" next
+  to "a single cold-white handheld torch beam" already somehow in the same
+  two hands. Tagged all five `two-handed-weapon`, reusing round XIX's
+  conflict with `hand-occupying` rather than inventing a new trait pair.
+  Re-swept after: 0 problems in 5000 seeds, fantasy and horror both.
+* **XX4 A render-trap word survived three rounds of review for this exact
+  class:** `"eyespot rosettes"` (a camouflage marking, like a moth wing's
+  false eye) - confirmed in render, `#00434`'s gelatinous mass grew a third
+  set of literal glowing eyes from what was meant to be a body marking.
+  Renamed `"concentric-ring rosettes"`, describing the same visual pattern
+  without the word "eye" in it.
+* **XX5 A form that names the animal half first drew two creatures instead
+  of one.** Confirmed in render: `#00506`'s centaur rendered as a complete
+  horse (with its own head) plus a separate human torso reaching up to pet
+  it, from the form text `"horse body below a human torso"` - "horse body"
+  read as a complete subject on its own, with "below a human torso" landing
+  as an unrelated second object rather than a fusion instruction. Compared
+  against the pack's own working examples: `gorgon` (`"human torso and arms
+  above a coiled serpent tail"`) and `naga` (the identical pattern) render
+  correctly, because the human half is named first and the animal half
+  trails as the modifier. Reworded `centaur` and the one other value with
+  the same animal-first shape, `merfolk` (`"long fish tail below a human
+  torso"`), to match the working pattern: `"human torso above a horse's
+  body"`, `"human torso above a long fish tail"`.
+* **XX6 A weapon-neutral situation still committed to a weapon shape a bow
+  cannot make.** Confirmed in render: `#00512`'s gorgon, carrying a
+  longbow, given `"charging with a lowered weapon"`, rendered holding a
+  pair of swords instead of the bow the text actually named - "lowered" and
+  "brandished high" read as bladed-weapon poses regardless of what
+  `armament` says. Round XV's existing `blade-act` trait already exists
+  for exactly this shape (conflicts with `bow-weapon`); the two situations
+  had just never been added to it. Added `"brandishing a weapon high"` and
+  `"charging with a lowered weapon"` to `_BLADE_ACTS`. Verified: 27 distinct
+  situations remain available to a bow-carrying `hybrid folk` entity across
+  an 8000-seed sweep, zero bad combinations - the fix excludes, it does not
+  starve.
+* **XX7-XX15: nine more instances of round XVII/XIX's "a situation names a
+  physical feature with no matching need" shape**, found by scanning every
+  situation's text for a surface/temperature word and cross-checking its
+  declared need (a script, not a re-read by eye - the same class had
+  already survived three rounds of manual review). Confirmed in render for
+  one: `#00472`'s burrowing horror "flattening itself against a rock" in
+  `"derelict shipyard orbit, out in open space"`, with nothing solid within
+  reach. Sci-fi: `"flattening itself against a rock"`, `"drilling a core
+  sample from the bedrock"`, `"crossing cracked ground"` -> need `ground`;
+  `"floating above a ruined floor"` -> needs `structure`; `"reversing out
+  of a gully"` -> needs `floor` (not `ground` - the one live render of this
+  situation, `#00461`, was a submersible in an ocean trench, which has
+  `floor` but not `ground`, and was already coherent); `"plunging through a
+  sheet of thin ice"`, `"tearing open along a frost-welded seam"`,
+  `"surfacing through a sheet of ice"` (already had `submerged`) -> need
+  `cold`. Fantasy: `"hammering at a rock face"` (dwarf) -> needs `ground`,
+  confirmed practically live (folk-kind is eligible for `interior` places,
+  which have no `ground`, unlike every other kind checked in this pass).
+  The scan also surfaced matches that were *not* fixed because a
+  kind-level restriction already made the place unreachable in practice
+  (verified per case, not assumed) - see "Investigated, not changed."
+
+### Investigated, not changed
+
+* **Every keyword-scan hit whose kind is already restricted to places that
+  all grant the matching need.** `"sitting slumped against a rock"` (giant,
+  needs `vast` already, and every `vast` place giant-kin can reach also has
+  `ground`), `"sliding slowly across the floor"` / `"dripping water onto
+  the floor"` (horror cursed object/furnishing, every reachable band has
+  `floor`), `"shedding a spray of rock chips"` and `"trailing waterfalls
+  from its floating rock"` (self-referential - the rock is the speaker's
+  own body, not a place feature). Checked each against `KIND_POOLS` x
+  `PLACE_AFFORDANCES` before deciding, not assumed safe from the wording
+  alone.
+* **`"banking hard around a spire of rock"` (round XIX's own addition) in
+  `"sea of clouds"`, which has no `ground`.** A real gap, but a soft one -
+  the other two `sky`-band places (`floating island archipelago`, a
+  mountain range) do have visible rock, so this fires wrong at most 1 time
+  in 3 for this one situation, and every candidate fix available right now
+  either reuses `ground` (which also carries a stance meaning - "the entity
+  stands on it" - this situation does not want to assert of an airborne
+  ship) or requires a new token whose only user would be this one value.
+  Left as a known, bounded soft spot rather than force a fix that either
+  overloads an existing token's meaning or adds a token for one line.
+* **`#00512`'s bow visibly not rendering as a bow even after XX6** was not
+  re-verified by render (fixing it changes which future seeds draw the
+  combination; it does not repaint `#00512` itself) - the fix is verified
+  by the situation/armament sweep in XX6, not by regenerating this specific
+  seed.
+* **Situation-vs-pose mismatches with no text contradiction to fix:**
+  `#00447` (siege mech shown firing, not "crouching to inspect wreckage"),
+  `#00478` (fire drake shown breathing fire, not "snapping at a hurled
+  spear"), `#00531` (revenant shown enthroned, not "clawing out of a stone
+  coffin"). In each, the situation text is internally coherent and the
+  entity's own identity (a mech with flame projectors, a *fire* drake, an
+  ancient revenant) supplies a stronger, always-available visual cue than
+  the specific momentary action asked for. This is a model fidelity limit
+  general to prompt-based image generation, not a pack defect - there is no
+  wording change that asks a fire-breathing dragon to reliably not breathe
+  fire in one frame. Flagged for the maintainer rather than claimed fixed.
+* **`#00596`'s "slumbering... sleeping breaths" tentacled abomination
+  rendered wide-eyed and alert.** `"bulging staring eyes"` is a permanent
+  anatomical descriptor (the eye *type*), not a state; asking it to also
+  read as closed/resting when the situation is dormant would require a
+  separate closed-eyes value for exactly this creature family's dormant
+  situations, which does not exist yet. Same category as the previous
+  bullet - flagged, not fixed blind.
+* **`#00594`'s cursed puzzle box, "glistening with fresh dew" while resting
+  on a "dusty ledge."** A soft material/condition tension (dew implies damp,
+  dust implies dry) rather than a contradiction on the scale of the
+  drowned-church-nave case XIX5 fixed; the render itself reads fine. Left
+  alone rather than force a rename with no confirmed defect behind it.
+* **`#00420`'s "soot-blackened" carrier starship rendering as a clean black
+  hull, not visibly charred**, and **`#00448`'s courier drone "shielding a
+  suited crewmate" with no crewmate in frame.** Neither is a text
+  contradiction - "soot-blackened" is a legitimate (if subtle) condition
+  word, and other situations in the pack already name something the frame
+  does not have to fully depict (a wreck "towing a disabled shuttlecraft in
+  a tractor beam" does not always show the shuttlecraft either). Flagged
+  as a possible pattern worth watching, not fixed on a guess.
+
+### Round XX, measured
+
+Full `unittest`/`pytest` suite green (670 tests, 131553 subtests).
+`reach_audit.py --pack scifi/fantasy/horror --gate` reports the same
+pre-existing gaps as round XIX in fantasy and horror, unchanged by this
+round. Sci-fi shows three additional never-drawn situations this round
+(`"rising slowly from the ground"`, `"cutting a snarl of cable away with a
+manipulator"`, `"lying half-buried under drifted dust"`) beyond round XIX's
+six - not a structural regression (the exhaustive, non-sampled `SHADOWED`
+check in the same test run is clean; this round's own `ground`/`cold`/
+`floor` additions shifted the RNG draw sequence enough that a 12000-seed
+sample missed three more rare place-and-situation combinations, the same
+`ground-vehicles-read-as-modern`-adjacent sampling-noise class documented
+since round XIII). Verified directly rather than assumed: a 5000-seed
+sweep of each of fantasy and horror found zero remaining hand-occupancy
+conflicts (XX3); an 8000-seed sweep confirmed a bow-carrying hybrid-folk
+entity still has 27 distinct situations available after XX6, none of them
+the excluded two.

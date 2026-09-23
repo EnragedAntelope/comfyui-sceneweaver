@@ -1472,7 +1472,9 @@ MARKINGS_POOLS: dict[str, tuple[str, ...]] = {
     ),
     "alien creature": (
         "moulted banding", "spotted dappling", "countershaded gradient",
-        "warning chevron patterning", "eyespot rosettes", "ripple striping",
+        # "eyespot" (a camouflage marking, like a moth wing's false eye) reads
+        # as a literal extra eye on the creature -- render-trap-word class.
+        "warning chevron patterning", "concentric-ring rosettes", "ripple striping",
         "mottled camouflage blotching", "iridescent scale sheen",
         "veined tracery", "brindled patterning", "rosette clustering",
         "chevron-scaled flanks",
@@ -5338,7 +5340,7 @@ VALUE_NEEDS["situation"].update({
     "drawing loose debris off the deck toward itself": frozenset({"floor", "gravity"}),  # alien artifact
     "drifting with its bays sealed": frozenset({}),  # space station
     "drifting with its engines cold": frozenset({}),  # courier,starship
-    "drilling a core sample from the bedrock": frozenset({}),  # surface vehicle
+    "drilling a core sample from the bedrock": frozenset({"ground"}),  # surface vehicle
     "drilling into a wall": frozenset({"structure"}),  # robot or mech
     "driving through a blockade line": frozenset({}),  # starship
     "launching a probe from a nose bay": frozenset({}),  # courier,starship
@@ -5360,10 +5362,13 @@ VALUE_NEEDS["situation"].update({
     "flaring its drive coils for a jump": frozenset({"open-space"}),  # starship
     "flashing a signal beacon in a slow pattern": frozenset({}),  # courier,starship
     "strobing a red beacon from its mast": frozenset({}),  # space station
-    "flattening itself against a rock": frozenset({}),  # alien creature,diffuse being
+    # Named a rock with no need for one -- a burrowing horror flattened
+    # against a literal boulder in open space, in a "derelict shipyard
+    # orbit" with nothing solid to press against.
+    "flattening itself against a rock": frozenset({"ground"}),  # alien creature,diffuse being
     "fleeing in a hard turn": frozenset({}),  # _default
     "flipping onto its back on a hard turn": frozenset({}),  # flying,hovering,legged,surface vehicle,underwater,wheeled/tracked
-    "floating above a ruined floor": frozenset({}),  # alien artifact
+    "floating above a ruined floor": frozenset({"structure"}),  # alien artifact
     "following a set of wheel ruts": frozenset({"ground"}),  # flying,hovering,legged,surface vehicle,underwater,wheeled/tracked
     "giving way under a salvage drone's cutting beam": frozenset({}),  # wreck
     "going dark all at once": frozenset({"floor"}),  # alien artifact
@@ -5415,7 +5420,7 @@ VALUE_NEEDS["situation"].update({
     "passing in front of a banded amber moon": frozenset({}),  # courier,starship
     "planting a beacon on a ridge": frozenset({"ground"}),  # spacefarer
     "ploughing a trench through the ground on impact": frozenset({"ground"}),  # starship
-    "plunging through a sheet of thin ice": frozenset({}),  # surface vehicle
+    "plunging through a sheet of thin ice": frozenset({"cold"}),  # surface vehicle
     "pressing its jaws to the ground": frozenset({"ground"}),  # alien creature
     "printing a slow plume from a vent": frozenset({}),  # space station
     "projecting a chart of unmapped space": frozenset({}),  # alien artifact
@@ -5435,7 +5440,7 @@ VALUE_NEEDS["situation"].update({
     "rearing up on its hind limbs": frozenset({}),  # alien creature
     "retracting a docking boom": frozenset({}),  # space station
     "retreating behind cover": frozenset({"floor"}),  # _default
-    "reversing out of a gully": frozenset({}),  # surface vehicle
+    "reversing out of a gully": frozenset({"floor"}),  # surface vehicle
     "righting itself after a fall": frozenset({}),  # robot or mech
     "rising slowly from the ground": frozenset({"ground"}),  # alien artifact
     "rolling down a slope out of control": frozenset({"gravity", "ground"}),  # surface vehicle
@@ -5483,7 +5488,7 @@ VALUE_NEEDS["situation"].update({
     "spraying sealant on a seam": frozenset({}),  # robot or mech,small drone
     "spreading a fan of spines": frozenset({}),  # alien creature,diffuse being
     "spreading a hood of skin": frozenset({}),  # alien creature,diffuse being
-    "crossing cracked ground": frozenset({}),  # robot or mech
+    "crossing cracked ground": frozenset({"ground"}),  # robot or mech
     "standing amid a circle of stones": frozenset({}),  # alien artifact
     "standing guard over a column of civilian starships": frozenset({}),  # starship
     "standing over the wreckage of something else": frozenset({"floor"}),  # _default
@@ -5499,7 +5504,7 @@ VALUE_NEEDS["situation"].update({
     "snapping at the air in a sudden strike": frozenset({"gravity", "air"}),  # alien creature
     "tearing loose from a docking clamp": frozenset({}),  # _default
     "tearing into a fallen hull": frozenset({}),  # alien creature,diffuse being
-    "tearing open along a frost-welded seam": frozenset({}),  # wreck
+    "tearing open along a frost-welded seam": frozenset({"cold"}),  # wreck
     "tearing open along a line of light": frozenset({}),  # alien artifact
     "tearing open along a rusted seam": frozenset({}),  # wreck
     "throwing a track at speed": frozenset({"vast"}),  # flying,hovering,legged,surface vehicle,underwater,wheeled/tracked
@@ -8221,7 +8226,7 @@ VALUE_NEEDS["situation"].update({
     "rolling to a stop inside a hangar": frozenset({"floor"}),
     "settling onto a landing platform": frozenset({"floor"}),
     "stalling in a crosswind above a canyon": frozenset({"sky"}),
-    "surfacing through a sheet of ice": frozenset({"submerged"}),
+    "surfacing through a sheet of ice": frozenset({"submerged", "cold"}),
     "sweeping a sensor beam across the cloud tops": frozenset({"sky", "cloud-deck"}),
     "tumbling out of control after a lightning strike": frozenset({"sky"}),
     "waiting on a launch platform": frozenset({"floor"}),

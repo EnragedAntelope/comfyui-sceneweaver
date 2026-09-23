@@ -8,7 +8,7 @@ genre is a data module and two registration lines.
 
 ## Current state
 
-_Last verified: 2026-09-22_
+_Last verified: 2026-09-23_
 
 - **Status:** **public beta.** `main` is v0.4.0 (coherence round XIV, published
   to the ComfyUI Registry). **v0.5.0 is on `tmp/sceneweaver-fantasy`**, awaiting
@@ -166,6 +166,21 @@ _Last verified: 2026-09-22_
   `time_of_day` (fantasy and horror) and the fantasy Tone filter are designed
   in `docs/genre-roadmap.md` and not built.
 - **Known gaps:**
+  - **`"banking hard around a spire of rock"` (fantasy, round XIX's own
+    addition) can still land in `"sea of clouds"`**, the one `sky`-band
+    place with no visible rock. A bounded soft spot (2 of 3 `sky` places do
+    have rock in view), not fixed in round XX because the available tokens
+    either overload `ground`'s stance meaning or would exist for this one
+    value alone. See "Round XX" in `docs/architecture.md`.
+  - **A few round-XX images showed a situation-vs-pose mismatch with no
+    text contradiction behind it** (a fire drake breathing fire instead of
+    "snapping at a spear," a siege mech shown firing instead of "crouching
+    to inspect," a revenant enthroned instead of "clawing out of a
+    coffin," a "slumbering" tentacled abomination reading as wide-eyed and
+    alert because "staring eyes" is a permanent anatomical descriptor).
+    Flagged for the maintainer rather than guessed at - there is no wording
+    fix that reliably stops a fire-breathing dragon's own identity from
+    upstaging one frame's specific action.
   - **Round XIX's walk-only-subkind fix (XIX4) is scoped, not exhaustive.**
     Only the reported kinds and their direct siblings (hoofed beast,
     hybrid folk) got a `ground` need; giants, most undead and constructs
@@ -313,6 +328,49 @@ _Last verified: 2026-09-22_
     dry coat underwater, and "a ramp down while moving" were each
     investigated; none had a traceable text-level cause found this round
     (full detail in `docs/architecture.md`, "Round XIX").
+  - **Round XX** (2026-09-23, still on `tmp/sceneweaver-fantasy`) went
+    through all 49 images of the maintainer's next render test individually
+    rather than sampling, after a report that fixes from prior rounds
+    weren't holding. Re-verified in render first: round XIX's emitter
+    anchoring *is* holding (`#00560`/`#00566`/`#00591` all glow at the
+    anchored location, not the mouth). 19 fixes, three of them new
+    mechanism-level findings rather than more instances of an already-known
+    shape. Round XIX's hand-occupancy trait was scoped to armament only;
+    swept 5000 seeds/pack and found it needed to cover `extras` too (a
+    spirit's own `"clutches {extras}"` sentence occupies a hand exactly
+    like a weapon does) and five survivor situations that occupy both hands
+    without naming a weapon at all (`"loading shells into a shotgun"`,
+    `"checking a hunting rifle with shaking hands"`, `"clutching a first
+    aid kit to their chest"`, `"bandaging a bleeding arm"`,
+    `"barricading a door"`) - tagged all five with the existing
+    `two-handed-weapon` trait rather than inventing a new one. A
+    render-trap word survived three rounds of the exact review meant to
+    catch it: `"eyespot rosettes"` (a camouflage marking) drew a literal
+    third eye - renamed `"concentric-ring rosettes"`. A genuinely new class:
+    a hybrid-creature form that names the *animal* half first
+    (`"horse body below a human torso"`) draws a complete separate animal
+    plus a human torso, confirmed in render for centaur (a horse with its
+    own head, a human torso reaching up to it) - reworded centaur and
+    merfolk to name the human half first, matching the pack's own working
+    examples (gorgon, naga). A weapon-neutral situation
+    (`"charging with a lowered weapon"`) still committed to a bladed-weapon
+    pose regardless of what `armament` said - added it and its sibling to
+    round XV's existing `blade-act` trait, already built for exactly this
+    shape; verified 27 situations remain available to a bow-carrier
+    afterward, not starved. The remaining 9 fixes are more instances of
+    round XVII/XIX's "situation names a surface with no matching need"
+    shape, found this time by scanning every situation's text against its
+    declared need rather than by eye - the same class had survived three
+    rounds of manual review. Every scan hit was individually checked
+    against `KIND_POOLS` x `PLACE_AFFORDANCES` before deciding whether it
+    was live; several were confirmed already-safe by an existing kind-level
+    restriction and left alone. A few images had a mismatch with no text
+    contradiction to fix (a fire drake breathing fire instead of "snapping
+    at a spear," a mech shown firing instead of "crouching to inspect") -
+    flagged for the maintainer as a model-fidelity limit, not claimed
+    fixed. Full findings, every investigated-but-not-fixed image, and the
+    measured verification sweeps are in `docs/architecture.md`
+    ("Round XX: the 922-concern batch (part 3)").
   - The substance-adjective render-trap class (item 3 above) has no automated
     check; a genre author has to catch it by eye until a narrower signal than
     "contains a common English word" is found.

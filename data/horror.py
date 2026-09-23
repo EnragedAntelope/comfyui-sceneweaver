@@ -997,7 +997,10 @@ _S_DEAD_EV_GORE = (
     "feeding hunched over a fresh kill", "tearing into raw meat with its teeth",
     "dragging a bloodied body by one ankle", "tearing a strip of flesh loose with its teeth",
     "clawing open its own stitched-shut abdomen", "dragging a trail of spilled entrails behind it",
-    "cracking open a ribcage with both hands",
+    # Was "...with both hands" -- the "dead" archetype keeps armament in the
+    # fixed head, so an armed skeleton warrior needed a third arm to also be
+    # gripping a rusted sword.
+    "cracking open a ribcage",
 )
 _S_DEAD_ACT = (
     "swaying on its feet", "dragging one foot as it walks", "turning its head at an unnatural angle",
@@ -1052,7 +1055,11 @@ _S_SPIRIT_EV = (
     "rushing forward in a sudden gust of cold air", "unravelling into strands of pale vapour",
 )
 _S_SPIRIT_ACT = (
-    "weeping with its face in its hands", "reaching out with a pale hand",
+    # Was "weeping with its face in its hands" -- the spirit archetype's own
+    # "{pronoun} clutches {extras}" sentence (a tarnished locket, a wilted
+    # bouquet) already puts something in its hands, the same conflict as
+    # the undead and dead archetypes had.
+    "hunched over in silent grief", "reaching out with a pale hand",
     "turning slowly to face the viewer", "drifting slowly past", "beckoning with one pale finger",
     "mouthing silent words", "rocking gently back and forth", "tilting its head to one side",
     "fading in and out of sight", "clutching a wilted bouquet",
@@ -1776,6 +1783,16 @@ _add_traits("emitters", {v: ("hand-occupying",)
                          for v in ("hooded lantern", "guttering candle", "handheld torch beam")})
 _add_traits("armament", {v: ("two-handed-weapon",) for v in ("shotgun", "fire axe")})
 _add_traits("extras", {"hunting rifle": ("two-handed-weapon",)})
+# A situation that already occupies both hands (working a rifle bolt,
+# loading a gun, holding something two-armed to the chest) conflicts with a
+# separately-drawn hand-occupying emitter the same way a two-handed weapon
+# does -- "loading shells into a shotgun" rendered with a handheld torch
+# beam also somehow in the same two hands.
+_add_traits(SITUATION_FIELD, {v: ("two-handed-weapon",) for v in (
+    "checking a hunting rifle with shaking hands", "loading shells into a shotgun",
+    "clutching a first aid kit to their chest", "bandaging a bleeding arm",
+    "barricading a door",
+)})
 
 TRAIT_CONFLICTS: tuple[tuple[str, str], ...] = (
     ("inactive", "powered-act"),
