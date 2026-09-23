@@ -461,7 +461,7 @@ SUBKIND_GROUPS: dict[str, tuple[str, ...]] = {
     "effigy": ("living scarecrow", "stitched straw man"),
     # eldritch horror
     "tentacled horror": ("tentacled abomination", "thing beneath the ice"),
-    "many-eyed horror": ("many-eyed abomination", "staring flesh mass"),
+    "many-eyed horror": ("many-eyed abomination", "pulsing flesh mass"),
     "amalgam": ("flesh-knit amalgam", "bone-and-sinew colossus"),
     # mortal
     "cult": ("hooded cultist", "cult high priest", "possessed villager"),
@@ -514,9 +514,9 @@ FORM_POOLS: dict[str, tuple[str, ...]] = {
     "drowned dead": ("swollen dripping frame", "weed-draped stooped frame"),
     # spirit
     "apparition": ("translucent drifting figure", "veiled floating figure",
-                   "flickering half-seen figure"),
+                   "flickering half-seen figure", "slender figure with long lank hair"),
     "wrathful spirit": ("tattered billowing shape", "long-limbed contorted shape",
-                        "hooded drifting shape"),
+                        "hooded drifting shape", "figure bent backwards at the waist"),
     # cryptid
     "werewolf": ("hulking wolf-headed body", "lean digitigrade wolf body"),
     "hellish black hound": ("gaunt shaggy hound body", "broad-chested hound body"),
@@ -527,8 +527,10 @@ FORM_POOLS: dict[str, tuple[str, ...]] = {
     "crawler": ("pale long-limbed crawling body", "spindly backwards-bent body"),
     "effigy": ("sagging stuffed body on a post", "lanky stitched body"),
     # eldritch horror
-    "tentacled horror": ("writhing tentacled mass", "towering tentacle-topped body"),
-    "many-eyed horror": ("bulging eye-studded mass", "quivering heap of staring flesh"),
+    # "tentacle-topped" drew an octopus head on a body.
+    "tentacled horror": ("writhing tentacled mass", "hunched many-limbed body trailing tentacles",
+                         "vast slug-like body ringed with tentacles"),
+    "many-eyed horror": ("bulging eye-studded mass", "quivering heap of eye-studded flesh"),
     "amalgam": ("lurching body of fused limbs", "towering knot of bone and sinew"),
     # mortal
     "mortal": ("tall lean build", "heavy-set build", "wiry build", "stooped build"),
@@ -553,7 +555,8 @@ FORM_POOLS: dict[str, tuple[str, ...]] = {
     "ruined chapel": ("roofless stone nave", "stone shell with a collapsed roof"),
     "family mausoleum": ("squat stone tomb with iron doors", "columned marble tomb"),
     "boarded-up church": ("steepled wooden meeting house", "brick hall with a squat tower"),
-    "attraction": ("rusted ride on a steel frame", "garish funhouse facade"),
+    "rusted carnival ride": ("rusted swing carousel on a steel frame", "stalled ferris wheel on a steel frame"),
+    "derelict funhouse": ("garish funhouse facade", "clown-faced funhouse front"),
     "lonely lighthouse": ("tall white tower on the rocks", "squat stone light tower"),
     "rotting windmill": ("timber mill tower with broken sails", "stone windmill tower"),
     "rusted water tower": ("bulbous tank on stilt legs", "tall cylindrical tank on a frame"),
@@ -569,8 +572,10 @@ MATERIAL_POOLS: dict[str, tuple[str, ...]] = {
     "skeletal dead": ("yellowed bone", "rusted chainmail over bone"),
     "drowned dead": ("sodden sailcloth rags", "waterlogged woollen coat"),
     # spirit
-    "apparition": ("translucent wedding veil", "pale burial shroud", "grey drifting gauze"),
-    "wrathful spirit": ("tattered shroud", "smoke-like drifting rags"),
+    "apparition": ("translucent wedding veil", "pale burial shroud", "grey drifting gauze",
+                   "faded mourning dress"),
+    "wrathful spirit": ("tattered shroud", "smoke-like drifting rags", "soot-stained wedding dress",
+                        "torn mourning dress"),
     # cryptid
     "cursed beast": ("matted shaggy fur", "coarse grey pelt", "slick mottled skin"),
     "watcher": ("grey bark-like hide", "dusty moth-scaled skin", "patchy rotting hide"),
@@ -599,7 +604,7 @@ MATERIAL_POOLS: dict[str, tuple[str, ...]] = {
 
 _COLOR_SKIN = ("grey-green", "corpse grey", "bruised purple", "jaundiced yellow", "waxen white",
                "mottled brown")
-_COLOR_GARB = ("black", "funeral grey", "faded crimson", "yellowed ivory", "mud brown",
+_COLOR_GARB = ("black", "funeral grey", "faded crimson", "yellowed ivory", "drab brown",
                "bottle green", "oxblood")
 _COLOR_SPIRIT = ("pale grey", "sickly green", "bone white", "cold blue", "ash grey")
 _COLOR_BUILT = ("peeling white", "soot black", "faded red", "weathered grey", "rust brown")
@@ -607,8 +612,9 @@ _COLOR_BUILT = ("peeling white", "soot black", "faded red", "weathered grey", "r
 PRIMARY_COLOR_POOLS: dict[str, tuple[str, ...]] = {
     POOL_DEFAULT_KEY: _COLOR_GARB,
     "undead": _COLOR_SKIN,
+    "bog body": ("peat brown", "dark umber", "blackened brown"),
     "spirit": _COLOR_SPIRIT,
-    "cryptid": ("pitch black", "ash grey", "mud brown", "waxen white", "mottled brown"),
+    "cryptid": ("pitch black", "ash grey", "drab brown", "waxen white", "mottled brown"),
     "crawler": ("waxen white", "corpse grey", "ash grey"),
     "eldritch horror": ("bruised purple", "slate grey", "sickly green", "raw red", "pallid pink"),
     "mortal": _COLOR_GARB,
@@ -619,11 +625,11 @@ PRIMARY_COLOR_POOL: tuple[str, ...] = tuple(
     dict.fromkeys(v for pool in PRIMARY_COLOR_POOLS.values() for v in pool)
 )
 ACCENT_COLOR_POOL: tuple[str, ...] = (
-    "dried-blood red", "tarnished silver", "black", "bone white", "rust orange", "funeral purple",
+    "dark maroon", "tarnished silver", "black", "bone white", "rust orange", "funeral purple",
     "verdigris green", "faded gold", "sickly yellow",
 )
 EMITTER_COLOR_POOL: tuple[str, ...] = (
-    "cold white", "sickly green", "ember red", "pale blue", "warm amber", "violet",
+    "cold white", "sickly green", "dull red", "pale blue", "warm amber", "violet",
 )
 EMITTER_COLOR_POOLS: dict[str, tuple[str, ...]] = {
     POOL_DEFAULT_KEY: EMITTER_COLOR_POOL,
@@ -643,12 +649,15 @@ EMITTER_COLOR_POOLS: dict[str, tuple[str, ...]] = {
 MARKINGS_POOLS: dict[str, tuple[str, ...]] = {
     POOL_DEFAULT_KEY: ("scratched sigils", "water stains", "scorch marks"),
     "undead": ("grave-dirt streaks", "blackened veins", "old stitched scars"),
+    "skeletal dead": ("grave-dirt streaks", "scratched sigils", "rust stains"),
     "spirit": ("drifting ripples", "faint water stains"),
     "cryptid": ("pale scar patches", "mud-caked streaks", "patchy dark mottling"),
     "cursed beast": ("pale scar patches", "bristling ridges of fur", "mud-caked streaks"),
+    "effigy": ("crude stitching", "faded paint smears"),
     "eldritch horror": ("pulsing vein patterning", "clustered warty growths"),
     "mortal": ("painted ritual sigils", "sewn-on bone charms", "mud-spattered hems"),
     "cursed object": ("scratched sigils", "faded painted flowers", "tiny bite marks"),
+    "furnishing": ("scratched sigils", "scorch marks", "crazed gilding"),
     "haunted place": ("scrawled warning sigils", "water stains", "scorch marks",
                       "boarded-over windows"),
 }
@@ -704,12 +713,18 @@ APPENDAGE_POOLS: dict[str, tuple[str, ...]] = {
     "survivor": ("battered backpack", "knitted scarf", "wide-brimmed hat"),
     "cult": ("deep hood", "ritual stole"),
     # cursed object
-    "cursed object": ("carved finial", "brass winding key"),
-    "furnishing": ("carved finial", "brass pendulum"),
+    # A pendulum is a clock's, a winding key a music box's, a finial not a box's.
+    "cursed object": ("tarnished brass clasp", "inlaid bone panel"),
+    "music box": ("brass winding key", "tiny dancing figure"),
+    "porcelain doll": ("lace bonnet", "ribbon sash"),
+    "ventriloquist dummy": ("tiny bow tie", "painted wooden hand"),
+    "furnishing": ("carved finial", "gilded crest"),
+    "grandfather clock": ("brass pendulum", "carved finial"),
     # haunted place
     "dwelling": ("sagging porch", "crooked chimney", "broken shutter", "weathervane"),
     "sacred ruin": ("leaning stone cross", "crumbling spire", "iron-barred gate"),
-    "attraction": ("rusted arm of gondolas", "peeling painted clown face"),
+    "rusted carnival ride": ("rusted arm of gondolas", "peeling painted clown face"),
+    "derelict funhouse": ("peeling painted clown face", "cracked plaster clown statue"),
     # "broken sail" is a windmill part; the bare "landmark" kind key used to
     # cover all three landmark subkinds, so a lighthouse and a water tower
     # grew sails too (round-xvi's kind-level-pool-is-a-trap shape).
@@ -726,19 +741,26 @@ EMITTER_POOLS: dict[str, tuple[str, ...]] = {
     # as light spilling from its "ring-shaped toothed maw" instead. Anchored
     # to a place on the body other than the face so the two no longer share
     # a location for the model to merge.
-    POOL_DEFAULT_KEY: ("pinprick eye", "cold spectral flame in its chest"),
-    "undead": ("reflective eye", "cold pinprick eye"),
-    "spirit": ("cold spectral flame in its chest", "pale inner light in its chest",
+    POOL_DEFAULT_KEY: ("pinprick eye", "spectral flame in its chest"),
+    "undead": ("reflective eye", "sunken pinprick eye"),
+    "spirit": ("inner light in its chest", "luminous outline", "light behind its eyes",
                "hollow burning eye"),
     "cryptid": ("reflective eye", "burning eye"),
-    "eldritch horror": ("pulsing inner light beneath its hide", "luminous pustule on its flank"),
-    "mortal": ("hooded lantern", "guttering candle", "handheld torch beam"),
-    "cursed object": ("faint inner light", "shining painted eye"),
+    "eldritch horror": ("luminous vein along its flank", "luminous pustule on its flank"),
+    # A hands-free light: with only hand-held ones a two-handed shotgun or
+    # fire axe could never be drawn beside them.
+    "mortal": ("hooded lantern", "guttering candle", "handheld torch beam", "headlamp"),
+    # The warden's lantern is in the name; a second light was held awkwardly.
+    "lantern-bearing warden": ("headlamp",),
+    "cursed object": ("faint inner light",),
+    "porcelain doll": ("faint inner light", "shining painted eye"),
+    "ventriloquist dummy": ("faint inner light", "shining painted eye"),
     # A doll's or a dummy's face carries painted eyes; a chair, a clock or a
     # mirror is not a face and should not grow one by falling through to the
     # kind-level pool above.
     "furnishing": ("faint inner light",),
     "haunted place": ("lamp in an upstairs window", "flickering porch lamp"),
+    "attraction": ("string of bare bulbs", "flickering marquee light"),
 }
 
 ARMAMENT_POOLS: dict[str, tuple[str, ...]] = {
@@ -755,7 +777,7 @@ ARMAMENT_POOLS: dict[str, tuple[str, ...]] = {
     "cult": ("ritual dagger", "curved sacrificial knife", "rusted cleaver"),
     "stalker": ("butcher's cleaver", "wood axe", "rusted machete", "iron chain whip", "sickle",
                "gore-slicked axe"),
-    "occultist": ("bone-handled knife", "iron cane"),
+    "occultist": ("curved skinning knife", "iron cane"),
     "survivor": ("fire axe", "shotgun", "iron crowbar", "wooden stake"),
     "village priest": ("silver crucifix", "wooden stake"),
     "cursed object": (),
@@ -766,11 +788,19 @@ SENSOR_POOLS: dict[str, tuple[str, ...]] = {
     POOL_DEFAULT_KEY: ("staring eye",),
     "undead": ("milky dead eye", "sunken eye"),
     "bloodsucker": ("unblinking red-rimmed eye", "cold pale eye"),
-    "spirit": ("hollow black eye", "sorrowful eye"),
+    "spirit": ("hollow black eye", "sorrowful eye", "clouded white eye"),
     "cryptid": ("flared sniffing nostril", "twitching tall ear"),
-    "eldritch horror": ("bulging staring eye", "wet black eye"),
-    "mortal": ("wide staring eye", "bloodshot eye", "eye behind a mask"),
-    "keepsake": ("painted glass eye", "watching painted eye"),
+    # An effigy's eyes are its glowing emitter; a hare's ears were drawn on a straw man.
+    "effigy": (),
+    "eldritch horror": ("bulging eye", "wet black eye"),
+    "mortal": ("wide staring eye", "bloodshot eye"),
+    # "eye behind a mask" put a mask on an investigator.
+    "stalker": ("wide staring eye", "eye behind a mask"),
+    "cult": ("wide staring eye", "eye behind a mask"),
+    # Eyes are a doll's and a dummy's; a puzzle box grew painted ones.
+    "keepsake": (),
+    "porcelain doll": ("painted glass eye", "watching painted eye"),
+    "ventriloquist dummy": ("painted glass eye", "watching painted eye"),
     "furnishing": (),
     "haunted family picture": ("watching painted eye",),
     "haunted place": (),
@@ -780,22 +810,26 @@ APERTURE_POOLS: dict[str, tuple[str, ...]] = {
     POOL_DEFAULT_KEY: ("gaping mouth", "hinged lid"),
     "undead": ("slack gaping jaw", "lipless grin", "blood-smeared mouth", "gore-clotted maw"),
     "bloodsucker": ("fanged smile", "blood-smeared mouth"),
-    "spirit": ("silently screaming mouth", "veiled face"),
+    # A veiled face cannot stare ("watching with an unblinking stare ... veiled face").
+    "spirit": ("silently screaming mouth", "gaping black mouth", "stitched-shut mouth"),
     "cryptid": ("wide lipless mouth", "needle-toothed mouth"),
     "cursed beast": ("snarling muzzle", "wide lipless mouth"),
     "eldritch horror": ("ring-shaped toothed maw", "vertical slit mouth"),
-    "mortal": ("gaunt unshaven face", "hood pulled low over the face"),
+    "mortal": ("gaunt hollow-cheeked face", "hood pulled low over the face"),
     "cult": ("hood pulled low over the face", "painted bone mask"),
     "possessed villager": ("slack twisted grin", "cracked bleeding lips"),
-    "stalker": ("blank white mask", "burlap sack mask", "gaunt unshaven face"),
-    "occultist": ("veiled face", "gaunt unshaven face"),
+    # A stalker is masked; a bare face beside "masked stalker" contradicted it.
+    "stalker": ("blank white mask", "burlap sack mask", "hood pulled low over the face"),
+    "occultist": ("veiled face", "gaunt hollow-cheeked face"),
     "plague doctor": ("beaked plague mask",),
     "survivor": ("frightened face", "grim determined face"),
     "cursed object": ("hinged lid",),
     "porcelain doll": ("tiny painted mouth",),
     "ventriloquist dummy": ("hinged painted jaw",),
     "furnishing": ("glass door hanging open", "cracked glass front"),
+    "antique rocking chair": ("worn wicker seat",),
     "haunted place": ("front door hanging open", "cellar door", "gaping broken window"),
+    "attraction": ("boarded-up entrance", "gaping clown-mouth entrance"),
 }
 
 EXTRAS_POOLS: dict[str, tuple[str, ...]] = {
@@ -812,7 +846,7 @@ EXTRAS_POOLS: dict[str, tuple[str, ...]] = {
     "cursed beast": ("broken chain collar", "tangle of snagged cloth"),
     "eldritch horror": ("trail of glistening slime", "cluster of clinging barnacles"),
     "mortal": ("ring of old iron keys", "coil of wire", "leather satchel", "burlap sack"),
-    "survivor": ("flashlight", "hunting rifle", "first aid kit", "crumpled map"),
+    "survivor": ("flashlight", "bolt-action hunting rifle", "first aid kit", "crumpled map"),
     "occultist": ("leather-bound grimoire", "bundle of dried herbs", "bird skull charm"),
     # "velvet-lined case" and its furnished siblings used to reach an object
     # in a reed marsh or on the floor of a drowned church -- gated below to
@@ -823,7 +857,7 @@ EXTRAS_POOLS: dict[str, tuple[str, ...]] = {
     # ledge" is the submerged equivalent.
     "cursed object": ("velvet-lined case", "dusty shelf", "carved side table", "child-sized chair",
                       "dusty ledge", "silt-caked ledge"),
-    "furnishing": ("peeling floral wallpaper", "wall of stained plaster", "row of warped floorboards"),
+    "furnishing": ("peeling floral wallpaper", "wall of stained plaster", "wall of warped panelling"),
     "haunted place": ("overgrown garden gate", "crooked picket fence", "tangle of dead rose bushes"),
     "dwelling": ("rusted swing on the porch", "overgrown garden gate", "crooked picket fence"),
 }
@@ -831,6 +865,7 @@ EXTRAS_POOLS: dict[str, tuple[str, ...]] = {
 OMITTED_POOLS: frozenset[tuple[str, str]] = frozenset({
     ("armament", "rotting dead"), ("armament", "spirit"), ("armament", "cursed object"),
     ("armament", "haunted place"), ("sensors", "haunted place"), ("sensors", "furnishing"),
+    ("sensors", "keepsake"), ("sensors", "effigy"),
 })
 
 
@@ -843,6 +878,7 @@ CONDITION_POOLS: dict[str, tuple[str, ...]] = {
     "undead": ("freshly risen", "rotting", "desiccated", "bloated", "grave-soiled", "entombed",
                "blood-soaked"),
     "skeletal dead": ("ancient", "cobwebbed", "grave-soiled", "entombed"),
+    "bog body": ("desiccated", "grave-soiled", "entombed", "ancient"),
     "bloodsucker": ("ancient", "gaunt", "pallid", "blood-soaked", "entombed"),
     "spirit": ("sorrowful", "wrathful", "ancient", "restless"),
     "cryptid": ("starving", "wounded", "ancient", "blood-soaked", "mangy"),
@@ -852,7 +888,7 @@ CONDITION_POOLS: dict[str, tuple[str, ...]] = {
     # "water-stained" rendered as literal water dripping off a dry chair --
     # the same substance-word-collision class as "forked"/"furled".
     "cursed object": ("antique", "cracked", "damp-blotched", "scorched", "dormant"),
-    "haunted place": ("abandoned", "boarded-up", "fire-gutted", "overgrown", "sagging"),
+    "haunted place": ("abandoned", "boarded-up", "burnt-out", "overgrown", "sagging"),
 }
 
 SCALE_POOLS: dict[str, tuple[str, ...]] = {
@@ -924,13 +960,15 @@ CARDINALITY: dict[str, dict[str, str]] = {
             "rusted helm", "trailing strand of weed", "long trailing veil", "bristling tail",
             "whip-thin tail", "dripping fin crest", "tattered hat", "hooded mantle",
             "wide-brimmed hat", "deep hood", "ritual stole", "carved finial", "brass winding key",
+            "tarnished brass clasp", "inlaid bone panel", "tiny dancing figure", "lace bonnet",
+            "ribbon sash", "tiny bow tie", "gilded crest", "cracked plaster clown statue",
             "brass pendulum", "sagging porch", "crooked chimney", "weathervane",
             "rusted arm of gondolas", "peeling painted clown face", "rusted access ladder",
             "jutting rib", "cracked lamp-room glass", "corroded support strut",
         )),
         ("a matched pair", (
             "long clawed hand", "pointed ear", "bony hand", "weed-tangled hand",
-            "outstretched hand", "long grasping hand", "pointed wolf ear", "hooked claw hand",
+            "outstretched hand", "long grasping hand", "pointed wolf ear", "painted wooden hand", "hooked claw hand",
             "ragged ear", "webbed claw hand", "branching antler", "dusty moth wing",
             "feathery antenna", "backwards-bent knee", "straw-stuffed arm", "long leather glove",
             "grasping hand",
@@ -943,12 +981,15 @@ CARDINALITY: dict[str, dict[str, str]] = {
                         "groping tendril", "fleshy stalk")),
     ),
     "emitters": _cardinality(
-        ("a lone part", ("cold spectral flame in its chest", "pale inner light in its chest",
-                         "pulsing inner light beneath its hide",
+        ("a lone part", ("spectral flame in its chest", "inner light in its chest",
+                         "luminous outline",
+                         "luminous vein along its flank",
                          "hooded lantern", "guttering candle", "handheld torch beam",
-                         "faint inner light", "lamp in an upstairs window", "flickering porch lamp")),
-        ("a matched pair", ("pinprick eye", "reflective eye", "cold pinprick eye",
-                            "hollow burning eye", "burning eye", "shining painted eye")),
+                         "faint inner light", "lamp in an upstairs window", "flickering porch lamp",
+                         "string of bare bulbs", "flickering marquee light", "headlamp")),
+        ("a matched pair", ("pinprick eye", "reflective eye", "sunken pinprick eye",
+                            "hollow burning eye", "burning eye", "shining painted eye",
+                            "light behind its eyes")),
         ("a body row", ("luminous pustule on its flank",)),
     ),
     "armament": _cardinality(
@@ -957,7 +998,7 @@ CARDINALITY: dict[str, dict[str, str]] = {
             "rusted sword", "notched axe", "rusted sickle", "pitchfork", "barbed stinger",
             "rusted cleaver", "wood axe", "sickle", "iron crowbar", "ritual dagger",
             "curved sacrificial knife", "butcher's cleaver", "rusted machete", "iron chain whip",
-            "bone-handled knife", "iron cane", "fire axe", "shotgun", "wooden stake",
+            "curved skinning knife", "iron cane", "fire axe", "shotgun", "wooden stake",
             "silver crucifix", "gore-slicked axe",
         )),
         ("a paired arm", (
@@ -967,11 +1008,11 @@ CARDINALITY: dict[str, dict[str, str]] = {
         ("a matched pair", (
             "flared sniffing nostril", "twitching tall ear",
             "staring eye", "milky dead eye", "sunken eye", "unblinking red-rimmed eye",
-            "cold pale eye", "hollow black eye", "sorrowful eye",
+            "cold pale eye", "hollow black eye", "sorrowful eye", "clouded white eye",
             "wide staring eye", "bloodshot eye", "eye behind a mask",
             "painted glass eye", "watching painted eye",
         )),
-        ("an array", ("bulging staring eye", "wet black eye")),
+        ("an array", ("bulging eye", "wet black eye")),
     ),
 }
 
@@ -1119,7 +1160,7 @@ _S_ELDRITCH_EV = (
 )
 _S_ELDRITCH_EV_GORE = (
     "swallowing a struggling victim whole", "trailing strips of torn flesh",
-    "pulling a body apart at the joints", "sinking rows of teeth into a still-twitching torso",
+    "pulling a body apart at the joints", "sinking its teeth into a still-twitching torso",
     "leaving a trail of half-digested remains",
 )
 _S_ELDRITCH_ACT = (
@@ -1137,7 +1178,7 @@ _S_ELDRITCH_SLEEP = ("lying coiled and motionless", "heaving in slow sleeping br
 
 # --- mortals ---
 _S_MORTAL_EV = (
-    "raising a weapon to strike", "bursting out of hiding", "breaking into a run",
+    "rearing back to strike", "bursting out of hiding", "breaking into a run",
     "spinning around at a sound", "lunging forward with a snarl", "smashing a lantern at their feet",
 )
 _S_MORTAL_EV_GORE = (
@@ -1172,7 +1213,7 @@ _S_SURVIVOR_EV = (
     "stumbling and falling", "hiding behind an overturned table", "spinning toward a noise",
 )
 _S_SURVIVOR_ACT = (
-    "checking a hunting rifle with shaking hands", "reading a torn diary page",
+    "checking a bolt-action rifle with shaking hands", "reading a torn diary page",
     "holding up a crucifix", "clutching a first aid kit to their chest",
     "bandaging a bleeding arm", "calling out into the dark", "creeping forward step by step",
     "loading shells into a shotgun", "shining a flashlight into the dark",
@@ -1193,16 +1234,18 @@ _S_OBJECT_EV = (
 _S_OBJECT_ACT = (
     "turning a fraction by itself", "rocking gently by itself", "weeping dark tears",
     "dripping water onto the floor", "trembling faintly", "shedding flakes of old paint",
-    "reflecting a pale figure behind the viewer", "sitting perfectly still",
+    "reflecting a pale figure behind the viewer", "with a fresh handprint in the dust on it",
     "leaning at an impossible angle", "gathering a ring of dead flies",
-    "shifting when nobody looks", "glistening with fresh dew", "rattling faintly on its own",
+    "shifting when nobody looks", "beaded with cold condensation", "rattling faintly on its own",
 )
-_S_OBJECT_IDLE = ("waiting in the corner", "facing the wall")
+_S_OBJECT_IDLE = ("with long scratches gouged into the wall behind it", "facing the wall")
 _S_OBJECT_DORMANT = ("gathering dust under a sheet",)
-_S_OBJECT_DORMANT_ANY = ("resting untouched in the dust",)
+_S_OBJECT_DORMANT_ANY = ("leaking a thin trickle of black fluid",)
 _S_KEEPSAKE_DORMANT = ("lying forgotten in a drawer",)
 _S_DOLL_ACT = ("turning its head toward the viewer", "sitting up by itself")
 _S_BOX_ACT = ("playing a tune nobody wound", "creaking open by itself")
+#: A puzzle box has no tune to play.
+_S_PUZZLE_ACT = ("sliding its panels by itself", "creaking open a crack by itself")
 _S_BOARD_ACT = ("moving its planchette on its own",)
 _S_CLOCK_ACT = ("striking thirteen", "swinging its pendulum faster and faster")
 
@@ -1318,6 +1361,7 @@ _BUCKETS = (
     (_S_KEEPSAKE_DORMANT, "idle", "n", _WALLS, _A, "d"),
     (_S_DOLL_ACT, "activity", "n", _A, _A, ""),
     (_S_BOX_ACT, "activity", "n", _A, _A, ""),
+    (_S_PUZZLE_ACT, "activity", "n", _A, _A, ""),
     (_S_BOARD_ACT, "activity", "n", _A, _A, ""),
     (_S_CLOCK_ACT, "event", "n", _A, _A, ""),
     (_S_PLACE_EV, "event", "n", _A, _A, ""),
@@ -1387,11 +1431,12 @@ SITUATION_POOLS: dict[str, tuple[str, ...]] = {
     "porcelain doll": _S_OBJECT_CORE + _S_KEEPSAKE_DORMANT + _S_DOLL_ACT,
     "ventriloquist dummy": _S_OBJECT_CORE + _S_KEEPSAKE_DORMANT + _S_DOLL_ACT,
     "music box": _S_OBJECT_CORE + _S_KEEPSAKE_DORMANT + _S_BOX_ACT,
-    "puzzle box": _S_OBJECT_CORE + _S_KEEPSAKE_DORMANT + _S_BOX_ACT,
+    "puzzle box": _S_OBJECT_CORE + _S_KEEPSAKE_DORMANT + _S_PUZZLE_ACT,
     "spirit board": _S_OBJECT_CORE + _S_KEEPSAKE_DORMANT + _S_BOARD_ACT,
     "grandfather clock": _S_OBJECT_CORE + _S_CLOCK_ACT,
     "haunted place": _S_PLACE_CORE,
-    "attraction": _S_PLACE_CORE + _S_RIDE_ACT,
+    "attraction": _S_PLACE_CORE,
+    "rusted carnival ride": _S_PLACE_CORE + _S_RIDE_ACT,
     "lonely lighthouse": _S_PLACE_CORE + _S_LIGHTHOUSE_ACT,
 }
 
@@ -1546,10 +1591,10 @@ PLACE_AFFORDANCES: dict[str, frozenset[str]] = {
     "graveyard": frozenset({"ground", "floor", "sky", "grave", "structure", "life"}),
     "waterside": frozenset({"ground", "floor", "sky", "shoreline", "vast"}),
     "underwater": frozenset({"submerged", "floor", "dark"}),
-    "town": frozenset({"ground", "floor", "sky", "structure"}),
-    "interior": frozenset({"floor", "structure", "dark"}),
+    "town": frozenset({"ground", "floor", "sky", "structure", "road"}),
+    "interior": frozenset({"floor", "structure", "dark", "room"}),
     "underground": frozenset({"floor", "structure", "dark"}),
-    "otherworld": frozenset({"floor", "structure", "dark", "vast"}),
+    "otherworld": frozenset({"floor", "structure", "dark", "vast", "room"}),
     # --- places that differ from their band ---
     "snowbound pine woods": frozenset({"ground", "floor", "sky", "vast", "life", "cold"}),
     "windswept moor of standing stones": frozenset({"ground", "floor", "sky", "vast", "life",
@@ -1560,8 +1605,13 @@ PLACE_AFFORDANCES: dict[str, frozenset[str]] = {
     "drowned village shoreline": frozenset({"ground", "floor", "sky", "shoreline", "structure",
                                             "vast"}),
     "rotting fishing pier": frozenset({"floor", "sky", "shoreline", "structure"}),
-    "abandoned carnival fairground": frozenset({"ground", "floor", "sky", "structure", "vast"}),
-    "flooded suburban street": frozenset({"ground", "floor", "sky", "structure", "shoreline"}),
+    "abandoned carnival fairground": frozenset({"ground", "floor", "sky", "structure", "vast",
+                                                "fairground"}),
+    "flooded suburban street": frozenset({"ground", "floor", "sky", "structure", "shoreline",
+                                          "road"}),
+    # A travelling fair sets up in the square.
+    "boarded-up village square": frozenset({"ground", "floor", "sky", "structure", "road",
+                                            "fairground"}),
     "flooded cellar": frozenset({"floor", "structure", "dark", "shoreline"}),
     "abandoned chapel": frozenset({"floor", "structure", "dark", "vast"}),
     "dusty manor ballroom": frozenset({"floor", "structure", "dark", "vast"}),
@@ -1606,7 +1656,7 @@ _FORM_KEY_STANCES: dict[str, frozenset[str]] = {
     "werewolf": _WALK, "hellish black hound": _WALK, "bog lurker": frozenset({"walks", "swims"}),
     "watcher": _WALK, "moth-winged watcher": _FLY_WALK, "hollow-eyed stag": _WALK,
     "crawler": _CRAWL, "effigy": _WALK,
-    "tentacled horror": frozenset({"walks", "swims"}), "many-eyed horror": _WALK,
+    "tentacled horror": frozenset({"walks", "swims", "rests"}), "many-eyed horror": _WALK,
     "amalgam": _WALK,
     "mortal": _WALK, "possessed villager": _CRAWL,
 }
@@ -1676,17 +1726,22 @@ _SUBKIND_NEEDS: dict[str, frozenset[str]] = {
     "lonely lighthouse": frozenset({"shoreline"}),
     "rotting windmill": frozenset({"ground"}),
     "rusted water tower": frozenset({"ground"}),
-    "rusted carnival ride": frozenset({"ground"}),
-    "derelict funhouse": frozenset({"ground"}),
+    # A ride or a funhouse outside a fairground was drawn on a moor and in a
+    # flooded street; a motel in snowbound pine woods. Each needs its own place.
+    "rusted carnival ride": frozenset({"ground", "fairground"}),
+    "derelict funhouse": frozenset({"ground", "fairground"}),
     **{value: frozenset({"ground"}) for value in SUBKIND_GROUPS["dwelling"]},
     "ruined chapel": frozenset({"ground"}),
     "boarded-up church": frozenset({"ground"}),
     "family mausoleum": frozenset({"grave"}),
-    **{value: frozenset({"structure"}) for value in SUBKIND_GROUPS["furnishing"]},
+    # A portrait propped in a sewer tunnel: furniture belongs in a room.
+    **{value: frozenset({"room"}) for value in SUBKIND_GROUPS["furnishing"]},
+    "derelict motel": frozenset({"ground", "road"}),
 }
 
 VALUE_NEEDS: dict[str, dict[str, frozenset[str]]] = {
-    SITUATION_FIELD: dict(_SITUATION_NEEDS),
+    # Condensation beads on a thing in a room (dew had formed in a morgue).
+    SITUATION_FIELD: {**_SITUATION_NEEDS, "beaded with cold condensation": frozenset({"room"})},
     "subkind": _SUBKIND_NEEDS,
     # "Dripping" asserts the subject is out of the water it dripped from; a
     # spirit or a corpse already ``submerged`` should not also be dripping.
@@ -1717,6 +1772,10 @@ VALUE_NEEDS: dict[str, dict[str, frozenset[str]]] = {
         "child-sized chair": _WALLS | frozenset({"air"}),
         "dusty ledge": frozenset({"air"}),
         "silt-caked ledge": frozenset({"submerged"}),
+        # A mirror in a mine shaft stood "against a wall of stained plaster".
+        "peeling floral wallpaper": frozenset({"room"}),
+        "wall of stained plaster": frozenset({"room"}),
+        "wall of warped panelling": frozenset({"room"}),
     },
 }
 
@@ -1782,17 +1841,64 @@ _add_traits("subkind", {"rotting windmill": ("rural-landmark",)})
 _add_traits("emitters", {v: ("hand-occupying",)
                          for v in ("hooded lantern", "guttering candle", "handheld torch beam")})
 _add_traits("armament", {v: ("two-handed-weapon",) for v in ("shotgun", "fire axe")})
-_add_traits("extras", {"hunting rifle": ("two-handed-weapon",)})
+_add_traits("extras", {"bolt-action hunting rifle": ("two-handed-weapon",)})
 # A situation that already occupies both hands (working a rifle bolt,
 # loading a gun, holding something two-armed to the chest) conflicts with a
 # separately-drawn hand-occupying emitter the same way a two-handed weapon
 # does -- "loading shells into a shotgun" rendered with a handheld torch
 # beam also somehow in the same two hands.
 _add_traits(SITUATION_FIELD, {v: ("two-handed-weapon",) for v in (
-    "checking a hunting rifle with shaking hands", "loading shells into a shotgun",
+    "checking a bolt-action rifle with shaking hands", "loading shells into a shotgun",
     "clutching a first aid kit to their chest", "bandaging a bleeding arm",
     "barricading a door",
 )})
+
+# Round XXI -- a material that names a colour fixes it: "waxen-white yellowed
+# bone", "jaundiced-yellow peat-blackened hide".
+_COLOUR_WORDS = ("grey", "black", "brown", "white", "yellowed", "pale", "red", "crimson", "peat",
+                 "soot", "ivory", "gold", "silver", "brass", "bone")
+_add_traits("material", {
+    v: ("self-coloured",) for pool in MATERIAL_POOLS.values() for v in pool
+    if any(w in v.replace("-", " ").split() for w in _COLOUR_WORDS)
+})
+_add_traits("primary_color", {v: ("states-a-colour",) for pool in PRIMARY_COLOR_POOLS.values() for v in pool})
+
+# Round XXII -- a face that is hidden has no mouth or eyes to show: a
+# "smooth-faced apparition" or "veiled floating figure" given a screaming mouth
+# and lights behind its eyes was drawn as two ghosts, one for each face.
+_add_traits("subkind", {"smooth-faced apparition": ("face-hidden",)})
+_add_traits("form", {"veiled floating figure": ("face-hidden",)})
+_add_traits("aperture", {v: ("face-feature",) for v in APERTURE_POOLS["spirit"]})
+_add_traits("sensors", {v: ("face-feature",) for v in SENSOR_POOLS["spirit"]})
+_add_traits("emitters", {v: ("face-feature",) for v in ("light behind its eyes", "hollow burning eye")})
+# #388 the warden's own lantern takes one hand, so the other stays free.
+_add_traits("subkind", {"lantern-bearing warden": ("lantern-hand",)})
+# #391 a crowbar in hand while both hands work a rifle.
+# "loading shells into a shotgun" is left out: its weapon is the one it names.
+_add_traits(SITUATION_FIELD, {v: ("both-hands-act",) for v in (
+    "checking a bolt-action rifle with shaking hands",
+    "clutching a first aid kit to their chest", "bandaging a bleeding arm", "barricading a door",
+)})
+
+# Round XXI -- what the hands hold. A priest carried a wooden stake and a
+# hunting rifle; a survivor a stake, a first aid kit and a lit candle.
+_add_traits("armament", {v: ("carried-weapon",) for v in (
+    ARMAMENT_POOLS["occultist"] + ARMAMENT_POOLS["survivor"] + ARMAMENT_POOLS["village priest"]
+)})
+_add_traits("extras", {"bolt-action hunting rifle": ("firearm",)})
+_add_traits("extras", {v: ("held-item",) for v in (
+    "first aid kit", "flashlight", "crumpled map", "leather-bound grimoire", "coil of wire",
+)})
+# A locket clutched to the chest and a flame in the chest are one place.
+_add_traits("emitters", {v: ("chest-located",) for pool in EMITTER_POOLS.values() for v in pool
+                         if v.endswith("in its chest")})
+_add_traits("extras", {"tarnished locket": ("chest-located",)})
+# A room, however strange, cannot hold a gargantuan thing.
+_add_traits(ENVIRONMENT_FIELD, {v: ("interior-place",) for v in (
+    "flesh-walled chamber", "endless crimson hallway",
+)})
+# A slumbering mass does not stare.
+_add_traits("sensors", {v: ("open-eyed",) for v in ("bulging eye", "wet black eye")})
 
 TRAIT_CONFLICTS: tuple[tuple[str, str], ...] = (
     ("inactive", "powered-act"),
@@ -1802,6 +1908,16 @@ TRAIT_CONFLICTS: tuple[tuple[str, str], ...] = (
     ("pacifist-role", "violent-act"),
     ("funerary-place", "rural-landmark"),
     ("two-handed-weapon", "hand-occupying"),
+    ("self-coloured", "states-a-colour"),
+    ("pacifist-role", "firearm"),
+    ("held-item", "hand-occupying"),
+    ("held-item", "two-handed-weapon"),
+    ("chest-located", "chest-located"),
+    ("inactive", "open-eyed"),
+    ("face-hidden", "face-feature"),
+    ("both-hands-act", "carried-weapon"),
+    ("lantern-hand", "carried-weapon"),
+    ("lantern-hand", "held-item"),
 )
 TRAIT_REASONS: dict[str, str] = {
     "inactive|powered-act": "a thing at rest does not act",
@@ -1811,6 +1927,16 @@ TRAIT_REASONS: dict[str, str] = {
     "pacifist-role|violent-act": "a priest does not kill",
     "funerary-place|rural-landmark": "a windmill belongs to a farm, not a graveyard",
     "two-handed-weapon|hand-occupying": "both hands are already full",
+    "self-coloured|states-a-colour": "a material that names its own colour fixes it",
+    "pacifist-role|firearm": "a priest does not carry a gun",
+    "held-item|hand-occupying": "both hands are already full",
+    "held-item|two-handed-weapon": "both hands are already full",
+    "chest-located|chest-located": "a clutched locket and a light in the chest share one place",
+    "inactive|open-eyed": "a slumbering thing does not stare",
+    "face-hidden|face-feature": "a hidden face shows no mouth or eyes",
+    "both-hands-act|carried-weapon": "both hands are busy, so the weapon is put away",
+    "lantern-hand|carried-weapon": "one hand holds the lantern the warden is named for",
+    "lantern-hand|held-item": "one hand holds the lantern the warden is named for",
 }
 
 
@@ -2046,7 +2172,10 @@ ARCHETYPES: dict[str, Archetype] = {
             Sentence(text="{pronoun} have {form}."),
             Sentence(text="{possessive} clothing is {primary_color}."),
             Sentence(text="{pronoun} show {surface_detail}."),
-            Sentence(text="{possessive} clothing bears {markings, accent_color}."),
+            # Joined, "mud-spattered hems and funeral-purple accents" drew
+            # purple splashed on the coat; apart, the accent is a trim.
+            Sentence(text="{possessive} clothing bears {markings}."),
+            Sentence(text="{possessive} clothing has {accent_color}."),
             Sentence(text="{pronoun} carry {armament, extras}."),
             Sentence(text="{pronoun} wear {appendages}."),
             Sentence(text="{possessive} features include {sensors}."),
@@ -2167,6 +2296,11 @@ def _hyphenated(tokens) -> dict[str, str]:
     return {token: token.replace(" ", "-") for token in tokens if " " in token}
 
 
+_SPOKEN_ENVIRONMENT: dict[str, str] = {
+    # Said plainly it rendered as a furnished room with a picture hanging in mid-air.
+    "void of drifting furniture": "endless black void with old furniture drifting in it",
+}
+
 _SPOKEN_SUBKIND: dict[str, str] = {
     **{value: value for pool in SUBKIND_POOLS.values() for value in pool},
     # A bare word a model draws as something else.
@@ -2179,6 +2313,7 @@ _SPOKEN_SUBKIND: dict[str, str] = {
 
 SPOKEN: dict[str, dict[str, str]] = {
     "subkind": _SPOKEN_SUBKIND,
+    "environment": _SPOKEN_ENVIRONMENT,
     "primary_color": _hyphenated(PRIMARY_COLOR_POOL),
     "accent_color": _hyphenated(ACCENT_COLOR_POOL),
     "emitter_color": _hyphenated(EMITTER_COLOR_POOL),

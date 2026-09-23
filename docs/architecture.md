@@ -2170,3 +2170,171 @@ sweep of each of fantasy and horror found zero remaining hand-occupancy
 conflicts (XX3); an 8000-seed sweep confirmed a bow-carrying hybrid-folk
 entity still has 27 distinct situations available after XX6, none of them
 the excluded two.
+
+## Round XXI: the 923-concern batch
+
+The maintainer's next render test, including deliberate cross-genre mixes
+(a fantasy or horror entity wired into another genre's scene). Every image
+was reviewed; the four whose fault was not visible from the prompt alone
+were asked about (#22, #65, #110, #135).
+
+### Cross-genre: the guest speaks for itself
+
+A wired entity from another genre used to be spoken, placed and given an act
+by the *host* pack, which had never heard of it: a spacefarer was "It is a
+slight narrow frame, covered in ... suit", a drop pod drew the host's
+"charging headlong", colours lost their hyphens. Two genre-blind modules fix
+it once:
+
+- `engine/registry.py` - every `generate_scene`/`generate_entity` call
+  registers its pack by slug, so the pack that built a payload is known to
+  whichever pack receives it. The engine never names a genre.
+- `engine/foreign.py` - `voice_of` speaks a foreign entity through its own
+  pack (archetype, grammar, spoken forms); `guest_fits_place` places it by
+  its own stances and needs, translated into the host's words
+  (`STANCE_EQUIVALENTS`), trying the body's **primary stance** first
+  (`PRIMARY_STANCE_ORDER`: a spacefarer that walks and floats is put where it
+  can walk, not in a sea of clouds); `guest_situation` draws an act from the
+  guest's own repertoire that the host place can stage, preferring
+  place-neutral acts, honouring the guest's own rules in both directions and
+  the host's content filter; `mask_for_filter` drops guest values the host
+  filter excludes. An unregistered guest falls back to the old host handling.
+
+### New checks and guards
+
+- **`COLOURWORD`** (`tests/validate_data.py`): a colour named after a
+  substance is drawn as the substance ("molten gold" emitters drew lava at a
+  spacefarer's boots, "ember" hues drew fire, "sea green" water, "frost blue"
+  ice, "honey" honey). Allowed only where the pool key names a subject made of
+  it (`SUBSTANCE_COLOUR_HOMES`). Every shipped colour was renamed to a plain
+  hue.
+- **Colour/noun stutter** (moved to `engine/scene.py` in round XXII): a colour
+  companion that repeats a word of its noun is dropped ("pale-blue pale inner
+  light", "ember-orange ember eye", "cold-white cold spectral flame").
+- **Hands** (all three packs): an act that fills both hands, or a great
+  two-handed weapon, excludes held gear (`hands-busy`/`hand-held` in sci-fi,
+  `hands-busy`/`two-handed-weapon` vs `hand-occupying` in fantasy,
+  `held-item` in horror; revised in round XXII).
+- **Self-coloured horror materials**: a material naming a colour
+  ("yellowed bone", "peat-blackened hide") fixes it, as in the other packs.
+
+### Placement
+
+- Sci-fi: interior acts that name a hull, panel, cargo pod, compartment or
+  containment field need `structure`; new outdoor and underwater acts keep
+  the floors. "bending a survey mast" needs `ground`.
+- Fantasy: the blazing elemental plane holds only what fire cannot kill
+  (dragons, spirits, undead, constructs, artifacts); the frost giants' realm
+  can hold giant-kin; moss (conditions, materials, moss troll) stays out of
+  hot and cold places.
+- Horror: a motel needs a `road`, a ride or funhouse a `fairground`;
+  wallpaper, plaster and floorboards need a `room`; dew needs `sky`; the
+  flesh-walled chamber and crimson hallway are interiors (no gargantuan
+  subject).
+
+### Values
+
+- Sci-fi: `collar light strip` (was a lone "boot magnet ring"), `buckled hull
+  plating` (was a growth mat in vacuum), bandage tied on the figure's own
+  forearm, "waving a straggler" (was a refugee crowd), "ducking low and
+  backing away" (was "retreating behind cover", drawn through a window), a
+  star map projected from one palm (was shown to an envoy), "lone
+  interstellar diplomat" (the bare word drew a handshake partner).
+- Fantasy: bear and wolf tails; sprite/pixie wings named once; satyr and
+  faun human half first; death knight armoured; clockwork guardian brass
+  parts and furnace grate; chariot/siege tower parts, materials and
+  markings; tome, crown, orb, mirror and hourglass materials; apertures only
+  on what opens; cloud skiff never large, portal arch never small; a gleaming
+  thing is not weathered; visible artifact acts; more wyrm silhouettes and
+  dragon hides.
+- Horror: ride and funhouse split; skeletons unscarred; bog body shrivelled
+  and peat-coloured; spirit faces, bodies, dresses and lights varied, one
+  chest light at a time; tentacled forms without an octopus head; a
+  slumbering mass does not stare; stalkers masked; objects keep their own
+  parts, eyes and acts (a puzzle box slides its panels, a music box plays).
+
+### Scene Weaver outputs
+
+`prompt_json` wired into a text encoder rendered the JSON as the prompt
+(#143). Both outputs now carry tooltips: `prompt_text` is the prompt,
+`prompt_json` is structured data, not a prompt.
+
+### Model limits, not text
+
+#22 (a hand through a window) was a model artefact; its act was reworded
+anyway. Pose-vs-act mismatches with no text contradiction remain a model
+limit.
+
+## Round XXII: the 923-concern batch (part 2)
+
+The maintainer's render test of round XXI, 61 images including more
+cross-genre mixes. Twelve images were asked about; every answer is folded in.
+
+### Cross-genre placement
+
+- **Habitat** (`engine/foreign.py::habitat`): what every place the guest's
+  own genre puts its kind in has in common. A host place must afford it, read
+  through shared words and `AFFORDANCE_EQUIVALENTS` (`open-space`/`void`,
+  `aloft` -> `void`). An ogre and a brownie were on a space-station approach
+  lane; a space station hung in a sea of clouds.
+- **Shared trait words**: a host place trait that conflicts with a guest body
+  trait of the same name refuses the body (a towering elemental in a
+  crawlway).
+- Placement relaxes in three steps: primary stance and strict needs, any
+  stance and strict needs, any stance and a need the host has no word for.
+
+### Word echoes, in the state
+
+`engine/scene.py::_silence_word_echoes` replaces round XXI's render-time
+colour guard: a head modifier that repeats a word of the head noun ("an
+antique antique rocking chair") and a colour companion that repeats its host
+("pale-blue pale inner light") are silenced in the resolved state, so
+`prompt_json` and `prompt_text` agree.
+
+### Hands, again
+
+- Horror: survivors always drew a hand-held light, so a shotgun or fire axe
+  could never be drawn (pre-existing since round XX). A hands-free headlamp
+  joins the lights. The warden's named lantern takes one hand.
+  `both-hands-act` puts a carried weapon away. The priest carries no gun.
+- Fantasy: `hands-together` acts (prayer, a lute, a potion) put a two-handed
+  weapon or bow away; a quiver comes with a bow.
+
+### Faces and heads
+
+- A hidden face (a smooth-faced or veiled ghost) shows no mouth or eyes: with
+  both, two ghosts were drawn.
+- Horns or a crest do not fit a sealed bubble helmet.
+- Naga and gorgon name the human head; a centaur has no mane on its human
+  half; satyrs and fauns from round XXI.
+- Folk: helms and visors are the armoured roles'; casters wear mantles; a
+  non-caster's light is one gem amulet.
+
+### Places
+
+- Sci-fi: a cockpit holds no creature; a barricade stands on ground;
+  spores need life; stations lost their snow-like frost.
+- Fantasy: a charge needs ground and a walking body (a kelpie galloped along
+  a trench, a merfolk charged on its tail); floating stones need air; moss
+  needs air.
+- Horror: furniture needs a `room` (a portrait in a sewer); a fair can set up
+  in the village square; the void is spoken as a black void.
+
+### Values
+
+Render traps renamed after this batch and the maintainer's notes: a colour
+named after a substance (`COLOURWORD` now also catches "hellfire"); decals
+(drew text); "halo crown" (a crown); a "volley of arrows" (arrows in mid-air
+and an archer); a hunter's hide (a rider); a bone-handled knife (a bone);
+"hunting rifle" (an assault rifle); "hexapod" (four legs); a belt lantern
+was rejected before it shipped. Invisible acts replaced with visible ones;
+cursed objects' idle acts made unsettling; blade acts no longer name a second
+blade.
+
+### Reach
+
+The reach audit found values that could never be drawn; each was made
+reachable or removed: survivor weapons (above), an effigy's sensors (its eyes
+are its glowing emitter, so it has none), the fire and magma elementals'
+colours (their materials always name a colour), the lap harp, the ride and
+its acts.

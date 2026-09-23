@@ -85,6 +85,7 @@ try:
         build_field_definitions,
         archetype_for,
         affordances_of,
+        spoken_value,
         archetype_name_for,
         build_resolution_definitions,
         filtered_pool,
@@ -131,6 +132,7 @@ except ImportError:  # pragma: no cover -- standalone/test context
         build_field_definitions,
         archetype_for,
         affordances_of,
+        spoken_value,
         archetype_name_for,
         build_resolution_definitions,
         filtered_pool,
@@ -151,7 +153,9 @@ except ImportError:  # pragma: no cover -- standalone/test context
     )
 
 from .budget import allowance_for, apply_budget
-from .prose import render_prose
+from .foreign import guest_fits_place, guest_pack, guest_situation, mask_for_filter, voice_of
+from .prose import head_phrase_spec, render_prose
+from .registry import register_pack
 from .grammar import head_noun
 from .resolution import ResolvedEntity, ResolvedRelation, ResolvedScene
 
@@ -575,7 +579,12 @@ def _environments_ruled_out_by_fixed_subjects(
             _locked_widget(definitions, widgets, definition.slot, name),
             _locked_widget(definitions, widgets, definition.slot, STANCE_FIELD),
         ))
+    guests: list[tuple[GenrePack, dict[str, str | None]]] = []
     for slot in sorted(promoted):
+        guest = guest_pack(pack, promoted[slot])
+        if guest is not None:
+            guests.append((guest, _payload_fields(guest, promoted[slot])))
+            continue
         fields = _payload_fields(pack, promoted[slot])
         subjects.append((
             fields.get(KIND_FIELD),
@@ -583,6 +592,20 @@ def _environments_ruled_out_by_fixed_subjects(
             fields.get(STANCE_FIELD),
         ))
     allowed = set(legal)
+    # A foreign guest narrows by what the two genres share -- its body's stances
+    # and its type's needs, read through the host's words -- since the host's
+    # own kind pools have never heard of it.
+    for guest, fields in guests:
+        for primary_only, strict in ((True, True), (False, True), (False, False)):
+            holders = {
+                environment for environment in allowed
+                if guest_fits_place(
+                    guest, pack, fields, environment, primary_only=primary_only, strict=strict
+                )
+            }
+            if holders:
+                allowed = holders
+                break
     for kind, value, form in subjects:
         if not kind or kind not in known_kinds:
             continue
@@ -1199,6 +1222,56 @@ def _apply_constraints(
     _silence_head_noun_repeats(
         pack, state, address_of, locked_paths, rng, scene_filter, slots
     )
+    _silence_word_echoes(pack, state, locked_paths, slots)
+
+
+_FUNCTION_WORDS = frozenset({"a", "an", "the", "of", "and", "in", "on", "with", "its", "their"})
+
+
+def _shares_word(a: str, b: str) -> bool:
+    """Whether two phrases share a content word, hyphenated parts counted apart."""
+    shared = set(a.replace("-", " ").split()) & set(b.replace("-", " ").split())
+    return bool(shared - _FUNCTION_WORDS)
+
+
+def _silence_word_echoes(
+    pack: GenrePack, state: dict[str, str | None], locked_paths: "set[str]", slots: int
+) -> None:
+    """Silence a word the phrase it joins already says, in the state so the JSON agrees.
+
+    "an antique antique rocking chair" was an ``antique`` condition modifying
+    that subkind; "a pale-blue pale inner light" a colour on its own emitter.
+    A head modifier that shares a word with the head noun, and a colour
+    companion that shares one with its host, go unsaid.
+    """
+    for slot in range(1, slots + 1):
+        fields = {name: state.get(slot_path(slot, name)) for name in pack.entity_fields}
+        if fields.get(KIND_FIELD) is None:
+            continue
+
+        def said(name: str) -> str:
+            return spoken_value(pack, name, fields[name]) if fields.get(name) else ""
+
+        def silence(name: str) -> None:
+            path = slot_path(slot, name)
+            if path not in locked_paths:
+                state[path] = None
+                fields[name] = None
+
+        head = head_phrase_spec(pack, fields.get(KIND_FIELD), archetype_for(pack, fields))
+        if head is not None:
+            nouns = ((head.subject,) if head.subject else ()) + tuple(head.noun)
+            noun = next((n for n in nouns if fields.get(n)), None)
+            if noun is not None:
+                for name in head.modifiers:
+                    if name in fields and fields.get(name) and _shares_word(said(name), said(noun)):
+                        silence(name)
+        for name, spec in pack.entity_fields.items():
+            host = spec.renders_with
+            if host is None or name == pack.entity_fields[host].count_partner:
+                continue
+            if fields.get(name) and fields.get(host) and _shares_word(said(name), said(host)):
+                silence(name)
 
 
 def _silence_head_noun_repeats(
@@ -1334,6 +1407,7 @@ def generate_scene(
     bare call behaves like a freshly-dropped node: one subject. Pass ``None``
     explicitly for "no opinion", where every slot is left to its own widget.
     """
+    register_pack(pack)
     rng = random.Random(seed)
     widgets = dict(widgets or {})
     wired_entities = dict(wired_entities or {})
@@ -1398,6 +1472,10 @@ def generate_scene(
     per_slot_locked: dict[int, set[str]] = {}
     wired_supplied: dict[int, dict[str, str | None]] = {}
     wired_chosen: dict[int, "frozenset[str]"] = {}
+    #: A foreign guest's own view of its fields, in its own pack's schema. The
+    #: host state still carries the values (the field keys are shared), but the
+    #: guest is budgeted, masked and spoken by the pack that built it.
+    guests: dict[int, tuple[GenrePack, dict[str, str | None]]] = {}
 
     environment_def = definitions[ENVIRONMENT_FIELD]
     environment_widget = _widget_value(environment_def, widgets)
@@ -1422,8 +1500,15 @@ def generate_scene(
         locked_here: set[str] = set()
         per_slot_locked[slot] = locked_here
 
+        guest = guest_pack(pack, payload)
+        if payload is not None and guest is not None:
+            guest_fields = _payload_fields(guest, payload)
+            mask_for_filter(guest, guest_fields, _payload_locked(payload), scene_filter)
+            guests[slot] = (guest, guest_fields)
         if payload is not None:
             supplied = _payload_fields(pack, payload)
+            if guest is not None:
+                supplied = {name: guests[slot][1].get(name) for name in pack.entity_fields}
             chosen = _payload_locked(payload)
             wired_supplied[slot] = {name: supplied.get(name) for name in pack.entity_fields}
             wired_chosen[slot] = chosen
@@ -1476,14 +1561,28 @@ def generate_scene(
         situation_def = definitions[key_for(slot, SITUATION_FIELD)]
         situation_widget = _widget_value(situation_def, widgets)
         situation_path = slot_path(slot, SITUATION_FIELD)
-        state[situation_path] = (
-            _resolve_one(
-                rng, pack, situation_def, situation_widget,
-                _scope_for(pack, state, situation_path), scene_filter, locked_paths,
+        # A foreign guest acts from its own repertoire when the host place can
+        # stage one of its acts; the host's default acts were written for things
+        # the host knows, which is how a drop pod came to be "charging headlong".
+        # A user's locked situation still wins.
+        guest_act = None
+        if slot in guests and situation_widget == RANDOM:
+            guest, guest_fields = guests[slot]
+            guest_act = guest_situation(
+                rng, guest, pack, guest_fields, state.get(ENVIRONMENT_FIELD), scene_filter,
             )
-            if state.get(slot_path(slot, KIND_FIELD)) is not None
-            else None
-        )
+        if guest_act is not None:
+            state[situation_path] = guest_act
+            locked_paths.add(situation_path)
+        else:
+            state[situation_path] = (
+                _resolve_one(
+                    rng, pack, situation_def, situation_widget,
+                    _scope_for(pack, state, situation_path), scene_filter, locked_paths,
+                )
+                if state.get(slot_path(slot, KIND_FIELD)) is not None
+                else None
+            )
 
     for first, second in relation_pairs(slots):
         key = relation_key(first, second)
@@ -1557,11 +1656,12 @@ def generate_scene(
     ]
     entities: list[ResolvedEntity] = []
     for position, slot in enumerate(occupied, start=1):
-        values = {name: state.get(slot_path(slot, name)) for name in pack.entity_fields}
+        voice = guests[slot][0] if slot in guests else pack
+        values = {name: state.get(slot_path(slot, name)) for name in voice.entity_fields}
         wired = sources[slot] == SOURCE_WIRED
-        archetype = _archetype_for(pack, values)
+        archetype = _archetype_for(voice, values)
         values = apply_budget(
-            pack, values,
+            voice, values,
             # A wired slot takes the top allowance for this scene -- what slot 1
             # gets -- rather than its own position's. Wiring a whole node in is
             # the request for depth; it is a promotion, never an exemption.
@@ -1667,6 +1767,7 @@ def generate_entity(
     both node classes: a rule written about an entity's material reaches this
     node too, without the pack having to say so twice.
     """
+    register_pack(pack)
     rng = random.Random(seed)
     widgets = dict(widgets or {})
     warnings: list[str] = []
@@ -1765,7 +1866,8 @@ def _to_json(pack: GenrePack, scene: ResolvedScene) -> dict[str, Any]:
             "source": entity.source,
             "genre": entity.genre,
             "archetype": archetype_name_for(
-                pack, {name: entity.get(name) for name in pack.entity_fields}
+                voice_of(entity.genre, pack),
+                {name: entity.get(name) for name in pack.entity_fields},
             ),
         }
         for name in pack.entity_fields:

@@ -101,8 +101,17 @@ def build_scene_node(pack: GenrePack) -> type:
                 ),
                 inputs=[*build_inputs(pack, SCENE_SLOTS), *_entity_sockets()],
                 outputs=[
-                    io.String.Output(display_name="prompt_text"),
-                    io.String.Output(display_name="prompt_json"),
+                    io.String.Output(
+                        display_name="prompt_text",
+                        tooltip="The prompt. Wire this into the text encoder.",
+                    ),
+                    # A prompt_json wired into the encoder rendered the JSON
+                    # itself as the prompt; the tooltip says what it is for.
+                    io.String.Output(
+                        display_name="prompt_json",
+                        tooltip="Structured scene data for other nodes or logs. "
+                        "Not a prompt: do not wire it into a text encoder.",
+                    ),
                 ],
             )
 

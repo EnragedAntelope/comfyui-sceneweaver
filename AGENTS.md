@@ -109,8 +109,8 @@ _Last verified: 2026-09-23_
   the scope that emptied its pool was itself re-drawn later in the same fixed
   point -- which is how a subject arrived with no silhouette at all. The Python
   suites, the jsdom suite, the data validator, the distribution sweep, the
-  coherence audit, the coherence sweep and `ruff` are green; the reach audit is
-  not (see Known gaps). Round XIV's decisions D16-D24 and its measurements are
+  coherence audit, the coherence sweep, `ruff` and (since round XXII, at
+  30000 seeds) the reach audit for all three packs are green. Round XIV's decisions D16-D24 and its measurements are
   in `docs/architecture.md` ("Concern audit (round XIV)").
 - **In progress:** **round XVI** (2026-09-20, still on
   `tmp/sceneweaver-fantasy`) responds to the maintainer's render test of round
@@ -176,8 +176,8 @@ _Last verified: 2026-09-23_
     text contradiction behind it** (a fire drake breathing fire instead of
     "snapping at a spear," a siege mech shown firing instead of "crouching
     to inspect," a revenant enthroned instead of "clawing out of a
-    coffin," a "slumbering" tentacled abomination reading as wide-eyed and
-    alert because "staring eyes" is a permanent anatomical descriptor).
+    coffin). The "slumbering" abomination with staring eyes was closed in
+    round XXI (`inactive`/`open-eyed`).
     Flagged for the maintainer rather than guessed at - there is no wording
     fix that reliably stops a fire-breathing dragon's own identity from
     upstaging one frame's specific action.
@@ -197,13 +197,12 @@ _Last verified: 2026-09-23_
     `"drowned dead"`'s dedicated sodden rags, `"bloodsucker"`'s velvet/cloak/
     gown materials render dry-looking even when the entity is staged
     underwater. Identified in round XIX, not fixed.
-  - `scripts/reach_audit.py --gate` **fails on `main` (0.3.0) and on every
-    round since**, including this one, with a handful of never-drawn values
-    confined to a rare place-and-kind (or place-and-subkind) combination -- a
-    drone at a trench vent, a rail-driver turret on a vehicle subkind a
-    12000-seed sample didn't happen to sample. It samples; it is a maintainer
-    instrument and CI does not run it. Round XIII's note calling it green was
-    measured on a different seed.
+  - `scripts/reach_audit.py --gate` samples, so at 12000 seeds it still lists
+    a few rare place-and-kind combinations as never drawn; at 30000 seeds all
+    three packs pass (round XXII). Round XXII fixed every value that was
+    structurally unreachable (survivor weapons, an effigy's sensors, the fire
+    and magma elementals' colours, the lap harp, the carnival ride, a
+    spacefarer's guideline act, the ice-dormant horror). CI does not run it.
   - Round XIV renamed or removed dropdown values; a saved workflow that locked
     one reports "value not in list". Release notes live in commit messages,
     never in the README (maintainer's rule).
@@ -371,9 +370,30 @@ _Last verified: 2026-09-23_
     fixed. Full findings, every investigated-but-not-fixed image, and the
     measured verification sweeps are in `docs/architecture.md`
     ("Round XX: the 922-concern batch (part 3)").
-  - The substance-adjective render-trap class (item 3 above) has no automated
-    check; a genre author has to catch it by eye until a narrower signal than
-    "contains a common English word" is found.
+  - **Round XXI** (2026-09-23, still on `tmp/sceneweaver-fantasy`) answers
+    the 923-concern batch, including cross-genre mixes. A wired entity from
+    another genre is now spoken, placed and given an act by **its own pack**
+    (`engine/registry.py`, `engine/foreign.py`); an unregistered guest falls
+    back to the host's stranger grammar. New guards: validator check
+    `COLOURWORD` (a colour named after a substance), a colour that repeats
+    its noun's word is dropped in `engine/prose.py`, a both-hands act excludes
+    held gear in all three packs, and horror materials that name a colour fix
+    it. Plus place fixes (sci-fi interior acts need `structure`; the blazing
+    plane holds only fire-proof kinds; horror motel/ride/funhouse/wallpaper/dew
+    gating) and value rewrites per image. Scene Weaver outputs carry tooltips
+    (`prompt_json` is not a prompt). Detail: `docs/architecture.md`
+    ("Round XXI").
+  - **Round XXII** (2026-09-23, still on `tmp/sceneweaver-fantasy`) answers
+    the next 61-image render test. Cross-genre placement now requires a
+    guest's **habitat** (what every place its own genre puts that kind in has
+    in common) and refuses a place trait that conflicts with a guest body
+    trait of the same name; word echoes ("antique antique", "pale-blue pale")
+    are silenced in the resolved state so the JSON agrees with the prose;
+    hands, faces and helmets, furniture placement and many render-trap values
+    were fixed per image. Detail: `docs/architecture.md` ("Round XXII").
+  - The substance-adjective render-trap class (item 3 above) is checked only
+    for colours (`COLOURWORD`); in other fields an author still catches it by
+    eye.
   - There is no fantasy or horror example workflow; swap the node in a sci-fi graph.
   - A world as **scenery** behind a ground-level scene has no placement concept,
     so `celestial body` is excluded from the `planetary surface` kind pool, and
@@ -424,8 +444,9 @@ _Last verified: 2026-09-23_
 python -m unittest discover -s tests -t . -v
 pytest tests
 python tests/validate_data.py
-python scripts/reach_audit.py --pack fantasy --seeds 12000
-python scripts/reach_audit.py --pack horror --seeds 12000
+python scripts/reach_audit.py --pack scifi --gate --seeds 30000
+python scripts/reach_audit.py --pack fantasy --gate --seeds 30000
+python scripts/reach_audit.py --pack horror --gate --seeds 30000
 python scripts/sample_distribution.py --seeds 1000
 python scripts/coherence_audit.py --seeds 2000
 python scripts/coherence_sweep.py --gate

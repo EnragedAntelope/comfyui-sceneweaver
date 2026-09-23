@@ -237,6 +237,26 @@ def check_pool_coverage(pack: G.GenrePack, report: Report) -> None:
     report.numbers["kind_scoped_fields"] = len(kind_scoped)
 
 
+#: A colour named after a substance is drawn as the substance: "molten gold"
+#: emitters rendered lava at a spacefarer's boots, "ember" hues drew fire,
+#: "sea green" drew water, "frost blue" ice. Allowed only on a subject made of
+#: that substance, matched by a word in the pool key.
+SUBSTANCE_COLOUR_HOMES: dict[str, tuple[str, ...]] = {
+    "molten": ("magma",), "lava": ("magma",), "ember": ("fire", "magma", "phoenix", "hellhound"),
+    "flame": ("fire",), "blood": ("magma", "hellhound"), "honey": (), "sea": ("water", "undine"),
+    "frost": ("ice", "water", "undine"), "ice": ("ice",), "moss": (), "mud": (), "smoke": (),
+    "coal": ("magma",), "soot": ("haunted",), "hellfire": ("fire", "hellhound"),
+}
+
+
+def substance_colour_words(value: str, pool_key: str) -> list[str]:
+    """Substance words in a colour whose pool key does not make the subject of that substance."""
+    return [
+        word for word, homes in SUBSTANCE_COLOUR_HOMES.items()
+        if re.search(rf"\b{word}\b", value) and not any(h in pool_key for h in homes)
+    ]
+
+
 def check_values(pack: G.GenrePack, report: Report) -> None:
     """4, 6, 8. Articles, readable text, the denylists and never-negate."""
     counts = set(_count_fields(pack))
@@ -250,6 +270,12 @@ def check_values(pack: G.GenrePack, report: Report) -> None:
                     report.fail("RENDERING", f"{where}: {value!r} contains {finding}")
                 for finding in negation_findings(value):
                     report.fail("NEGATION", f"{where}: {value!r} contains {finding}")
+                if name.endswith("color"):
+                    for word in substance_colour_words(value, kind):
+                        report.fail(
+                            "COLOURWORD",
+                            f"{where}: {value!r} names {word!r}, which a model draws as the substance",
+                        )
                 if name not in counts and leading_article(value):
                     report.fail("ARTICLE", f"{where}: {value!r} opens with an article")
                 if name in counts and re.search(r"\d", value):
