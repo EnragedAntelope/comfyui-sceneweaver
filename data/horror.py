@@ -719,11 +719,19 @@ APPENDAGE_POOLS: dict[str, tuple[str, ...]] = {
 }
 
 EMITTER_POOLS: dict[str, tuple[str, ...]] = {
-    POOL_DEFAULT_KEY: ("pinprick eye", "cold spectral flame"),
+    # An unlocated glow and a mouth/aperture, spoken in their own sentences
+    # since round XVIII, still read as one thing when a diffusion model
+    # attends across the whole prompt rather than sentence by sentence -- a
+    # flesh mass's "pulsing inner light" (meant as a body glow) kept drawing
+    # as light spilling from its "ring-shaped toothed maw" instead. Anchored
+    # to a place on the body other than the face so the two no longer share
+    # a location for the model to merge.
+    POOL_DEFAULT_KEY: ("pinprick eye", "cold spectral flame in its chest"),
     "undead": ("reflective eye", "cold pinprick eye"),
-    "spirit": ("cold spectral flame", "pale inner light", "hollow burning eye"),
+    "spirit": ("cold spectral flame in its chest", "pale inner light in its chest",
+               "hollow burning eye"),
     "cryptid": ("reflective eye", "burning eye"),
-    "eldritch horror": ("pulsing inner light", "luminous pustule"),
+    "eldritch horror": ("pulsing inner light beneath its hide", "luminous pustule on its flank"),
     "mortal": ("hooded lantern", "guttering candle", "handheld torch beam"),
     "cursed object": ("faint inner light", "shining painted eye"),
     # A doll's or a dummy's face carries painted eyes; a chair, a clock or a
@@ -807,11 +815,14 @@ EXTRAS_POOLS: dict[str, tuple[str, ...]] = {
     "survivor": ("flashlight", "hunting rifle", "first aid kit", "crumpled map"),
     "occultist": ("leather-bound grimoire", "bundle of dried herbs", "bird skull charm"),
     # "velvet-lined case" and its furnished siblings used to reach an object
-    # in a reed marsh or on the floor of a flooded church -- gated below to
-    # an indoor, dry place (VALUE_NEEDS). "dusty ledge" is place-neutral and
-    # keeps outdoor/underwater cursed objects a surface to rest on.
+    # in a reed marsh or on the floor of a drowned church -- gated below to
+    # an indoor, dry place (VALUE_NEEDS). "dusty ledge" is the outdoor
+    # place-neutral surface, gated to air only -- dust does not settle
+    # underwater, and a spirit board on a "dusty ledge" in a drowned nave
+    # rendered as a bone-dry room with no water in it at all. "silt-caked
+    # ledge" is the submerged equivalent.
     "cursed object": ("velvet-lined case", "dusty shelf", "carved side table", "child-sized chair",
-                      "dusty ledge"),
+                      "dusty ledge", "silt-caked ledge"),
     "furnishing": ("peeling floral wallpaper", "wall of stained plaster", "row of warped floorboards"),
     "haunted place": ("overgrown garden gate", "crooked picket fence", "tangle of dead rose bushes"),
     "dwelling": ("rusted swing on the porch", "overgrown garden gate", "crooked picket fence"),
@@ -932,12 +943,13 @@ CARDINALITY: dict[str, dict[str, str]] = {
                         "groping tendril", "fleshy stalk")),
     ),
     "emitters": _cardinality(
-        ("a lone part", ("cold spectral flame", "pale inner light", "pulsing inner light",
+        ("a lone part", ("cold spectral flame in its chest", "pale inner light in its chest",
+                         "pulsing inner light beneath its hide",
                          "hooded lantern", "guttering candle", "handheld torch beam",
                          "faint inner light", "lamp in an upstairs window", "flickering porch lamp")),
         ("a matched pair", ("pinprick eye", "reflective eye", "cold pinprick eye",
                             "hollow burning eye", "burning eye", "shining painted eye")),
-        ("a body row", ("luminous pustule",)),
+        ("a body row", ("luminous pustule on its flank",)),
     ),
     "armament": _cardinality(
         ("a hand weapon", (
@@ -1686,13 +1698,18 @@ VALUE_NEEDS: dict[str, dict[str, frozenset[str]]] = {
         "overgrown": _LIFE,
     },
     # A cursed object's furnished resting surfaces (velvet, a display case, a
-    # dusty shelf) presume an indoor, dry room; a reed marsh and a flooded
-    # church nave are neither. "dusty ledge" is left ungated on purpose.
+    # dusty shelf) presume an indoor, dry room; a reed marsh and a drowned
+    # church nave are neither. "dusty ledge" is the outdoor-or-underwater
+    # fallback, but "dusty" itself needs air (dust does not settle
+    # underwater) -- "silt-caked ledge" is submerged's own fallback so a
+    # cursed object always has a surface, wet or dry.
     "extras": {
         "velvet-lined case": _WALLS | frozenset({"air"}),
         "dusty shelf": _WALLS | frozenset({"air"}),
         "carved side table": _WALLS | frozenset({"air"}),
         "child-sized chair": _WALLS | frozenset({"air"}),
+        "dusty ledge": frozenset({"air"}),
+        "silt-caked ledge": frozenset({"submerged"}),
     },
 }
 
@@ -1752,6 +1769,13 @@ _add_traits("subkind", {"village priest": ("pacifist-role",)})
 # (a lake shore, the wilds).
 _add_traits(ENVIRONMENT_FIELD, {v: ("funerary-place",) for v in _ENV_GRAVES})
 _add_traits("subkind", {"rotting windmill": ("rural-landmark",)})
+# A figure already carrying a two-handed weapon has no hand left for a
+# lantern, a candle or a torch -- "backing away with a flashlight raised"
+# while also carrying a shotgun rendered a lantern strapped to a wrist.
+_add_traits("emitters", {v: ("hand-occupying",)
+                         for v in ("hooded lantern", "guttering candle", "handheld torch beam")})
+_add_traits("armament", {v: ("two-handed-weapon",) for v in ("shotgun", "fire axe")})
+_add_traits("extras", {"hunting rifle": ("two-handed-weapon",)})
 
 TRAIT_CONFLICTS: tuple[tuple[str, str], ...] = (
     ("inactive", "powered-act"),
@@ -1760,6 +1784,7 @@ TRAIT_CONFLICTS: tuple[tuple[str, str], ...] = (
     ("interior-place", "large-scale"),
     ("pacifist-role", "violent-act"),
     ("funerary-place", "rural-landmark"),
+    ("two-handed-weapon", "hand-occupying"),
 )
 TRAIT_REASONS: dict[str, str] = {
     "inactive|powered-act": "a thing at rest does not act",
@@ -1768,6 +1793,7 @@ TRAIT_REASONS: dict[str, str] = {
     "interior-place|large-scale": "a room cannot hold something huge",
     "pacifist-role|violent-act": "a priest does not kill",
     "funerary-place|rural-landmark": "a windmill belongs to a farm, not a graveyard",
+    "two-handed-weapon|hand-occupying": "both hands are already full",
 }
 
 

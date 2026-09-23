@@ -683,9 +683,10 @@ SUBKIND_GROUPS: dict[str, tuple[str, ...]] = {
     # stands in the scene. A war horn left the pool: a carried object with nothing
     # to rest on was drawn hanging in the middle of a forest.
     "relic": ("crystal orb", "enchanted tome", "reliquary", "magic mirror", "jewelled crown",
-              "staff of power", "jewelled chalice", "dragon egg", "ancient hourglass"),
+              "staff of power", "jewelled chalice", "dragon egg", "ancient hourglass",
+              "black grail", "singing harp"),
     "monument": ("sword in the stone", "runestone", "cursed idol", "portal arch",
-                 "rune-carved anvil", "dragon-skull totem"),
+                 "rune-carved anvil", "dragon-skull totem", "weeping idol"),
 }
 
 SUBKIND_POOLS: dict[str, tuple[str, ...]] = {
@@ -894,6 +895,9 @@ FORM_POOLS: dict[str, tuple[str, ...]] = {
     "rune-carved anvil": ("squat block of rune-cut iron", "horned block of blackened iron"),
     "dragon-skull totem": ("vast horned skull set on a stone slab",
                            "skull half-sunk in a heap of bones"),
+    "black grail": ("wide shallow drinking bowl", "tall tarnished chalice"),
+    "singing harp": ("tall standing frame harp", "small lap harp"),
+    "weeping idol": ("kneeling robed figure", "hooded figure with bowed head"),
 }
 
 
@@ -1670,7 +1674,11 @@ _S_DRAGON_ACT = (
     "shifting its great weight",
 )
 _S_DRAGON_IDLE = ("resting with its head lowered", "blinking slowly", "watching with narrowed eyes")
-_S_DRAGON_CALM = ("guarding a clutch of eggs", "grooming its scales with a long tongue")
+_S_DRAGON_CALM = ("grooming its scales with a long tongue",)
+#: A nest needs somewhere wild to nest -- a market square is not one, "hydra
+#: guarding eggs in a cobbled market square" was drawn as a stall-holder's
+#: neighbour.
+_S_DRAGON_NEST = ("guarding a clutch of eggs",)
 _S_WINGED_EV = ("unfurling its wings to their full span", "sweeping its tail in a wide arc")
 _S_WINGED_EV_SKY = (
     "beating its wings to climb into the air", "banking hard between two peaks",
@@ -2092,6 +2100,7 @@ _BUCKETS = (
     (_S_DRAGON_ACT, "activity", "n", _A, _A, ""),
     (_S_DRAGON_IDLE, "idle", "n", _A, _A, ""),
     (_S_DRAGON_CALM, "activity", "p", _A, _A, ""),
+    (_S_DRAGON_NEST, "activity", "p", _LIFE, _A, ""),
     (_S_WINGED_EV, "event", "n", _AIR, _A, ""),
     (_S_WINGED_EV_SKY, "event", "n", _SKY, _FLY, ""),
     (_S_WINGED_EV_SKY_WAR, "event", "c", _SKY, _FLY, ""),
@@ -2304,8 +2313,8 @@ _BUCKETS = (
 _S_DRAGON_CORE = (
     _S_DRAGON_EV_WAR + _S_DRAGON_EV_BREATH + _S_DRAGON_EV_AIR + _S_DRAGON_EV_COLD + _S_DRAGON_EV
     + _S_DRAGON_ACT
-    + _S_DRAGON_IDLE + _S_DRAGON_CALM + _S_STONE_DORMANT + _S_STONE_DORMANT_LIFE + _S_SLEEP
-    + _S_SLEEP_DRAGON + _S_SLEEP_LIFE
+    + _S_DRAGON_IDLE + _S_DRAGON_CALM + _S_DRAGON_NEST + _S_STONE_DORMANT + _S_STONE_DORMANT_LIFE
+    + _S_SLEEP + _S_SLEEP_DRAGON + _S_SLEEP_LIFE
 )
 _S_BEAST_CORE = (
     _S_BEAST_EV_WAR + _S_BEAST_EV_WAR_LIFE + _S_BEAST_EV_AIR_WAR + _S_BEAST_EV + _S_BEAST_EV_AIR + _S_BEAST_ACT
@@ -2906,6 +2915,15 @@ _SUBKIND_NEEDS: dict[str, frozenset[str]] = {
     "elven tree palace": _LIFE,
     "lighthouse": _SHORE,
     "windmill": _GROUND,
+    # Walk-only forms (no swim, no fly -- see _FORM_KEY_STANCES) reached
+    # underwater and astral-void places through the coarse kind-level gate
+    # (KIND_POOLS): a unicorn was drawn "charging headlong" through drowned
+    # city streets. "ground" is granted by wilds/waterside/settlement/
+    # underground alike, so this does not narrow where they legitimately
+    # already appear.
+    "unicorn": _GROUND, "nightmare steed": _GROUND, "silver stag": _GROUND,
+    "centaur": _GROUND, "satyr": _GROUND, "faun": _GROUND, "minotaur": _GROUND,
+    "gorgon": _GROUND,
 }
 
 VALUE_NEEDS: dict[str, dict[str, frozenset[str]]] = {
@@ -3106,6 +3124,9 @@ _NEGLECT_ACTS = (
 )
 _add_traits("condition", {v: ("pristine-state",) for v in _PRISTINE_CONDITIONS})
 _add_traits(SITUATION_FIELD, {v: ("neglect-act",) for v in _NEGLECT_ACTS})
+# A drawn bow needs both hands; a carried lantern rendered strapped to a
+# wrist on an archer mid-draw.
+_add_traits("extras", {"hooded lantern": ("hand-occupying",)})
 
 TRAIT_CONFLICTS: tuple[tuple[str, str], ...] = (
     ("self-coloured", "states-a-colour"),
@@ -3126,6 +3147,7 @@ TRAIT_CONFLICTS: tuple[tuple[str, str], ...] = (
     ("blade-act", "bow-weapon"),
     ("blade-act", "unbladed-weapon"),
     ("pristine-state", "neglect-act"),
+    ("bow-weapon", "hand-occupying"),
 )
 TRAIT_REASONS: dict[str, str] = {
     "self-coloured|states-a-colour": "a material that names its own colour fixes it",
@@ -3146,6 +3168,7 @@ TRAIT_REASONS: dict[str, str] = {
     "blade-act|bow-weapon": "a blade act needs a blade",
     "blade-act|unbladed-weapon": "a blade act needs a blade",
     "pristine-state|neglect-act": "a new or gleaming thing is not decaying",
+    "bow-weapon|hand-occupying": "a drawn bow needs both hands",
 }
 
 

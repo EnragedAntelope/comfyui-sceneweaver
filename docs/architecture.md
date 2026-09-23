@@ -1839,3 +1839,154 @@ no longer doubles as a lantern); `"crown"` fell to 1.4% in horror and 2.1% in
 fantasy, both now free of the render-trap phrase entirely (remaining hits
 are literal worn/held crowns - a lich's `"iron crown"`, a relic that *is* a
 `"jewelled crown"` - which are correct).
+
+## Round XIX: the 922-concern batch (part 2)
+
+53 images from a mixed sci-fi/fantasy/horror batch, the maintainer's render
+test of round XVIII plus fresh testing on all three genres together. Nine
+fixes this round - the first to touch all three packs in one round, though
+each fix stays inside its own pack; sci-fi and fantasy shared no code path
+that could let a fix in one cost the other.
+
+### Findings and fixes
+
+* **XIX1 Splitting the emitters/aperture clause (round XVIII) was necessary
+  but not sufficient.** "Glow in a mouth" was still reported: a diffusion
+  model attends across the whole prompt, not sentence by sentence, so an
+  unlocated "pulsing inner light" and a "ring-shaped toothed maw" still read
+  as one thing even in separate sentences - both describe the same
+  featureless silhouette, so the model puts the light where the mouth is.
+  Anchored every unlocated horror emitter to a body location other than the
+  face: `"cold spectral flame"` -> `"...in its chest"`,
+  `"pale inner light"` -> `"...in its chest"`, `"pulsing inner light"` ->
+  `"...beneath its hide"`, `"luminous pustule"` -> `"...on its flank"`.
+  Verified each phrase pluralizes correctly (`engine/grammar.py`'s
+  preposition-boundary rule needs the location phrase to start with one of
+  its recognised prepositions - "in", "beneath", "on" - immediately after
+  the noun, not after another adjective; an early draft, `"...deep in its
+  chest"`, pluralized "deep" instead of the noun and was caught by direct
+  testing before it shipped).
+* **XIX2 "dusty ledge" was still the fallback surface underwater.** Round
+  XVI declared it place-neutral on purpose, correctly for a reed marsh, but
+  dust does not settle underwater - a spirit board resting on a "dusty
+  ledge" in a "drowned church nave, deep underwater" rendered as a bone-dry
+  room with no water in it at all, confirming the maintainer's "that
+  drowned church still isn't looking right." Gated `"dusty ledge"` to `air`
+  (excludes submerged) and added `"silt-caked ledge"`, gated to `submerged`,
+  so a cursed object always has a surface, wet or dry.
+* **XIX3 A nest needs somewhere wild to nest.** `"guarding a clutch of
+  eggs"` (every dragon subkind, including a hydra) carried no place need at
+  all - confirmed in render: a marsh hydra guarding eggs in a cobbled
+  market square, between the stalls. Split it out of the shared
+  `_S_DRAGON_CALM` bucket into its own bucket requiring `life`, which
+  `settlement`/`cobbled market square` do not grant; `"grooming its scales"`
+  (needs nothing) stayed behind.
+* **XIX4 Walk-only creatures reached underwater and astral-void places
+  through a coarse kind-level gate.** `KIND_POOLS["underwater"]` lists
+  `"mythic beast"` and `"hybrid folk"` because some of their members swim
+  (kraken, hippocamp, merfolk, naga) - but the gate does not distinguish a
+  swimmer from `"unicorn"` (form stance `_WALK` only), confirmed in render:
+  "a huge untamed unicorn is charging headlong" through drowned city
+  streets. `value_stances`/`place_stances` correctly filters which
+  *situations* a walk-only form can do there, but does not exclude the
+  *subkind itself* from an incompatible place - a form-vs-place mismatch
+  the stance system was never wired to catch at that level. Gave the eight
+  walk-only members of `"hoofed beast"` and `"hybrid folk"`
+  (`unicorn`, `nightmare steed`, `silver stag`, `centaur`, `satyr`, `faun`,
+  `minotaur`, `gorgon`) a `ground` need via `_SUBKIND_NEEDS`, granted by
+  wilds/waterside/settlement/underground alike so nothing they already
+  correctly appear in is narrowed. Verified empirically (4000/6000-seed
+  targeted sweeps): zero walk-only subkinds reach `drowned city streets`
+  afterward, only the aquatic members do. A full audit of every remaining
+  walk-only subkind against every underwater/sky-only environment (giants,
+  most undead, constructs) is not done this round - scoped to the reported
+  kinds and their direct siblings; see Known gaps.
+* **XIX5 A full-throttle mishap needs room to have built up speed in.** Six
+  ground-vehicle situations (`"losing a wheel"`, `"spinning out"`,
+  `"throwing a track"`, `"ramming a barricade"`, `"climbing a dune ridge"`,
+  all "at full throttle"/"at speed", plus `"racing a storm front toward
+  shelter"`) carried no place need, confirmed in render: an amphibious
+  crawler "losing a wheel at full throttle" inside a "station docking ring
+  interior" - a tight, walled place `KIND_POOLS` allows a vehicle into for
+  loading, not racing through. Gated all six to `vast` (`"climbing a dune
+  ridge"` also needed `ground`, caught by the affordance lint on the word
+  "ridge" - the two zero-need situations that already had a place attached
+  to their name still needed the token spelled out).
+* **XIX6 A new cross-field trait: a hand can hold one thing.** "Someone
+  with a lantern stuck to their wrist while firing a bow," "holding too
+  much": a hand-held light (horror's `"hooded lantern"`/`"guttering
+  candle"`/`"handheld torch beam"`, fantasy's `"hooded lantern"`) is drawn
+  independently of armament, so it could land beside a bow at full draw or
+  a shotgun - both already occupying both hands. Declared `hand-occupying`
+  on the light values and a new `two-handed-weapon` trait on horror's
+  `shotgun`/`fire axe`/`hunting rifle`, conflicting with fantasy's existing
+  `bow-weapon` trait (`longbow`, `tiny bow`) - the same declarative
+  mechanism `bow-act`/`edged-weapon` already used, extended to a field
+  nobody had connected to it before rather than a new engine feature.
+* **XIX7 Fantasy's artifact pool was thin.** 15 subkinds across `relic`/
+  `monument`, each close to bare self-naming with only a kind-level
+  material/colour/markings pool behind it - the maintainer's "artifacts
+  kinda suck." Added three, each with its own `form` values (the one
+  per-subkind card an artifact needs; everything else already resolves at
+  the group level): `"black grail"` and `"singing harp"` (relic),
+  `"weeping idol"` (monument).
+
+### Investigated, not changed
+
+* **"Very odd protrusions" / "crystal protrusions."** Traced further than
+  round XVII's "diversify the tentacle vocabulary" note: `"alien creature"`'s
+  `detail_cap`/rotation is not obviously over-budget in field *count*
+  (comparable to sibling archetypes), but several small-scale fungal/
+  crystalline-growth subkinds stack multiple independently-counted part
+  fields at once (a filter stalk, four acid spore bursts, eight
+  light-sensing patches, three phosphorescent tendrils, a feeding slit - 17
+  individual named parts on one small body). This is a cardinality-budget
+  tension, not a vocabulary bug: the high-count values ("a dozen", "eight")
+  exist because "genuinely many" is the right description for some
+  creatures, and trimming them globally would cost the variety the
+  maintainer also asked to keep. Needs a body-plan-by-body-plan pass with
+  measurement, not a rushed cap change touching every scifi creature -
+  scoped out of this round, left for a dedicated one with this sharper
+  diagnosis to start from.
+* **"So many people spraying random stuff that makes no sense."** No single
+  traceable pool value found; `"sealing a hull breach with a foam sprayer"`
+  and `"spraying sealant on a seam"` are coherent as written. Likely a
+  diffusion-rendering limitation for the concept of a directed spray rather
+  than a text defect.
+* **"Stuff coming out of the dirt where there should not be dirt"
+  (sci-fi).** The word "dirt" does not appear anywhere in `data/scifi.py`;
+  not text-traceable.
+* **"Weird bone decorations on clothes."** `"sewn-on bone charms"` (a
+  horror markings value) is a coherent, thematically-intended folk-horror
+  detail; no defect found in the text.
+* **"Goat holding bow."** A faun's form is already `"goat-legged human
+  build"` - correctly bipedal with human arms. The quadrupedal-reading
+  render is most likely a model interpretation, not a text bug; no safer
+  rewording found without weakening the "goat-legged" cue that makes a
+  faun read as a faun at all.
+* **A vampire's dry velvet coat, rendered underwater with no waterlogged
+  cue.** Identified (`"bloodsucker"` has no submerged-appropriate material,
+  unlike `"drowned dead"`'s dedicated sodden rags) but not fixed this round
+  - lower confidence and impact than the other findings; noted for a future
+  pass rather than rushed.
+* **"A ramp down while a vehicle is moving and its engines are firing."**
+  Not reproduced from this batch's prompt text; no single situation or
+  value combination found that states both at once. Likely a rendering
+  combination rather than a text defect.
+
+### Round XIX, measured
+
+Full `unittest`/`pytest` suite green (670 tests, 131327 subtests).
+`reach_audit.py --pack scifi/fantasy/horror --gate` reports the same
+pre-existing gaps as round XVIII in sci-fi and horror, unchanged by this
+round's edits. Fantasy has one new entry, `"small lap harp"` (one of two
+`"singing harp"` form values) - the same rare-combination-not-sampled class
+already documented above (`"white-gold"`, the five unbucketed situations),
+not a structural gap; `singing harp` is one of eleven relic subkinds and the
+form is a straight coin flip within it. Verified directly (not just via the
+suite) that the two coherence fixes hardest to see from a diff alone hold:
+a 4000-seed sweep of `drowned city streets` before XIX4 drew `unicorn`
+three times and zero after, sourced only from `kraken`/`hippocamp`/
+`kelpie`/`giant sea turtle`/`selkie`/`naga`/`merfolk`; a 6000-seed sweep of
+every scene containing `"guarding a clutch of eggs"` after XIX3 drew it only
+in `life`-affording places, zero times in a settlement.

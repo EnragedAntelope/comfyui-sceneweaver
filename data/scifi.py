@@ -5395,7 +5395,10 @@ VALUE_NEEDS["situation"].update({
     "levelling its shoulder cannon": frozenset({}),  # robot or mech
     "lifting a spread of rubble off the ground": frozenset({"ground"}),  # alien artifact
     "listing badly with half its hull gone": frozenset({}),  # space station
-    "losing a wheel at full throttle": frozenset({}),  # flying,hovering,legged,surface vehicle,underwater,wheeled/tracked
+    # A full-throttle mishap needs room to have built up speed in -- reached
+    # a "station docking ring interior" (a tight, walled place) as readily
+    # as open ground, and rendered a ground vehicle racing indoors.
+    "losing a wheel at full throttle": frozenset({"vast"}),  # flying,hovering,legged,surface vehicle,underwater,wheeled/tracked
     "lowering a cargo cradle onto a waiting hull": frozenset({}),  # space station
     "lowering a maintenance platform": frozenset({}),  # space station
     "sweeping the terrain below with a scanning beam": frozenset({}),  # courier,starship
@@ -5426,7 +5429,7 @@ VALUE_NEEDS["situation"].update({
     "raising a cloud of grit": frozenset({"ground"}),  # flying,hovering,legged,surface vehicle,underwater,wheeled/tracked
     "raising a crest of quills": frozenset({}),  # alien creature,diffuse being
     "raising a heavy rock drill": frozenset({}),  # robot or mech,small drone
-    "ramming a barricade at full speed": frozenset({}),  # surface vehicle
+    "ramming a barricade at full speed": frozenset({"vast"}),  # surface vehicle
     "reaching down to help someone up": frozenset({"floor"}),  # spacefarer
     "keying a sequence into a console": frozenset({"floor", "structure"}),  # spacefarer
     "rearing up on its hind limbs": frozenset({}),  # alien creature
@@ -5470,7 +5473,7 @@ VALUE_NEEDS["situation"].update({
     "spilling a white plume from a ruptured hull": frozenset({}),  # space station
     "spilling its contents across the ground": frozenset({"ground"}),  # wreck
     "spilling light from a widening crack": frozenset({}),  # alien artifact
-    "spinning out at full throttle": frozenset({}),  # flying,hovering,legged,surface vehicle,underwater,wheeled/tracked
+    "spinning out at full throttle": frozenset({"vast"}),  # flying,hovering,legged,surface vehicle,underwater,wheeled/tracked
     "spinning out with a thruster stuck open": frozenset({}),  # courier,starship
     "spinning up a cloud of fragments": frozenset({}),  # alien artifact
     "spitting a stream of caustic bile": frozenset({}),  # alien creature,diffuse being
@@ -5499,7 +5502,9 @@ VALUE_NEEDS["situation"].update({
     "tearing open along a frost-welded seam": frozenset({}),  # wreck
     "tearing open along a line of light": frozenset({}),  # alien artifact
     "tearing open along a rusted seam": frozenset({}),  # wreck
-    "throwing a track at speed": frozenset({}),  # flying,hovering,legged,surface vehicle,underwater,wheeled/tracked
+    "throwing a track at speed": frozenset({"vast"}),  # flying,hovering,legged,surface vehicle,underwater,wheeled/tracked
+    "climbing a dune ridge at full throttle": frozenset({"vast", "ground"}),  # surface vehicle
+    "racing a storm front toward shelter": frozenset({"vast"}),  # flying,hovering,legged,surface vehicle,wheeled/tracked
     "tightening a coupling with a wrench": frozenset({"floor"}),  # spacefarer
     "hauling a stripped hulk in a tractor beam": frozenset({}),  # starship
     "tracking something overhead": frozenset({}),  # alien creature,diffuse being

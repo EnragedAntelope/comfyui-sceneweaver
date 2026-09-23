@@ -166,6 +166,22 @@ _Last verified: 2026-09-22_
   `time_of_day` (fantasy and horror) and the fantasy Tone filter are designed
   in `docs/genre-roadmap.md` and not built.
 - **Known gaps:**
+  - **Round XIX's walk-only-subkind fix (XIX4) is scoped, not exhaustive.**
+    Only the reported kinds and their direct siblings (hoofed beast,
+    hybrid folk) got a `ground` need; giants, most undead and constructs
+    are walk-only too and were never audited against every underwater/
+    astral-void/sky-only environment. Revisit if one of them turns up
+    somewhere it can't stand.
+  - **Alien creature "protrusions" (round XVII and XIX) needs a
+    body-plan-by-body-plan cardinality pass**, not another spot-fix: several
+    small-scale fungal/crystalline subkinds stack many independently-counted
+    part fields (a filter stalk, four spore bursts, eight patches, three
+    tendrils, a slit) on one small body. See "Round XIX" in
+    `docs/architecture.md` for the full diagnosis.
+  - **A vampire's material has no submerged-appropriate option.** Unlike
+    `"drowned dead"`'s dedicated sodden rags, `"bloodsucker"`'s velvet/cloak/
+    gown materials render dry-looking even when the entity is staged
+    underwater. Identified in round XIX, not fixed.
   - `scripts/reach_audit.py --gate` **fails on `main` (0.3.0) and on every
     round since**, including this one, with a handful of never-drawn values
     confined to a rare place-and-kind (or place-and-subkind) combination -- a
@@ -257,8 +273,46 @@ _Last verified: 2026-09-22_
     land," "random eyes," "wet bony coverings" and "floating chalice" were
     each investigated and found either already-coherent or not
     independently traceable this round. Full findings are in
-    `docs/architecture.md` ("Round XVIII: the 922-concern batch"). **Not
-    yet render-tested** - awaiting the maintainer's next ComfyUI pass.
+    `docs/architecture.md` ("Round XVIII: the 922-concern batch").
+  - **Round XIX** (2026-09-22, still on `tmp/sceneweaver-fantasy`) is the
+    maintainer's render test of round XVIII: 53 images across all three
+    genres in one batch, the first round to touch sci-fi, fantasy and
+    horror together (each fix stays inside its own pack). Nine fixes: round
+    XVIII's emitters/aperture sentence split helped but did not stop "glow
+    in a mouth" - a diffusion model attends across the whole prompt, not
+    sentence by sentence, so an unlocated glow and a mouth on the same
+    featureless silhouette still merge; anchored every unlocated horror
+    emitter to a body location other than the face ("in its chest",
+    "beneath its hide", "on its flank"). `"dusty ledge"`, round XVI's
+    deliberate place-neutral fallback, still doesn't know dust does not
+    settle underwater - gated to `air`, added `"silt-caked ledge"` for
+    `submerged` (the maintainer's "drowned church still isn't looking
+    right"). `"guarding a clutch of eggs"` had no place need at all -
+    confirmed in render, a hydra guarding eggs in a market square; split
+    into its own bucket needing `life`. Walk-only creatures (unicorn,
+    centaur, satyr, faun, minotaur, gorgon and siblings) reached underwater
+    and astral-void places through a coarse kind-level gate that only knows
+    some family members swim - confirmed in render, "a huge untamed
+    unicorn is charging headlong" through drowned city streets; gave the
+    eight land-bound members a `ground` need (verified empirically: zero
+    walk-only subkinds reach a submerged place afterward, in a targeted
+    sweep). Six "at full throttle" vehicle-mishap situations had no place
+    need either - confirmed in render, a crawler racing inside a station's
+    tight docking-ring interior; gated to `vast`. A new cross-field trait,
+    `hand-occupying` vs `two-handed-weapon`/`bow-weapon`, stops a hand-held
+    lantern or candle from being drawn alongside a bow at full draw or a
+    shotgun - "a lantern stuck to their wrist while firing a bow." Fantasy's
+    thin 15-subkind artifact pool ("artifacts kinda suck") gained three:
+    `black grail`, `singing harp`, `weeping idol`. "Crystal and other
+    protrusions" got a sharper diagnosis than round XVII's - several
+    small-scale alien creatures stack many independently-counted part
+    fields at once, a cardinality-budget tension rather than a vocabulary
+    bug - but a real fix needs a body-plan-by-body-plan pass, left for a
+    dedicated round. "Spraying that makes no sense," "dirt where there
+    shouldn't be," "bone decorations," "goat holding a bow," a vampire's
+    dry coat underwater, and "a ramp down while moving" were each
+    investigated; none had a traceable text-level cause found this round
+    (full detail in `docs/architecture.md`, "Round XIX").
   - The substance-adjective render-trap class (item 3 above) has no automated
     check; a genre author has to catch it by eye until a narrower signal than
     "contains a common English word" is found.
