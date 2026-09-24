@@ -2412,3 +2412,72 @@ were reworded to one figure in all three packs.
   whisker barbels on a snake, route stripes (numbers), an ion-trace strip (a
   laser), radiation trefoils, a nose cone (an aircraft), bloodshot eyes (a
   bleeding face), a luminous outline (a second ghost).
+
+## Round XXIV: the 924 morning batch
+
+The maintainer's render test of round XXIII, the unclear images asked
+about, plus two requests: horror swarms (vermin coming at the viewer or
+crawling over a screaming victim) and pox, boils and lesions as gore; and
+artifacts, cursed objects and haunted places that were flagged for doing
+nothing dramatic.
+
+### New content
+
+- Horror kind `swarm` (group `vermin`: cockroaches, spiders, rats, snakes,
+  centipedes). A swarm is its bodies: no limb, eye, mouth or weapon pools.
+  Its acts come at the viewer, pour out of walls, drains, graves and logs, or
+  cover a screaming victim; the victim is a second body, so it is drawn as a
+  person, not a clone. Weighted below the other living kinds.
+- Horror mortal group `afflicted` (a plague-stricken villager, a pox-ridden
+  wanderer): the horror is their own body. Boils, pox scars and open lesions
+  are gore-tagged finishes on them, on other mortals and on the undead.
+  Survivors gained acts with a swarm on themselves.
+- Cursed objects, haunted places and relics in every pack gained dramatic
+  acts (a painted figure climbing out of its frame, a figure behind the mirror
+  glass, every pane lit at once, a relic hurling a rover); the quiet ones were
+  reworded or made rarer (`CONDITION_WEIGHTS`).
+
+### Cross-genre
+
+`mask_for_place` now fails a guest need the host has no word for: a horror
+chair "set against a wall of warped panelling" stood in a fantasy stone crypt,
+because fantasy has no `room`. The values this drops across all genre pairs
+are few and all read wrong in the host (wall backdrops, sun-bleaching,
+drifting debris).
+
+### Coherence gates
+
+- Sci-fi: pristine or new things show no worn markings or finishes, and never
+  crack open; scorch marks burn nowhere under water; a visor strip is not
+  worn inside a clear bubble helmet; a lithovore walks (it was a rooted plate
+  column with legs); a worm has no foot; a plated body is not a gel; legs come
+  in twos or more; a drone pinned under a plate needs a floor.
+- Fantasy: both-hands acts set every held weapon down; a gaunt body is not a
+  heavy one; a colossus, behemoth or elder dragon, and anything colossal,
+  needs a vast place; a river barge stays off the open sea; a marsh hydra
+  needs a shore; a wrecked airship's gasbag has come down (a new form); a
+  moving cart has its horses and a siege tower its soldiers; a chariot is
+  never colossal; fire-bearing emitters and air acts stay out of water.
+- Horror: a blade act needs a blade; one head covering per head (a hood, a
+  hat, a sack mask or a headlamp); dragging takes both hands; wallpaper and
+  panelling belong to homely rooms, and nothing stands behind furniture
+  drifting in the void; a small likeness is never large; a building's form
+  and walls are the same material; nothing is freshly scorched under water;
+  a mortuary slab is indoors.
+
+### Render traps renamed
+
+A "hospital starship" (a present-day hospital ship with a radio mast), a
+dorsal sensor "spine" (a giant boom), warp coil rings (wheels on a grounded
+ship), rusted banners (a field of red flags), bloodshot and axe-scarred
+giants (a bleeding face, an axe), a thrown satchel and a volley of arrows (the
+thrower and the archers), a snake's mouth on a naga (a snake's head), a
+"stone" fist on a bronze colossus, "dropping from the ceiling" (hanging in
+mid-air under dripping goop).
+
+### Known gaps closed
+
+A sea of clouds has no rock to bank around; a vampire is never placed
+underwater (its velvet drew dry); a generation ship stays in open space; a
+sampled audit of all three packs found no body placed where it cannot
+stand, so round XIX's walk-only note is retired.

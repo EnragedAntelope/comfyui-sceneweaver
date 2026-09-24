@@ -319,7 +319,9 @@ def mask_for_place(
 
     The guest drew its coat and its gear without knowing where it would stand: a
     "rain-soaked trench coat" brought rain into a habitat ring. Omitted, with its
-    count and colour, for the reason ``mask_for_filter`` omits.
+    count and colour, for the reason ``mask_for_filter`` omits. A need the host
+    has no word for fails: a horror chair set against "a wall of warped
+    panelling" stood in a fantasy stone crypt, because fantasy has no ``room``.
     """
     if environment is None:
         return
@@ -328,7 +330,7 @@ def mask_for_place(
         value = fields.get(name)
         if value is None or name in chosen or name in identity:
             continue
-        if _needs_met(resolved_needs(guest, name, value), host, environment, unknown_ok=True):
+        if _needs_met(resolved_needs(guest, name, value), host, environment, unknown_ok=False):
             continue
         fields[name] = None
         for other, other_spec in guest.entity_fields.items():

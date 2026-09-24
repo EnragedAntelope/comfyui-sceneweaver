@@ -340,7 +340,11 @@ class RepetitionTests(unittest.TestCase):
         collision = "verdigris staining"
         pools = {name: dict(by_kind) for name, by_kind in SCIFI_PACK.pools.items()}
         pools["surface_detail"]["alien artifact"] = (collision,)
-        pack = dataclasses.replace(SCIFI_PACK, pools=pools)
+        # A trait on a finish the narrowed pool no longer holds would name a non-value.
+        live = {v for by_kind in pools["surface_detail"].values() for v in by_kind}
+        traits = {name: dict(table) for name, table in SCIFI_PACK.value_traits.items()}
+        traits["surface_detail"] = {v: t for v, t in traits["surface_detail"].items() if v in live}
+        pack = dataclasses.replace(SCIFI_PACK, pools=pools, value_traits=traits)
         widgets = {
             "entity1_kind": "alien artifact",
             "entity1_markings": collision,

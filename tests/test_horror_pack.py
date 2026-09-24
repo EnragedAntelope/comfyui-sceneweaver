@@ -200,6 +200,20 @@ class HorrorCrossGenreTests(unittest.TestCase):
                 self.assertNotIn("rain-soaked", values)
         self.assertGreater(seen, 0)
 
+    def test_a_guest_drops_a_backdrop_the_host_has_no_word_for(self) -> None:
+        # A rocking chair "set against a wall of warped panelling" in a stone crypt (#820).
+        seen = 0
+        for seed in range(400):
+            _text, payload = generate_entity(seed, HORROR_PACK)
+            if payload["fields"].get("subkind") not in H.SUBKIND_GROUPS["furnishing"]:
+                continue
+            seen += 1
+            _t, document = generate_scene(seed, FANTASY_PACK, wired_entities={1: payload},
+                                          widgets={"environment": "catacomb crypt"}, entity_count=1)
+            with self.subTest(seed=seed):
+                self.assertIsNone(document["entities"][0].get("extras"))
+        self.assertGreater(seen, 0)
+
 
 if __name__ == "__main__":
     unittest.main()

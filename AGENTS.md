@@ -8,7 +8,7 @@ genre is a data module and two registration lines.
 
 ## Current state
 
-_Last verified: 2026-09-23_
+_Last verified: 2026-09-24_
 
 - **Status:** **public beta.** `main` is v0.4.0 (coherence round XIV, published
   to the ComfyUI Registry). **v0.5.0 is on `tmp/sceneweaver-fantasy`**, awaiting
@@ -166,12 +166,6 @@ _Last verified: 2026-09-23_
   `time_of_day` (fantasy and horror) and the fantasy Tone filter are designed
   in `docs/genre-roadmap.md` and not built.
 - **Known gaps:**
-  - **`"banking hard around a spire of rock"` (fantasy, round XIX's own
-    addition) can still land in `"sea of clouds"`**, the one `sky`-band
-    place with no visible rock. A bounded soft spot (2 of 3 `sky` places do
-    have rock in view), not fixed in round XX because the available tokens
-    either overload `ground`'s stance meaning or would exist for this one
-    value alone. See "Round XX" in `docs/architecture.md`.
   - **A few round-XX images showed a situation-vs-pose mismatch with no
     text contradiction behind it** (a fire drake breathing fire instead of
     "snapping at a spear," a siege mech shown firing instead of "crouching
@@ -181,22 +175,10 @@ _Last verified: 2026-09-23_
     Flagged for the maintainer rather than guessed at - there is no wording
     fix that reliably stops a fire-breathing dragon's own identity from
     upstaging one frame's specific action.
-  - **Round XIX's walk-only-subkind fix (XIX4) is scoped, not exhaustive.**
-    Only the reported kinds and their direct siblings (hoofed beast,
-    hybrid folk) got a `ground` need; giants, most undead and constructs
-    are walk-only too and were never audited against every underwater/
-    astral-void/sky-only environment. Revisit if one of them turns up
-    somewhere it can't stand.
-  - **Alien creature "protrusions" (round XVII and XIX) needs a
-    body-plan-by-body-plan cardinality pass**, not another spot-fix: several
-    small-scale fungal/crystalline subkinds stack many independently-counted
-    part fields (a filter stalk, four spore bursts, eight patches, three
-    tendrils, a slit) on one small body. See "Round XIX" in
-    `docs/architecture.md` for the full diagnosis.
-  - **A vampire's material has no submerged-appropriate option.** Unlike
-    `"drowned dead"`'s dedicated sodden rags, `"bloodsucker"`'s velvet/cloak/
-    gown materials render dry-looking even when the entity is staged
-    underwater. Identified in round XIX, not fixed.
+  - **Alien creature "protrusions" (round XVII and XIX):** since round XXIV a
+    small or tiny body draws no count above four and no extra growth, but
+    every creature still names limbs, a natural weapon, senses and a mouth by
+    design. Watch renders of small creatures.
   - `scripts/reach_audit.py --gate` samples, so at 12000 seeds it still lists
     a few rare place-and-kind combinations as never drawn; at 30000 seeds all
     three packs pass (round XXII). Round XXII fixed every value that was
@@ -206,9 +188,9 @@ _Last verified: 2026-09-23_
   - Round XIV renamed or removed dropdown values; a saved workflow that locked
     one reports "value not in list". Release notes live in commit messages,
     never in the README (maintainer's rule).
-  - Not fixed in round XIV (no clean fix yet): a generation ship can still be
-    drawn landed on a surface. "lunar far-side orbit" is spoken as orbit over
-    an ochre, ice-streaked moon since round XXIII; unverified in a render.
+  - "lunar far-side orbit" is spoken as orbit over an ochre, ice-streaked
+    moon since round XXIII; unverified in a render. Alien moons and ring and
+    binary places (round XXIV) are wording fixes, verified only by render.
   - There is **no core-nodes-only example workflow.** The two graphs in
     `example_workflows/` are the maintainer's real Krea2 graphs, saved from a
     running ComfyUI, so they are known-good wiring but need a specific
@@ -398,6 +380,12 @@ _Last verified: 2026-09-23_
     support; acts naming an unseen second person (drawn as clones) were
     reworded; the validator fails a situation opening with a preposition.
     Detail: `docs/architecture.md` ("Round XXIII").
+  - **Round XXIV** (2026-09-24, still on `tmp/sceneweaver-fantasy`) answers
+    the 924 morning batch. Horror gained a `swarm` kind (vermin coming at the
+    viewer or over a screaming victim) and an `afflicted` mortal group (pox,
+    boils and lesions as gore); objects, places and relics in every pack
+    gained dramatic acts; `mask_for_place` now fails a guest need the host has
+    no word for. Detail: `docs/architecture.md` ("Round XXIV").
   - The substance-adjective render-trap class (item 3 above) is checked only
     for colours (`COLOURWORD`); in other fields an author still catches it by
     eye.

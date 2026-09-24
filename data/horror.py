@@ -107,12 +107,12 @@ COUNT_WEIGHTS: dict[str, float] = {
 #: A thing at rest is the quiet frame horror is good at; weighted so it stays an
 #: occasional one rather than a still life on every seed.
 CONDITION_WEIGHTS: dict[str, float] = {
-    "entombed": 0.4, "dormant": 0.4, "abandoned": 0.6, "boarded-up": 0.6,
+    "entombed": 0.4, "dormant": 0.3, "abandoned": 0.45, "boarded-up": 0.45,
 }
 
 KIND_WEIGHTS: dict[str, float] = {
     "undead": 1.3, "spirit": 1.2, "cryptid": 1.2, "eldritch horror": 0.9, "mortal": 1.2,
-    "cursed object": 0.6, "haunted place": 0.7,
+    "cursed object": 0.6, "haunted place": 0.7, "swarm": 0.8,
 }
 
 
@@ -429,20 +429,21 @@ KINDS: tuple[str, ...] = (
     "mortal",
     "cursed object",
     "haunted place",
+    "swarm",
 )
 
 #: A cursed object belongs in a room or a tomb, a haunted place under open sky.
 KIND_POOLS: dict[str, tuple[str, ...]] = {
     POOL_DEFAULT_KEY: KINDS,
-    "wilds": ("undead", "spirit", "cryptid", "eldritch horror", "mortal", "haunted place"),
-    "graveyard": ("undead", "spirit", "cryptid", "mortal", "haunted place"),
-    "waterside": ("undead", "spirit", "cryptid", "eldritch horror", "mortal", "haunted place"),
+    "wilds": ("undead", "spirit", "cryptid", "eldritch horror", "mortal", "haunted place", "swarm"),
+    "graveyard": ("undead", "spirit", "cryptid", "mortal", "haunted place", "swarm"),
+    "waterside": ("undead", "spirit", "cryptid", "eldritch horror", "mortal", "haunted place", "swarm"),
     "underwater": ("undead", "spirit", "eldritch horror", "cursed object"),
-    "town": ("undead", "spirit", "cryptid", "mortal", "haunted place"),
-    "interior": ("undead", "spirit", "cryptid", "eldritch horror", "mortal", "cursed object"),
-    "underground": ("undead", "spirit", "cryptid", "eldritch horror", "mortal", "cursed object"),
-    "otherworld": ("spirit", "eldritch horror", "mortal", "cursed object"),
-    "rotting fishing pier": ("undead", "spirit", "cryptid", "eldritch horror", "mortal"),
+    "town": ("undead", "spirit", "cryptid", "mortal", "haunted place", "swarm"),
+    "interior": ("undead", "spirit", "cryptid", "eldritch horror", "mortal", "cursed object", "swarm"),
+    "underground": ("undead", "spirit", "cryptid", "eldritch horror", "mortal", "cursed object", "swarm"),
+    "otherworld": ("spirit", "eldritch horror", "mortal", "cursed object", "swarm"),
+    "rotting fishing pier": ("undead", "spirit", "cryptid", "eldritch horror", "mortal", "swarm"),
 }
 
 SUBKIND_GROUPS: dict[str, tuple[str, ...]] = {
@@ -479,6 +480,12 @@ SUBKIND_GROUPS: dict[str, tuple[str, ...]] = {
     "sacred ruin": ("ruined chapel", "family mausoleum", "boarded-up church"),
     "attraction": ("rusted carnival ride", "derelict funhouse"),
     "landmark": ("lonely lighthouse", "rotting windmill", "rusted water tower"),
+    # swarm -- vermin in their thousands, coming for the viewer or already on
+    # somebody else.
+    "vermin": ("swarm of cockroaches", "swarm of spiders", "swarm of rats", "writhing mass of snakes",
+               "swarm of centipedes"),
+    # mortal -- the sick, whose horror is their own bodies.
+    "afflicted": ("plague-stricken villager", "pox-ridden wanderer"),
 }
 
 SUBKIND_POOLS: dict[str, tuple[str, ...]] = {
@@ -490,10 +497,11 @@ SUBKIND_POOLS: dict[str, tuple[str, ...]] = {
     "eldritch horror": SUBKIND_GROUPS["tentacled horror"] + SUBKIND_GROUPS["many-eyed horror"]
     + SUBKIND_GROUPS["amalgam"],
     "mortal": SUBKIND_GROUPS["cult"] + SUBKIND_GROUPS["stalker"] + SUBKIND_GROUPS["occultist"]
-    + SUBKIND_GROUPS["survivor"],
+    + SUBKIND_GROUPS["survivor"] + SUBKIND_GROUPS["afflicted"],
     "cursed object": SUBKIND_GROUPS["keepsake"] + SUBKIND_GROUPS["furnishing"],
     "haunted place": SUBKIND_GROUPS["dwelling"] + SUBKIND_GROUPS["sacred ruin"]
     + SUBKIND_GROUPS["attraction"] + SUBKIND_GROUPS["landmark"],
+    "swarm": SUBKIND_GROUPS["vermin"],
 }
 
 
@@ -563,6 +571,11 @@ FORM_POOLS: dict[str, tuple[str, ...]] = {
     "lonely lighthouse": ("tall white tower on the rocks", "squat stone light tower"),
     "rotting windmill": ("timber mill tower with broken sails", "stone windmill tower"),
     "rusted water tower": ("bulbous tank on stilt legs", "tall cylindrical tank on a frame"),
+    # swarm
+    "swarm": ("seething carpet of countless bodies", "rippling tide of countless bodies",
+              "heaving mound of countless bodies"),
+    "writhing mass of snakes": ("heaving knot of countless coils", "rippling tide of countless coils"),
+    "afflicted": ("stooped trembling build", "emaciated shivering build"),
 }
 
 MATERIAL_POOLS: dict[str, tuple[str, ...]] = {
@@ -603,6 +616,13 @@ MATERIAL_POOLS: dict[str, tuple[str, ...]] = {
     "sacred ruin": ("moss-streaked stone", "blackened brick", "weathered marble", "rotting timber"),
     "attraction": ("rust-streaked steel", "peeling painted plywood"),
     "landmark": ("weathered clapboard", "rust-streaked steel", "moss-streaked stone"),
+    # swarm
+    "swarm of cockroaches": ("glossy chitin shells",),
+    "swarm of spiders": ("bristling coarse hair", "glossy chitin"),
+    "swarm of rats": ("greasy matted fur", "mangy wet fur"),
+    "writhing mass of snakes": ("slick overlapping scales", "dull dry scales"),
+    "swarm of centipedes": ("segmented chitin plates",),
+    "afflicted": ("filthy nightshirt", "threadbare sackcloth smock", "stained bandage wrappings"),
 }
 
 _COLOR_SKIN = ("grey-green", "corpse grey", "bruised purple", "jaundiced yellow", "waxen white",
@@ -618,6 +638,7 @@ PRIMARY_COLOR_POOLS: dict[str, tuple[str, ...]] = {
     "bog body": ("peat brown", "dark umber", "blackened brown"),
     "spirit": _COLOR_SPIRIT,
     "cryptid": ("pitch black", "ash grey", "drab brown", "waxen white", "mottled brown"),
+    "swarm": ("pitch black", "drab brown", "mottled brown", "ash grey"),
     "crawler": ("waxen white", "corpse grey", "ash grey"),
     "eldritch horror": ("bruised purple", "slate grey", "sickly green", "raw red", "pallid pink"),
     "mortal": _COLOR_GARB,
@@ -657,6 +678,7 @@ MARKINGS_POOLS: dict[str, tuple[str, ...]] = {
     "cryptid": ("pale scar patches", "mud-caked streaks", "patchy dark mottling"),
     "cursed beast": ("pale scar patches", "bristling ridges of fur", "mud-caked streaks"),
     "effigy": ("crude stitching", "faded paint smears"),
+    "swarm": ("patchy dark mottling", "pale banded stripes"),
     "eldritch horror": ("pulsing vein patterning", "clustered warty growths"),
     "mortal": ("painted ritual sigils", "sewn-on bone charms", "mud-spattered hems"),
     "cursed object": ("scratched sigils", "faded painted flowers", "tiny bite marks"),
@@ -669,16 +691,20 @@ SURFACE_DETAIL_POOLS: dict[str, tuple[str, ...]] = {
     POOL_DEFAULT_KEY: ("cracked finish", "thick dust"),
     "undead": ("grave dirt in every crease", "split grey skin", "clumps of wet earth",
                "dripping fresh blood", "exposed ribs", "torn-open gut wound",
-               "glistening exposed muscle"),
+               "glistening exposed muscle", "bursting plague boils", "black pox lesions"),
     "skeletal dead": ("cobwebbed joints", "cracked yellowed bone", "clinging grave dirt"),
     "spirit": ("frayed translucent edges", "slowly dripping water"),
     "cryptid": ("old gouged scars", "cracked peeling skin", "caked dried mud",
                 "fresh claw-mark gashes"),
     "cursed beast": ("burrs matted into the fur", "old gouged scars", "blood-matted fur around the muzzle"),
     "effigy": ("straw poking through the seams", "crow-pecked burlap"),
+    "swarm": ("glistening wet backs", "clinging cobwebs and grime"),
     "eldritch horror": ("glistening slime", "weeping sores", "barnacle-like growths",
                         "raw weeping flesh"),
-    "mortal": ("mud-caked boots", "rain-soaked clothing", "torn sleeves", "blood-spattered sleeves"),
+    "mortal": ("mud-caked boots", "rain-soaked clothing", "torn sleeves", "blood-spattered sleeves",
+               "pox-scarred skin"),
+    "afflicted": ("fever-flushed skin", "sweat-soaked collar", "weeping boils on the neck", "pox-scarred skin",
+                  "open lesions along the arms"),
     "cursed object": ("crazed varnish", "thick dust", "hairline cracks", "faded gilt edges"),
     "haunted place": ("peeling paint", "sagging gutters", "shattered windows", "creeping black mould"),
 }
@@ -734,6 +760,7 @@ APPENDAGE_POOLS: dict[str, tuple[str, ...]] = {
     "lonely lighthouse": ("rusted access ladder", "cracked lamp-room glass"),
     "rotting windmill": ("rusted access ladder", "broken sail"),
     "rusted water tower": ("rusted access ladder", "corroded support strut"),
+    "swarm": (),
 }
 
 EMITTER_POOLS: dict[str, tuple[str, ...]] = {
@@ -753,6 +780,7 @@ EMITTER_POOLS: dict[str, tuple[str, ...]] = {
     # A hands-free light: with only hand-held ones a two-handed shotgun or
     # fire axe could never be drawn beside them.
     "mortal": ("hooded lantern", "guttering candle", "handheld torch beam", "headlamp"),
+    "afflicted": ("guttering candle",),
     # The warden's lantern is in the name; a second light was held awkwardly.
     "lantern-bearing warden": ("headlamp",),
     "cursed object": ("faint inner light",),
@@ -764,6 +792,7 @@ EMITTER_POOLS: dict[str, tuple[str, ...]] = {
     "furnishing": ("faint inner light",),
     "haunted place": ("lamp in an upstairs window", "flickering porch lamp"),
     "attraction": ("string of bare bulbs", "flickering marquee light"),
+    "swarm": (),
 }
 
 ARMAMENT_POOLS: dict[str, tuple[str, ...]] = {
@@ -785,6 +814,8 @@ ARMAMENT_POOLS: dict[str, tuple[str, ...]] = {
     "village priest": ("silver crucifix", "wooden stake"),
     "cursed object": (),
     "haunted place": (),
+    "swarm": (),
+    "afflicted": (),
 }
 
 SENSOR_POOLS: dict[str, tuple[str, ...]] = {
@@ -807,6 +838,7 @@ SENSOR_POOLS: dict[str, tuple[str, ...]] = {
     "furnishing": (),
     "haunted family picture": ("watching painted eye",),
     "haunted place": (),
+    "swarm": (),
 }
 
 APERTURE_POOLS: dict[str, tuple[str, ...]] = {
@@ -833,6 +865,7 @@ APERTURE_POOLS: dict[str, tuple[str, ...]] = {
     "antique rocking chair": ("worn wicker seat",),
     "haunted place": ("front door hanging open", "cellar door", "gaping broken window"),
     "attraction": ("boarded-up entrance", "gaping clown-mouth entrance"),
+    "swarm": (),
 }
 
 EXTRAS_POOLS: dict[str, tuple[str, ...]] = {
@@ -846,11 +879,13 @@ EXTRAS_POOLS: dict[str, tuple[str, ...]] = {
                "rusted shackle"),
     "spirit": ("wilted bouquet", "tarnished locket"),
     "cryptid": ("tangle of snagged cloth", "trail of muddy prints"),
+    "swarm": ("scatter of gnawed bones", "litter of shed husks"),
     "cursed beast": ("broken chain collar", "tangle of snagged cloth"),
     "eldritch horror": ("trail of glistening slime", "cluster of clinging barnacles"),
     "mortal": ("ring of old iron keys", "coil of wire", "leather satchel", "burlap sack"),
     "survivor": ("flashlight", "bolt-action hunting rifle", "first aid kit", "crumpled map"),
     "occultist": ("leather-bound grimoire", "bundle of dried herbs", "bird skull charm"),
+    "afflicted": ("stained rag", "wooden rosary", "empty tin cup"),
     # "velvet-lined case" and its furnished siblings used to reach an object
     # in a reed marsh or on the floor of a drowned church -- gated below to
     # an indoor, dry place (VALUE_NEEDS). "dusty ledge" is the outdoor
@@ -869,6 +904,9 @@ OMITTED_POOLS: frozenset[tuple[str, str]] = frozenset({
     ("armament", "rotting dead"), ("armament", "spirit"), ("armament", "cursed object"),
     ("armament", "haunted place"), ("sensors", "haunted place"), ("sensors", "furnishing"),
     ("sensors", "keepsake"), ("sensors", "effigy"),
+    # A swarm is its thousands of bodies: no one limb, eye, mouth or weapon.
+    ("appendages", "swarm"), ("emitters", "swarm"), ("armament", "swarm"), ("sensors", "swarm"),
+    ("aperture", "swarm"), ("armament", "afflicted"),
 })
 
 
@@ -893,6 +931,8 @@ CONDITION_POOLS: dict[str, tuple[str, ...]] = {
     # "water-stained" rendered as literal water dripping off a dry chair --
     # the same substance-word-collision class as "forked"/"furled".
     "cursed object": ("antique", "cracked", "damp-blotched", "scorched", "dormant"),
+    "swarm": ("ravenous", "teeming", "restless"),
+    "afflicted": ("feverish", "exhausted", "wild-eyed", "delirious"),
     "haunted place": ("abandoned", "boarded-up", "burnt-out", "overgrown", "sagging"),
 }
 
@@ -905,6 +945,7 @@ SCALE_POOLS: dict[str, tuple[str, ...]] = {
     "mortal": ("small", "large", "hulking"),
     "cursed object": ("small", "large"),
     "haunted place": ("small", "large", "towering"),
+    "swarm": ("small", "large"),
 }
 
 
@@ -1151,7 +1192,7 @@ _S_BEAST_EV_GORE = (
 )
 _S_BEAST_ACT = ("baring its teeth in a silent snarl", "licking its muzzle slowly")
 _S_CRAWLER_ACT = ("crawling along the ceiling", "scuttling backwards on all fours")
-_S_CRAWLER_EV = ("dropping from the ceiling",)
+_S_CRAWLER_EV = ("leaping down from the ceiling at the viewer",)
 _S_EFFIGY_ACT = ("climbing down from its post", "turning its sackcloth head")
 _S_EFFIGY_EV = ("lurching upright among the stalks",)
 _S_WATCHER_ACT_SKY = ("spreading its wings against the sky",)
@@ -1196,7 +1237,7 @@ _S_MORTAL_EV_GORE = (
 _S_MORTAL_ACT = (
     "standing silently and watching", "tilting their head slowly", "chanting under their breath",
     "dragging a heavy sack", "sharpening a blade on a whetstone", "setting down a single candle",
-    "wiping their hands on a stained apron", "turning a key in a rusted padlock",
+    "wiping their hands on a filthy rag", "turning a key in a rusted padlock",
     "counting under their breath",
 )
 _S_MORTAL_IDLE = ("waiting motionless", "standing perfectly still")
@@ -1228,6 +1269,65 @@ _S_SURVIVOR_ACT = (
 )
 _S_SURVIVOR_IDLE = ("hiding very still", "catching their breath")
 _S_SURVIVOR_PEACE = ("praying quietly by candle stub",)
+#: The swarm seen on somebody else: the viewer watches it happen.
+_S_SURVIVOR_SWARM = (
+    "screaming as cockroaches swarm up their arms", "clawing at spiders crawling over their face",
+    "shrieking as rats pour over their feet", "thrashing as snakes coil around their legs",
+)
+
+# --- the afflicted ---
+_S_AFFLICTED_EV = (
+    "collapsing to their knees", "staggering toward the viewer with one arm outstretched",
+    "lurching away from the viewer", "flinching from a sudden light",
+    "screaming as flies swarm around them", "tearing at their collar as if suffocating",
+)
+_S_AFFLICTED_EV_GORE = ("coughing up black blood", "clawing at weeping boils until they bleed")
+_S_AFFLICTED_ACT = (
+    "shivering under a filthy blanket", "rocking back and forth and muttering",
+    "ringing a small plague bell as they limp along", "limping forward on a crooked stick",
+    "wheezing with every breath", "reaching out with a trembling hand",
+    "shuffling forward with bowed head", "picking at a stained bandage",
+    "whispering a feverish prayer", "shaking with fever in the cold",
+)
+_S_AFFLICTED_ACT_GORE = (
+    "scratching at weeping boils on their neck", "staring in horror at their blistered hands",
+    "peeling a bandage from an open sore",
+)
+_S_AFFLICTED_IDLE = ("slumped and wheezing", "staring blankly ahead")
+_S_AFFLICTED_WALLS = ("slumped shivering against a wall",)
+
+# --- swarms ---
+_S_SWARM_EV = (
+    "surging toward the viewer in a glistening wave", "swarming over a screaming man",
+    "crawling all over a terrified woman clawing at her face",
+    "engulfing a shrieking victim from head to toe", "streaming up the legs of a man frozen in terror",
+    "fanning out to surround the viewer", "boiling up out of an overturned crate",
+    "spilling out of a torn sack in a writhing flood",
+)
+_S_SWARM_EV_GORE = (
+    "stripping a fallen body to the bone", "spilling out of a dead man's open mouth",
+    "feeding on a slumped body",
+)
+_S_SWARM_EV_AIR = ("pouring over a fallen lantern and snuffing it out",)
+_S_SWARM_ACT = (
+    "rolling forward like a dark wave", "writhing in a seething heap",
+    "piling over one another in a heaving mound", "creeping slowly toward the viewer",
+    "seething around a dropped flashlight", "pouring out from under a heap of rags",
+    "flowing around the viewer's feet", "swarming over a half-eaten meal",
+    "gathering in a restless rustling mass",
+)
+_S_SWARM_ACT_AIR = ("circling a guttering candle stub",)
+_S_SWARM_IDLE = ("lying in a quivering heap", "falling suddenly and utterly still")
+_S_SWARM_EV_WALLS = (
+    "streaming out from under a door", "boiling out of a crack in the wall",
+    "pouring down the stairs toward the viewer",
+)
+_S_SWARM_ACT_WALLS = ("blanketing an entire wall in a moving carpet",)
+_S_SWARM_CLIMB = ("crawling up the walls and across the ceiling",)
+_S_SWARM_EV_GROUND = ("erupting from the soil toward the viewer",)
+_S_SWARM_LIFE = ("streaming out of a hollow log",)
+_S_SWARM_GRAVE = ("streaming out of an open grave",)
+_S_SWARM_SHORE = ("swarming up out of the black water",)
 _S_SURVIVOR_WALLS = (
     "barricading a door", "searching a dark room by flashlight", "listening at a closed door",
     "peering around a corner", "sitting slumped against a wall to catch their breath",
@@ -1239,8 +1339,8 @@ _S_OBJECT_EV = (
     "spinning in place", "sliding slowly across the floor", "toppling with a crash",
 )
 _S_OBJECT_ACT = (
-    "turning a fraction by itself", "rocking gently by itself", "weeping dark tears",
-    "dripping water onto the floor", "trembling faintly", "shedding flakes of old paint",
+    "turning a fraction by itself", "rocking faster and faster by itself", "weeping dark tears",
+    "dripping water onto the floor", "trembling faintly", "splitting open as something pushes out from inside",
     "reflecting a pale figure behind the viewer", "marked by a small handprint in its dust",
     "leaning at an impossible angle", "gathering a ring of dead flies",
     "shifting when nobody looks", "beaded with cold condensation", "rattling faintly on its own",
@@ -1250,12 +1350,30 @@ _S_OBJECT_DORMANT = ("gathering dust under a sheet",)
 _S_OBJECT_DORMANT_ANY = ("leaking a thin trickle of black fluid",)
 _S_OBJECT_DORMANT_DEEP = ("half-buried in drifting silt", "crusted with pale barnacles")
 _S_KEEPSAKE_DORMANT = ("lying forgotten in a drawer",)
-_S_DOLL_ACT = ("turning its head toward the viewer", "sitting up by itself")
-_S_BOX_ACT = ("playing a tune nobody wound", "creaking open by itself")
+_S_DOLL_ACT = ("turning its head toward the viewer", "sitting up by itself",
+               "crawling across the floor toward the viewer", "turning its head all the way around")
+_S_BOX_ACT = ("playing a tune nobody wound", "creaking open by itself",
+              "playing as its tiny dancer turns to stare at the viewer")
 #: A puzzle box has no tune to play.
-_S_PUZZLE_ACT = ("sliding its panels by itself", "creaking open a crack by itself")
-_S_BOARD_ACT = ("moving its planchette on its own",)
-_S_CLOCK_ACT = ("striking thirteen", "swinging its pendulum faster and faster")
+_S_PUZZLE_ACT = ("sliding its panels by itself", "creaking open a crack by itself",
+                 "unfolding into impossible angles")
+_S_BOARD_ACT = ("moving its planchette on its own", "spelling out the viewer's name on its own")
+_S_BOARD_EV_ROOM = ("hurling its planchette across the room",)
+_S_CLOCK_ACT = ("striking thirteen", "swinging its pendulum faster and faster",
+                "ticking wildly backward as its pendulum races", "chiming as its case splits open")
+_S_CLOCK_GORE = ("seeping black blood from behind its face",)
+#: A cursed object doing something quiet read as boring (924 batch).
+_S_OBJECT_EV2 = (
+    "sliding across the floor toward the viewer", "rising slowly into the air",
+    "bursting into cold blue flame", "shaking so hard the floor cracks beneath it",
+)
+_S_PICTURE_EV = ("turning every painted face toward the viewer",
+                 "splitting open as a painted figure climbs out of it")
+_S_PICTURE_GORE = ("bleeding from the eyes of its painted faces",)
+_S_MIRROR_EV = ("showing a pale figure pressed against the glass from inside",
+                "cracking as something pushes through the glass from inside")
+_S_CHAIR_EV = ("rocking violently with nobody in it",
+               "creaking under a half-seen shape sitting in it")
 
 # --- haunted places ---
 _S_PLACE_EV = (
@@ -1273,6 +1391,12 @@ _S_PLACE_ACT = (
 )
 _S_PLACE_IDLE = ("standing silent at the end of an overgrown drive", "looming over a dead lawn")
 _S_PLACE_DORMANT = ("rotting quietly into the ground", "standing boarded-up and silent")
+_S_PLACE_DORMANT_SKY = ("standing silent under a sky black with circling crows",
+                        "standing black against a bruised purple sky")
+_S_PLACE_EV2 = (
+    "blazing with light in every pane at once", "banging its front gate open and shut",
+    "pouring black smoke from every broken pane", "showing a pale face behind every pane",
+)
 _S_RIDE_ACT = ("turning slowly with nobody aboard", "creaking in a gust of wind")
 _S_LIGHTHOUSE_ACT = ("sweeping a beam across the black water",)
 
@@ -1374,6 +1498,35 @@ _BUCKETS = (
     (_S_PUZZLE_ACT, "activity", "n", _A, _A, ""),
     (_S_BOARD_ACT, "activity", "n", _A, _A, ""),
     (_S_CLOCK_ACT, "event", "n", _A, _A, ""),
+    (_S_CLOCK_GORE, "event", "c", _A, _A, ""),
+    (_S_OBJECT_EV2, "event", "n", frozenset({"floor", "air"}), _A, ""),
+    (_S_PICTURE_EV, "event", "n", _A, _A, ""),
+    (_S_PICTURE_GORE, "event", "c", _A, _A, ""),
+    (_S_MIRROR_EV, "event", "n", _A, _A, ""),
+    (_S_CHAIR_EV, "event", "n", _FLOOR, _A, ""),
+    (_S_BOARD_EV_ROOM, "event", "n", frozenset({"room", "structure"}), _A, ""),
+    (_S_PLACE_EV2, "event", "n", _A, _A, ""),
+    (_S_PLACE_DORMANT_SKY, "idle", "n", _GROUND | _SKY, _A, "d"),
+    (_S_SURVIVOR_SWARM, "event", "n", _A, _A, ""),
+    (_S_AFFLICTED_EV, "event", "n", _A, _A, ""),
+    (_S_AFFLICTED_EV_GORE, "event", "c", _A, _A, ""),
+    (_S_AFFLICTED_ACT, "activity", "n", _A, _A, ""),
+    (_S_AFFLICTED_ACT_GORE, "activity", "c", _A, _A, ""),
+    (_S_AFFLICTED_IDLE, "idle", "n", _A, _A, ""),
+    (_S_AFFLICTED_WALLS, "idle", "n", _WALLS, _A, ""),
+    (_S_SWARM_EV, "event", "n", _A, _A, ""),
+    (_S_SWARM_EV_GORE, "event", "c", _A, _A, ""),
+    (_S_SWARM_EV_AIR, "event", "n", frozenset({"air"}), _A, ""),
+    (_S_SWARM_ACT, "activity", "n", _A, _A, ""),
+    (_S_SWARM_ACT_AIR, "activity", "n", frozenset({"air"}), _A, ""),
+    (_S_SWARM_IDLE, "idle", "n", _A, _A, ""),
+    (_S_SWARM_EV_WALLS, "event", "n", _WALLS, _A, ""),
+    (_S_SWARM_ACT_WALLS, "activity", "n", _WALLS, _A, ""),
+    (_S_SWARM_CLIMB, "activity", "n", _WALLS, _CLIMB, ""),
+    (_S_SWARM_EV_GROUND, "event", "n", _GROUND, _A, ""),
+    (_S_SWARM_LIFE, "activity", "n", _GROUND | _LIFE, _A, ""),
+    (_S_SWARM_GRAVE, "event", "n", _GRAVE, _A, ""),
+    (_S_SWARM_SHORE, "event", "n", _SHORE, _A, ""),
     (_S_PLACE_EV, "event", "n", _A, _A, ""),
     (_S_PLACE_ACT, "activity", "n", _A, _A, ""),
     (_S_PLACE_IDLE, "idle", "n", _GROUND, _A, ""),
@@ -1404,9 +1557,16 @@ _S_MORTAL_CORE = (
 )
 _S_OBJECT_CORE = (
     _S_OBJECT_EV + _S_OBJECT_ACT + _S_OBJECT_IDLE + _S_OBJECT_DORMANT + _S_OBJECT_DORMANT_ANY
-    + _S_OBJECT_DORMANT_DEEP
+    + _S_OBJECT_DORMANT_DEEP + _S_OBJECT_EV2
 )
-_S_PLACE_CORE = _S_PLACE_EV + _S_PLACE_ACT + _S_PLACE_IDLE + _S_PLACE_DORMANT
+_S_PLACE_CORE = (
+    _S_PLACE_EV + _S_PLACE_ACT + _S_PLACE_IDLE + _S_PLACE_DORMANT + _S_PLACE_EV2 + _S_PLACE_DORMANT_SKY
+)
+_S_SWARM_CORE = (
+    _S_SWARM_EV + _S_SWARM_EV_GORE + _S_SWARM_EV_AIR + _S_SWARM_ACT + _S_SWARM_ACT_AIR + _S_SWARM_IDLE
+    + _S_SWARM_EV_WALLS + _S_SWARM_ACT_WALLS + _S_SWARM_CLIMB + _S_SWARM_EV_GROUND + _S_SWARM_LIFE
+    + _S_SWARM_GRAVE + _S_SWARM_SHORE
+)
 
 SITUATION_POOLS: dict[str, tuple[str, ...]] = {
     #: The cross-genre fall-through: true of almost anything, so a foreign entity acts.
@@ -1436,15 +1596,23 @@ SITUATION_POOLS: dict[str, tuple[str, ...]] = {
     "occultist": _S_MORTAL_CORE + _S_OCCULT_ACT,
     "survivor": (
         _S_SURVIVOR_EV + _S_SURVIVOR_ACT + _S_SURVIVOR_IDLE + _S_SURVIVOR_PEACE
-        + _S_SURVIVOR_WALLS
+        + _S_SURVIVOR_WALLS + _S_SURVIVOR_SWARM
     ),
+    "afflicted": (
+        _S_AFFLICTED_EV + _S_AFFLICTED_EV_GORE + _S_AFFLICTED_ACT + _S_AFFLICTED_ACT_GORE
+        + _S_AFFLICTED_IDLE + _S_AFFLICTED_WALLS
+    ),
+    "swarm": _S_SWARM_CORE,
     "cursed object": _S_OBJECT_CORE,
     "porcelain doll": _S_OBJECT_CORE + _S_KEEPSAKE_DORMANT + _S_DOLL_ACT,
     "ventriloquist dummy": _S_OBJECT_CORE + _S_KEEPSAKE_DORMANT + _S_DOLL_ACT,
     "music box": _S_OBJECT_CORE + _S_KEEPSAKE_DORMANT + _S_BOX_ACT,
     "puzzle box": _S_OBJECT_CORE + _S_KEEPSAKE_DORMANT + _S_PUZZLE_ACT,
-    "spirit board": _S_OBJECT_CORE + _S_KEEPSAKE_DORMANT + _S_BOARD_ACT,
-    "grandfather clock": _S_OBJECT_CORE + _S_CLOCK_ACT,
+    "spirit board": _S_OBJECT_CORE + _S_KEEPSAKE_DORMANT + _S_BOARD_ACT + _S_BOARD_EV_ROOM,
+    "grandfather clock": _S_OBJECT_CORE + _S_CLOCK_ACT + _S_CLOCK_GORE,
+    "haunted family picture": _S_OBJECT_CORE + _S_PICTURE_EV + _S_PICTURE_GORE,
+    "cracked mirror": _S_OBJECT_CORE + _S_MIRROR_EV,
+    "antique rocking chair": _S_OBJECT_CORE + _S_CHAIR_EV,
     "haunted place": _S_PLACE_CORE,
     "attraction": _S_PLACE_CORE,
     "rusted carnival ride": _S_PLACE_CORE + _S_RIDE_ACT,
@@ -1474,7 +1642,7 @@ RELATION_POSITION_POOL: tuple[str, ...] = (
 # Labels
 # ---------------------------------------------------------------------------
 
-_LIVING = ("undead", "cryptid", "eldritch horror")
+_LIVING = ("undead", "cryptid", "eldritch horror", "swarm")
 
 
 def _labels(**by_kind: str) -> dict[str, str]:
@@ -1490,7 +1658,7 @@ def _labels(**by_kind: str) -> dict[str, str]:
 
 LABELS: dict[str, dict[str, str]] = {
     "subkind": _labels(undead="Undead type", spirit="Spirit type", cryptid="Cryptid type",
-                       eldritch_horror="Horror type", mortal="Person type",
+                       eldritch_horror="Horror type", mortal="Person type", swarm="Swarm type",
                        cursed_object="Object type", haunted_place="Place type"),
     "scale": _labels(living="Size", mortal="Size", spirit="Size"),
     "condition": _labels(undead="Decay and state", living="State", mortal="State",
@@ -1558,6 +1726,7 @@ KIND_CAPABILITIES: dict[str, frozenset[str]] = {
     "mortal": frozenset({"agent", "mobile", "sapient"}),
     "cursed object": frozenset(),
     "haunted place": frozenset({"massive"}),
+    "swarm": frozenset({"agent", "mobile"}),
 }
 
 RELATION_ROLES: dict[str, tuple[frozenset[str], frozenset[str]]] = {
@@ -1671,6 +1840,7 @@ _FORM_KEY_STANCES: dict[str, frozenset[str]] = {
     "many-eyed abomination": _CRAWL,
     "amalgam": _WALK,
     "mortal": _WALK, "possessed villager": _CRAWL,
+    "swarm": _CRAWL, "writhing mass of snakes": _WALK, "afflicted": _WALK,
 }
 
 
@@ -1962,7 +2132,8 @@ def _tag_code(code: str) -> str:
 #: now roughly tripled.
 _GORE = {
     "condition": ("blood-soaked",),
-    "surface_detail": ("dripping fresh blood", "exposed ribs", "blood-matted fur around the muzzle",
+    "surface_detail": ("bursting plague boils", "black pox lesions", "pox-scarred skin",
+                       "weeping boils on the neck", "open lesions along the arms", "dripping fresh blood", "exposed ribs", "blood-matted fur around the muzzle",
                        "weeping sores", "blood-spattered sleeves", "torn-open gut wound",
                        "glistening exposed muscle", "fresh claw-mark gashes", "raw weeping flesh"),
     "aperture": ("blood-smeared mouth", "cracked bleeding lips", "gore-clotted maw"),
@@ -2040,6 +2211,7 @@ BODY_FEATURES: dict[str, frozenset[str]] = {
     "mortal": frozenset({"hands", "jaws"}),
     "cursed object": frozenset(),
     "haunted place": frozenset(),
+    "swarm": frozenset(),
 }
 BODY_KEYWORDS: dict[str, tuple[str, ...]] = {
     "hands": ("hand", "hands", "finger", "fingers", "fist"),
@@ -2293,7 +2465,7 @@ ARCHETYPES: dict[str, Archetype] = {
 
 ARCHETYPE_OF_KIND: dict[str, str] = {
     "undead": "dead", "spirit": "spirit", "cryptid": "creature", "eldritch horror": "creature",
-    "mortal": "figure", "cursed object": "object", "haunted place": "place",
+    "mortal": "figure", "cursed object": "object", "haunted place": "place", "swarm": "creature",
 }
 ARCHETYPE_OF_SUBKIND: dict[str, str] = {
     **{v: "furnishing" for v in SUBKIND_GROUPS["furnishing"]},
@@ -2465,6 +2637,117 @@ TRAIT_REASONS.update({
     "lantern-act|lantern-light": "the lantern being smashed is the only one",
     "lantern-hand|lantern-act": "the warden does not smash the lantern they are named for",
     "inactive|gaping": "a slumbering thing keeps its maw shut",
+})
+
+
+# ---------------------------------------------------------------------------
+# Round XXIV -- the 924 morning batch
+# ---------------------------------------------------------------------------
+
+# A swarm needs air to crawl in; a guest swarm is never placed underwater.
+_SUBKIND_NEEDS.update({v: frozenset({"air"}) for v in SUBKIND_GROUPS["vermin"]})
+# A vampire's velvet and cloak drew dry underwater (a known gap since round XIX).
+_SUBKIND_NEEDS.update({v: frozenset({"air"}) for v in SUBKIND_GROUPS["bloodsucker"]})
+# #762 a vampire on a mortuary slab in a carnival fairground.
+VALUE_NEEDS[SITUATION_FIELD]["lying still on a mortuary slab"] = frozenset({"structure", "room"})
+VALUE_NEEDS[SITUATION_FIELD].update({
+    "circling a guttering candle stub": frozenset({"air"}),
+    "pouring over a fallen lantern and snuffing it out": frozenset({"air"}),
+    "pouring black smoke from every broken pane": frozenset({"air"}),
+    "bursting into cold blue flame": frozenset({"floor", "air"}),
+})
+# #785 floral wallpaper in a hospital corridor; #783 a papered wall standing in
+# an endless black void. Wallpaper and panelling belong to a home, a hotel, a
+# parlour; nothing stands behind a thing drifting in the void.
+for _place in ("taxidermy parlour", "dusty manor ballroom", "peeling hotel hallway", "farmhouse kitchen",
+               "attic crawlspace", "abandoned chapel", "endless crimson hallway"):
+    _band = next(b for b, places in ENVIRONMENT_BANDS.items() if _place in places)
+    PLACE_AFFORDANCES[_place] = PLACE_AFFORDANCES.get(_place, PLACE_AFFORDANCES[_band]) | {"domestic"}
+VALUE_NEEDS["extras"].update({
+    "peeling floral wallpaper": frozenset({"room", "domestic"}),
+    "wall of warped panelling": frozenset({"room", "domestic"}),
+})
+_add_traits(ENVIRONMENT_FIELD, {"void of drifting furniture": ("open-void",)})
+_add_traits("extras", {v: ("wall-backdrop",) for v in (
+    "peeling floral wallpaper", "wall of stained plaster", "wall of warped panelling", "dusty shelf",
+    "dusty ledge",
+)})
+# A "scorched" spirit board at the bottom of a lake.
+_add_traits("condition", {v: ("combustion",) for v in ("scorched", "burnt-out")})
+_add_traits("markings", {"scorch marks": ("combustion",)})
+# #785 a "large" small oval likeness.
+_add_traits("scale", {v: ("big-scale",) for v in ("large", "hulking", "towering", "gargantuan")})
+_add_traits("form", {"small oval likeness in a gilt frame": ("inherently-small",)})
+_add_traits("form", {"life-sized likeness in a heavy frame": ("inherently-large",)})
+# #778 an occult scholar gutting a carcass with an iron cane.
+_add_traits(SITUATION_FIELD, {v: ("blade-work",) for v in (
+    "gutting a carcass strung up on a hook", "hacking through a limb with three heavy strokes",
+    "wiping a bloodied blade clean", "sharpening a blade on a whetstone", "sharpening a stained cleaver",
+    "carving a symbol into bare flesh", "carving a sigil into a door", "raising a ritual dagger overhead",
+)})
+_add_traits("armament", {v: ("blunt-held",) for v in (
+    "iron cane", "iron crowbar", "wooden stake", "silver crucifix", "shotgun", "iron chain whip",
+    "broken shovel", "pitchfork", "iron hook", "rusted meat hook",
+)})
+# #780 a hooded cultist with a headlamp, dragging a sack with a dagger and keys in hand;
+# #839 a hooded executioner in a hooded mantle and a burlap sack mask.
+_add_traits("subkind", {v: ("head-covering",) for v in ("hooded cultist", "hooded executioner")})
+_add_traits("aperture", {v: ("head-covering",) for v in ("hood pulled low over the face", "burlap sack mask")})
+_add_traits("appendages", {v: ("head-covering",) for v in ("hooded mantle", "deep hood", "wide-brimmed hat")})
+_add_traits("material", {"hooded ritual robe": ("head-covering",)})
+_add_traits("emitters", {"headlamp": ("head-covering",)})
+_add_traits(SITUATION_FIELD, {v: ("both-hands-act",) for v in (
+    "dragging a heavy sack", "dragging a bloodied sack", "dragging a disembowelled body by its ankles",
+)})
+_add_traits("armament", {v: ("carried-weapon",) for v in ARMAMENT_POOLS["cult"] + ARMAMENT_POOLS["stalker"]})
+_add_traits("extras", {v: ("held-item",) for v in ("ring of old iron keys", "burlap sack", "stained rag",
+                                                    "empty tin cup")})
+# #824 a timber mill tower built of moss-streaked stone.
+_add_traits("form", {v: ("timber-built",) for v in (
+    "timber mill tower with broken sails", "two-storey clapboard house", "log house with a stone chimney",
+    "steepled wooden meeting house",
+)})
+_add_traits("form", {v: ("stone-built",) for v in (
+    "stone windmill tower", "squat stone light tower", "roofless stone nave", "stone shell with a collapsed roof",
+    "squat stone tomb with iron doors", "columned marble tomb",
+)})
+_add_traits("form", {v: ("metal-built",) for v in (
+    "bulbous tank on stilt legs", "tall cylindrical tank on a frame",
+    "rusted swing carousel on a steel frame", "stalled ferris wheel on a steel frame",
+)})
+_add_traits("material", {v: ("timber-material",) for v in ("weathered clapboard", "rotting timber")})
+_add_traits("material", {v: ("masonry-material",) for v in (
+    "moss-streaked stone", "blackened brick", "weathered marble",
+)})
+_add_traits("material", {v: ("metal-material",) for v in ("rust-streaked steel",)})
+
+TRAIT_CONFLICTS = TRAIT_CONFLICTS + (
+    ("open-void", "wall-backdrop"),
+    ("aqueous", "combustion"),
+    ("inherently-small", "big-scale"),
+    ("inherently-large", "small-scale"),
+    ("blade-work", "blunt-held"),
+    ("head-covering", "head-covering"),
+    ("both-hands-act", "held-item"),
+    ("timber-built", "masonry-material"),
+    ("timber-built", "metal-material"),
+    ("stone-built", "timber-material"),
+    ("stone-built", "metal-material"),
+    ("metal-built", "masonry-material"),
+)
+TRAIT_REASONS.update({
+    "open-void|wall-backdrop": "nothing stands behind a thing drifting in the void",
+    "aqueous|combustion": "nothing is freshly scorched under water",
+    "inherently-small|big-scale": "a small likeness is never large",
+    "inherently-large|small-scale": "a life-sized likeness is never small",
+    "blade-work|blunt-held": "cutting is done with a blade, not a cane or a crowbar",
+    "head-covering|head-covering": "one hood, hat, mask or lamp on one head",
+    "both-hands-act|held-item": "both hands are busy with the act",
+    "timber-built|masonry-material": "a timber building is not built of stone",
+    "timber-built|metal-material": "a timber building is not built of steel",
+    "stone-built|timber-material": "a stone building is not built of clapboard",
+    "stone-built|metal-material": "a stone building is not built of steel",
+    "metal-built|masonry-material": "a steel frame is not built of stone",
 })
 
 
