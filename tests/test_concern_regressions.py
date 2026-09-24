@@ -11,7 +11,9 @@ import unittest
 from dataclasses import dataclass, field
 from typing import Callable, Mapping
 
-from data.genre import affordances_of, group_of, pool_for, resolved_needs
+from data import fantasy as FANTASY
+from data.genre import GenrePack, affordances_of, group_of, pool_for, resolved_needs
+from data.fantasy import FANTASY_PACK
 from data.scifi import SCIFI_PACK
 from engine.grammar import head_is_plural
 from engine.scene import generate_entity, generate_scene
@@ -26,16 +28,18 @@ class Concern:
     widgets: Mapping[str, str] = field(default_factory=dict)
     #: When set, a Scene Entity with this kind *drawn* (not locked) is wired into slot 1.
     wired_kind: "str | None" = None
+    #: The genre the row was reported against.
+    pack: GenrePack = SCIFI_PACK
 
 
 def scenes(concern: Concern):
     for seed in range(SEEDS):
         wired = {}
         if concern.wired_kind is not None:
-            _text, payload = generate_entity(seed, SCIFI_PACK, widgets={"kind": concern.wired_kind})
+            _text, payload = generate_entity(seed, concern.pack, widgets={"kind": concern.wired_kind})
             wired = {1: dict(payload, locked=[])}
         text, document = generate_scene(
-            seed + 50_000, SCIFI_PACK, widgets=dict(concern.widgets),
+            seed + 50_000, concern.pack, widgets=dict(concern.widgets),
             wired_entities=wired, entity_count=1,
         )
         if document["entities"]:
@@ -51,7 +55,7 @@ _WORLD_TYPES = (
     "volcanic moon", "lava world", "carbon planet", "gas giant", "ice giant", "ring system",
 )
 _BUILT_SCENERY = (
-    "drifting line of dead hulls", "distant station with a row of lights",
+    "scatter of dead hulls", "distant station with a row of lights",
     "swarm of support landers at a safe distance", "scatter of navigation beacons",
     "distant formation holding station", "single derelict turning end over end",
 )
@@ -687,6 +691,221 @@ CONCERNS: tuple[Concern, ...] = (
         "a deep-space scene trails frozen vapour",
         lambda r, d, t: "frozen vapour" in t.lower(),
         widgets={"environment": "emission nebula"},
+    ),
+    # --- round XV: the 0916-evening sci-fi batch -------------------------------
+    *(
+        Concern(
+            f"a moon in the sky over {place} is a bare or cratered moon",
+            lambda r, d, t: bool(re.search(
+                r"\b(twin moons|two moons|cratered moon|in front of a moon|a nearby moon)\b",
+                t.lower())),
+            widgets={"environment": place},
+        )
+        for place in ("black sand tidal flat", "barren alien wilderness", "basalt mesa badlands")
+    ),
+    *(
+        Concern(
+            f"a context in {place} draws smokestacks, an airport, panels or a string of machines",
+            lambda r, d, t: bool(re.search(
+                r"(venting steam|venting vapour|landing field|string of|queue of|line of dead"
+                r"|solar collectors|scaffold of gantries|curtain of vapour)", said(d, "context"))),
+            widgets={"environment": place},
+        )
+        for place in ("crater basin", "orbital debris belt", "hollowed geode cavern",
+                      "storm band of a gas giant")
+    ),
+    Concern(
+        "a creature is half inside a cocoon, a shell or a husk",
+        lambda r, d, t: bool(re.search(r"(cocoon|shell of hardened resin|husk)",
+                                       said(r, "situation"))),
+        widgets={"entity1_kind": "alien creature"},
+    ),
+    Concern(
+        "a creature closes on a drone, a probe or a cargo pod",
+        lambda r, d, t: bool(re.search(r"\b(drones?|probes?|cargo pods?)\b", said(r, "situation"))),
+        widgets={"entity1_kind": "alien creature"},
+    ),
+    Concern(
+        "a starship carries a detached panel, boom, clamp, arm or pod",
+        lambda r, d, t: bool(re.search(
+            r"(solar|radiator vane|grapple|clamp|outrigger|towed|external fuel|boom arm"
+            r"|refuelling probe|mine rack|cargo pod)",
+            said(r, "appendages") + " " + said(r, "extras"))),
+        widgets={"entity1_kind": "starship"},
+    ),
+    Concern(
+        "a surface vehicle carries a mast, clamp, hoist or outrigger",
+        lambda r, d, t: bool(re.search(
+            r"(mast|clamp|outrigger|hoist|gantry|whip aerial|array panel|locker)",
+            " ".join(said(r, f) for f in ("appendages", "extras", "sensors")))),
+        widgets={"entity1_kind": "surface vehicle"},
+    ),
+    *(
+        Concern(
+            f"a wheeled or tracked {kind} is under water",
+            lambda r, d, t: "rolls" in SCIFI_PACK.value_stances["form"].get(r.get("form"), ()),
+            widgets={"environment": "hydrothermal vent field of a water world", "entity1_kind": kind},
+        )
+        for kind in ("robot or mech", "surface vehicle")
+    ),
+    Concern(
+        "a crewmate in open space is not said to be suited",
+        lambda r, d, t: "crewmate" in said(r, "situation") and "suit" not in said(r, "situation"),
+        widgets={"environment": "orbital debris belt", "entity1_kind": "spacefarer"},
+    ),
+    Concern(
+        "a starship at a planet's surface flies a fleet manoeuvre",
+        lambda r, d, t: bool(re.search(
+            r"(formation|escorts|moon|banded world|past a derelict|blockade|interceptors"
+            r"|searchlight|signal beacon|wake of particles|long plume|debris curtain)",
+            said(r, "situation"))),
+        widgets={"environment": "red dust plain of a dead world", "entity1_kind": "starship"},
+    ),
+    Concern(
+        "a ground vehicle with no flight stance burns through re-entry",
+        lambda r, d, t: "re-entry" in said(r, "situation") and not (
+            {"flies", "hovers"} & set(SCIFI_PACK.value_stances["form"].get(r.get("form"), ()))),
+        widgets={"environment": "floating-rock plateau", "entity1_kind": "surface vehicle"},
+    ),
+    Concern(
+        "a rooted growth grows out of a deck",
+        lambda r, d, t: said(r, "subkind") in ("fungal colony", "plant-form", "crystalline growth"),
+        widgets={"environment": "hydroponics bay", "entity1_kind": "alien creature"},
+    ),
+    Concern(
+        "a bell-bodied swimmer sits on dry ground",
+        lambda r, d, t: said(r, "subkind") == "cephalopod",
+        widgets={"environment": "cracked salt flat", "entity1_kind": "alien creature"},
+    ),
+    Concern(
+        "a machine is said to carry an arm or a limb",
+        lambda r, d, t: bool(re.search(r"\bcarr(y|ies)\b[^.]*\b(arms?|limbs?)\b", t.lower())),
+        widgets={"entity1_kind": "robot or mech"},
+    ),
+    Concern(
+        "a submersible shows treads or tracks",
+        lambda r, d, t: bool(re.search(r"\b(treads?|tracks?)\b", t.lower())),
+        widgets={"entity1_kind": "surface vehicle", "entity1_subkind": "submersible"},
+    ),
+    # --- round XV: the 0917 fantasy batch ---------------------------------------
+    Concern(
+        "a giant's size is a vague word",
+        lambda r, d, t: said(r, "scale") in ("large", "huge", "colossal", "small", "tiny"),
+        widgets={"entity1_kind": "giant-kin"}, pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a forge holds a library's, a temple's or a hall's furniture",
+        lambda r, d, t: bool(re.search(r"(books|feasting|pews|altar|lectern)", said(d, "context"))),
+        widgets={"environment": "blacksmith's forge"}, pack=FANTASY_PACK,
+    ),
+    *(
+        Concern(
+            f"birds or wild horses stand behind a subject in {place}",
+            lambda r, d, t: bool(re.search(r"(ravens|gulls|heron|eagles|wild horses)",
+                                           said(d, "context"))),
+            widgets={"environment": place}, pack=FANTASY_PACK,
+        )
+        for place in ("rolling highland hills", "shallow river ford", "sea of clouds")
+    ),
+    Concern(
+        "a wizard's tower has a weapon",
+        lambda r, d, t: r.get("armament") is not None,
+        widgets={"entity1_kind": "structure", "entity1_subkind": "wizard's tower"},
+        pack=FANTASY_PACK,
+    ),
+    *(
+        Concern(
+            f"a {subkind} is said to carry a body part",
+            lambda r, d, t: bool(re.search(
+                r"\bcarr(y|ies)\b[^.]*\b(talons?|claws?|arms?|fists?)\b", t.lower())),
+            widgets={"entity1_subkind": subkind, "entity1_kind": kind}, pack=FANTASY_PACK,
+        )
+        for kind, subkind in (("hybrid folk", "harpy"), ("construct", "gargoyle"))
+    ),
+    Concern(
+        "a minotaur carries reed pipes into a fight",
+        lambda r, d, t: "pipes" in t.lower(),
+        widgets={"entity1_kind": "hybrid folk", "entity1_subkind": "minotaur"}, pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a sea-going ship sits in a shallow ford",
+        lambda r, d, t: said(r, "subkind") in ("galleon", "longship", "war galley", "pirate sloop"),
+        widgets={"environment": "shallow river ford", "entity1_kind": "vessel"}, pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a wagon carries a ship's parts",
+        lambda r, d, t: bool(re.search(r"\b(anchor|stern|waterline|sails?|masts?|barnacled)\b",
+                                       t.lower())),
+        widgets={"entity1_kind": "vessel", "entity1_subkind": "painted travelling wagon"},
+        pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a wheeled vehicle climbs a mountain peak",
+        lambda r, d, t: said(r, "subkind") in FANTASY.SUBKIND_GROUPS["land vehicle"],
+        widgets={"environment": "snowbound mountain peak", "entity1_kind": "vessel"},
+        pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a newly launched vessel is rotting or abandoned",
+        lambda r, d, t: bool(re.search(r"(abandoned|peeling|rotting|overgrown|broken)",
+                                       said(r, "situation"))),
+        widgets={"entity1_kind": "vessel", "entity1_condition": "newly launched"},
+        pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a living beast weathers like a statue",
+        lambda r, d, t: r.get("situation") in FANTASY._STONE_ACTS
+        and r.get("condition") != "petrified",
+        widgets={"entity1_kind": "mythic beast"}, pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a structure rings an Earth bell",
+        lambda r, d, t: bool(re.search(r"\bbells?\b", t.lower())),
+        widgets={"entity1_kind": "structure"}, pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a sea wyrm hangs a lure from its mouth",
+        lambda r, d, t: "lure" in t.lower(),
+        widgets={"entity1_kind": "dragon", "entity1_subkind": "leviathan"}, pack=FANTASY_PACK,
+    ),
+    *(
+        Concern(
+            f"a {kind} in a warm forest coats things in ice",
+            lambda r, d, t: bool(re.search(r"\b(rime|freezing|hail|frost-rimed)\b", t.lower())),
+            widgets={"environment": "ancient oak forest", "entity1_kind": kind}, pack=FANTASY_PACK,
+        )
+        for kind in ("artifact", "dragon", "structure")
+    ),
+    Concern(
+        "an artifact hangs in open sky",
+        lambda r, d, t: said(r, "kind") == "artifact",
+        widgets={"environment": "sea of clouds"}, pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a forest or marsh spirit haunts a crypt",
+        lambda r, d, t: said(r, "subkind") in ("forest spirit", "will-o'-wisp", "sylph", "dryad"),
+        widgets={"environment": "catacomb crypt", "entity1_kind": "spirit or elemental"},
+        pack=FANTASY_PACK,
+    ),
+    Concern(
+        "an act attacks something that is not in the frame",
+        lambda r, d, t: bool(re.search(r"(barricade|line of attackers|hunter's net)",
+                                       said(r, "situation"))),
+        widgets={"environment": "field of standing stones", "entity1_kind": "undead"},
+        pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a creature named giant is small",
+        lambda r, d, t: said(r, "scale") in ("small", "tiny"),
+        widgets={"entity1_kind": "mythic beast", "entity1_subkind": "giant sea turtle"},
+        pack=FANTASY_PACK,
+    ),
+    Concern(
+        "an act names a weapon the entity does not carry",
+        lambda r, d, t: bool(re.search(r"(arrow|longbow)", said(r, "situation")))
+        and bool(re.search(r"(sword|mace|hammer|staff|axe|dagger|rapier|flail|shield)",
+                           said(r, "armament"))),
+        widgets={"entity1_kind": "folk"}, pack=FANTASY_PACK,
     ),
 )
 

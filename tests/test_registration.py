@@ -33,11 +33,13 @@ class EntrypointTests(unittest.TestCase):
         extension = asyncio.run(self.module.comfy_entrypoint())
         self.assertIsInstance(extension, self.module.SceneWeaverExtension)
 
-    def test_get_node_list_returns_both_classes(self) -> None:
+    def test_get_node_list_returns_every_genre_pair(self) -> None:
         nodes = _node_list(self.module)
-        self.assertEqual(len(nodes), 2)
+        self.assertEqual(len(nodes), 6)
         self.assertEqual(
-            {n.__name__ for n in nodes}, {"SceneWeaverSciFi", "SceneEntitySciFi"}
+            {n.__name__ for n in nodes},
+            {"SceneWeaverSciFi", "SceneEntitySciFi", "SceneWeaverFantasy", "SceneEntityFantasy",
+             "SceneWeaverHorror", "SceneEntityHorror"},
         )
 
     def test_web_directory_points_at_the_js_folder(self) -> None:
@@ -65,7 +67,7 @@ class FlatLayoutFallbackTests(unittest.TestCase):
         module = load_entrypoint_flat()
         self.assertEqual(module.__package__, "")
         self.assertIn("data.scifi", sys.modules)
-        self.assertEqual(len(_node_list(module)), 2)
+        self.assertEqual(len(_node_list(module)), 6)
 
 
 class NodeIdentityTests(unittest.TestCase):
@@ -176,7 +178,7 @@ class MissingModuleTests(unittest.TestCase):
         """The blocker teardown must leave ``sys.modules`` usable -- otherwise
         this class would poison every test that runs after it."""
         importlib.import_module("data.scifi")
-        self.assertEqual(len(_node_list(load_entrypoint())), 2)
+        self.assertEqual(len(_node_list(load_entrypoint())), 6)
 
 
 if __name__ == "__main__":  # pragma: no cover

@@ -1295,3 +1295,1189 @@ frozen list `scripts/concern_flags_0916.py` for regression.
 on **both** `main` and this round (a drone at a trench vent, a station at a
 scaffold): the audit samples, and a value confined to a rare place and a rare kind
 can miss a 12000-scene run. It is a maintainer instrument, not a CI gate.
+
+## The fantasy pack (0.5.0)
+
+`data/fantasy.py` is the second genre and the first real test of the seam: it
+needed one data module, two registration lines in `__init__.py`, a `"fantasy"`
+section in `user_options.json`, and a `--pack` option on two maintainer
+scripts. Nothing under `engine/` or `nodes/` changed, and the frontend decorates
+the new nodes from the same route payload.
+
+It keeps the sci-fi field keys and their widget order, so an entity of either
+genre fills a slot in the other; only `LABELS` differ.
+
+### Decisions
+
+* **F1 Situations are authored in buckets.** A bucket is one tuple whose values
+  share a tier, a filter tag, the place they need, the stance they take, and
+  whether a dormant or a sleeping thing can be doing them. `_BUCKETS` derives
+  `SITUATION_TIERS`, the tags, `value_needs`, `value_stances`, `DORMANT_ACTS`,
+  `SLEEP_ACTS`, `powered-act`, `waking-act` and `violent-act`. A situation is
+  declared once, and the module refuses to import one with no bucket. Pools
+  concatenate buckets as literals, so the ast option reader still sees them.
+* **F2 Two closed liveness lists.** A petrified, ruined, wrecked or dormant thing
+  draws only `DORMANT_ACTS`; a slumbering one only `SLEEP_ACTS`. Every emitter is
+  `emissive` and conflicts with `inactive`.
+* **F3 Every type has a spoken form.** Check 16 asks each type of an
+  apposition-free kind to say its category. A fantasy type almost always names
+  itself ("frost troll", "stone golem"), so the pack declares every type as
+  itself and overrides only the ones a model draws as something else ("kelpie
+  water horse", "brownie hearth sprite", "phoenix firebird").
+* **F4 Underwater affords water only.** The sci-fi trench grants `floor`, which
+  supports walking; in fantasy that put a cave bear on a coral reef. (Sci-fi keeps
+  its seabed floor and blocks rolling there instead -- see R3.)
+* **F5 Weapons are neutral under the scene filter.** A knight keeps a sword in a
+  Peaceful scene; the filter reads what is *done* (situations, relations).
+* **F6 A form never repeats its type's head noun, and a cap is the clause count
+  plus two.** Both were found by `scripts/reach_audit.py --pack fantasy`: a
+  "square keep" on a "ruined keep" is silenced by the repeat guard, and the two
+  head modifiers come off `detail_cap` before the allowance is spent.
+
+### Measured (3000 scenes per path, seeded)
+
+| measure | result |
+|---|---|
+| validator findings (`python tests/validate_data.py`) | 0 |
+| a petrified, ruined or sleeping subject acting | 0 |
+| a body placed where its form cannot stand | 0 |
+| fire under water, a huge thing indoors, a civilian fighting | 0 |
+| anachronism, stance verb, rendering or negation word in the prose | 0 |
+| distinct prompts in the variety run | every one |
+
+The seeded sweep that asserts these is `tests/test_fantasy_pack.py`.
+
+## Round XV: the 0916-evening sci-fi and 0917 fantasy batches
+
+Both batches replayed byte-for-byte (`scripts/replay_batch.py` now picks the pack
+from each node's class name). The images were read one by one; most defects were
+render traps and parts that did not fit the body or the place, and several were
+classes the validator could be taught to find.
+
+### Contract and engine decisions
+
+* **R1 A native subject never speaks the stranger's vocabulary.** Validator check
+  32 (`FALLTHROUGH`): where most native subjects resolve a key of their own, a
+  native subject that falls through to `_default` is a hole. Every fantasy tower
+  and shrine "had a single spear"; the fix is a declared empty pool.
+* **R2 Nothing a carry sentence names is a body part.** Check 33 (`CARRYPART`):
+  "they carry a single hooked talon" drew a harpy holding a talon, and "it carries a
+  pair of hydraulic limbs" a robot holding its arms. Made things now *have* their
+  parts.
+* **R3 A place can block a stance.** `GenrePack.place_stance_blocks`: a body that
+  *has* a blocked stance is kept out of the place entirely, in the stance rules and
+  in type feasibility (`blocked_stances`, `stances_fit`). A wheeled robot at rest on
+  a vent field is still a wheeled robot; removing `floor` instead starved every
+  legitimate seabed act.
+* **R4 A requirement fills an empty target.** A `require` rule used to be the
+  exclusion of its complement, which says nothing to a field left empty by
+  omission. `_required_targets` now draws the target from the allowed values
+  (without omission) unless the user locked it empty. Fantasy uses it so a stone
+  act ("wreathed in creeping ivy") brings the petrified condition with it.
+* **R5 A genre names its own filter.** `scene_filter_labels` maps what the node
+  shows to Any / Peaceful / Conflict, with `scene_filter_default` and an optional
+  tooltip; `canonical_scene_filter` accepts either spelling and `_meta` keeps the
+  label. The shipped labels are a compatibility surface like any dropdown value.
+* **R6 The scene filter reaches a wired entity's drawn values.** The Scene Entity
+  node has no filter, so its random draws passed straight through: a blood-soaked
+  corpse reached a "No gore" scene. A drawn tag-scoped value the filter masks is
+  re-drawn with its count; a value the user locked, and the kind and type, are
+  kept.
+* **R7 The readout is cut to the node's width.** Canvas text is not clipped by the
+  node body; a long warning ran past its right edge.
+
+### Data decisions
+
+* **R8 Sci-fi:** fleet manoeuvres need the derived `aloft` affordance (open space or
+  above the cloud tops), and a grounded starship got landing, lift-off and low-pass
+  acts instead of parking in a ruin field "holding formation"; flight acts declare a
+  flight stance; every part that stood off the hull on a boom, arm, mast, clamp or
+  outrigger left the component pools (solar vanes drew detached panels, outrigger
+  pods drew airliner turbofans, cargo cradles hung boxes on cables); drone- and
+  pod-prey acts became body-only acts (a drone fused to a snout); contexts that drew
+  smokestacks, an airport, pylons or a string of machines were renamed; every moon
+  carries a colour or a ring; a rooted growth needs ground and a bell-bodied swimmer
+  needs the derived `water`; surface detail joined the part lint.
+* **R9 Fantasy:** a giant, a troll, a goblin and a pixie state a measured size
+  (weighted to be voiced most of the time; no comparison objects); contexts are keyed
+  by place; vessel parts are scoped by sailing ship, flying ship and land vehicle and
+  checked against `keel`, `stern` and `sails` features; ships need `navigable` water
+  and wheels need `open-ground`; a relic rests on something and a monument is set
+  amid something; spirits keep to their domain; bow and blade acts carry weapon-class
+  traits; a new thing is never decaying; a plain bear, wolf, boar, turtle or spider
+  body was given a silhouette that is not the Earth animal. A later `**{...}` entry in
+  a dict literal had silently replaced `inherently-vast` on the kraken, the leviathan
+  and the giant sea turtle; traits are now added, never merged by literal.
+
+### Round XV, measured
+
+| measure | before | after |
+|---|---|---|
+| sci-fi wired scenes with any sweep class (`coherence_sweep.py`) | 5.4% | 5.1% |
+| sci-fi unwired scenes with any sweep class | 5.0% | 4.8% |
+| repeated sentence leads, 300 scenes (sci-fi / fantasy / horror) | 0 / 183 / -- | 0 / 0 / 0 |
+| fantasy giant-kin with no size stated | 76% | 29% |
+| fantasy small folk with no size stated | 70% | 22% |
+| fantasy distinct contexts drawn (3000 scenes) | 58 | 130 |
+| wired "blood-soaked" horror corpses kept under No gore | 382 of 382 | 0 |
+
+Variety was compared against the branch start (`distinct` and Shannon entropy per
+field per kind, 3000 scenes per path). Sci-fi gained entropy in all but one field
+(starship armament, slightly more often unsaid). Fantasy gained in most; the fields
+that lost entropy kept every distinct value and lost it to intended placement --
+ships and wagons keep to water and roads, spirits to their domains, and a tower no
+longer carries a weapon. The fantasy context and scale omission weights were lowered
+so smaller place-keyed pools and type-scoped scale did not simply say less.
+
+## The horror pack (0.5.0)
+
+`data/horror.py` is the third genre, built on the fantasy module's shape: buckets,
+closed liveness, the shared field keys. It needed the R5 filter labels and nothing
+else from the contract.
+
+### Decisions
+
+* **H1 Gore is the filter's conflict end.** Graphic situations, conditions, surface
+  details, apertures and weapons are tagged `conflict_only`; the node shows "No
+  gore" (default), "Any" and "Gore only". `tests/test_horror_pack.py` holds "No gore"
+  to zero graphic values on both paths.
+* **H2 Stillness is priced up.** `TIER_WEIGHTS` favour idle acts more than the other
+  genres, and every kind has place-neutral acts of standing, watching and waiting.
+* **H3 Liveness inverts for the dead.** A walking corpse is live; `DORMANT_ACTS` is
+  what a thing at rest does -- lying in its coffin, gathering dust, rotting quietly
+  into the ground.
+* **H4 Placement is declared per kind.** A cursed object belongs in a room, a tomb
+  or under water; a haunted place under open sky.
+* **H5 Content guidelines** from `docs/genre-roadmap.md`: no real people or
+  tragedies, no mental illness as a monster, no living religious or cultural figure
+  as a monster, no trademarks, no child in peril.
+
+## Round XVI: the 0917-afternoon concerns batch
+
+162 images pulled by hand from a mixed sci-fi/fantasy/horror batch, the
+horror pack's first render test. Four defects traced to mechanism gaps
+rather than data mistakes.
+
+### Two pre-existing engine defects, exposed by this round's own data edits
+
+Both measured zero hits on `main` before this round; a pool-size change
+anywhere shifts the RNG draw sequence for everything drawn after it in the
+same seed, and this round's edits (mostly narrower pools, per
+`variety-is-kept-by-adding`, replaced before removed) happened to shift far
+enough to reach code paths the old distribution never touched. Neither is a
+new risk this round introduced on top of the shared engine - both were
+already reachable on every genre, this round's data changes just made them
+visible.
+
+* **X1 A rotation slot is a count, not a share of unspent allowance.**
+  `engine/budget.py`: when a fixed-head field went unsaid, the surplus
+  allowance kept drawing *additional* rotation candidates one at a time until
+  the whole remaining budget was spent on rotation, against a declared
+  `detail_rotation_slots` of one or two. A courier grew three boarding-tube
+  launchers and six telescope panels; an asteroid's `world` archetype (fixed
+  head includes both `appendages` and `emitters`) always spoke an emitter
+  *and* an appendage together. The draw now stops at
+  `reserved = min(slots, allowance)`; a reserved slot nothing could fill
+  still falls back to the core order, unchanged.
+
+  Two sci-fi archetypes (`object`, `structure`) turned out to rely on the old
+  spillover to satisfy `test_every_entity_speaks_a_component_clause`: their
+  rotation pool mixed genuine component fields (`appendages`/`emitters`/
+  `armament`/`sensors`/`aperture`/`extras`) with decorative ones
+  (`markings`/`accent_color`/`surface_detail`), sharing one slot, so a
+  decorative field could legally win it outright and leave the archetype
+  with no component spoken. Moved the decorative fields into the fixed head
+  (`object`'s cap already had headroom; `structure`'s cap rose from 8 to 11,
+  matching the three fields added to its fixed list - never about speaking
+  *more*, only about which field a lone rotation slot could spend itself on).
+* **X2 A re-offered value is not re-validated.** `engine/scene.py`, the round
+  XIII "re-offer what a rule emptied" step (`_apply_constraints`): it fills a
+  field the fixed point nulled, once, after the fixed point has already
+  settled - so a value re-offered late can conflict with a field that
+  settled earlier, while the target still read `None` and excluded nothing.
+  A haunted place's `condition` re-offered as `"boarded-up"` (the `inactive`
+  trait) landed next to an already-fixed `situation` carrying `powered-act`
+  ("shuddering as something moves inside"), a combination the
+  `inactive|powered-act` trait conflict already forbids and normally
+  prevents. Fixed with a bounded (3x) outer retry around the fixed point +
+  re-offer pair: whenever a re-offer actually changes something, the fixed
+  point gets one more pass to catch and redraw whatever it now conflicts
+  with, using its own existing exclusion logic.
+
+### Genre-agnostic patterns, fixed once each
+
+* **X3 A doll's eyes reach a chair.** `EMITTER_POOLS["cursed object"]`
+  (horror) held a painted-eye value at the kind level; the `furnishing`
+  subkind (a mirror, a clock, a rocking chair) had no key of its own and fell
+  through to it. Same shape as round XV's `FALLTHROUGH` (check 32), a
+  different pool; fixed with an empty-key override, the same trick
+  `SENSOR_POOLS["furnishing"]` already used.
+* **X4 A substance-adjective renders as the substance.** Beyond a bare noun
+  ("tether" draws a chain), a hyphenated adjective whose head is a substance
+  noun can detach and render literally: "forked tongue" drew a table fork,
+  "furled banner" drew fur fringe, "water-stained" (a condition on a cursed
+  chair) drew dripping water off a dry floor. The three instances found are
+  renamed (cloven tongue, rolled banner, damp-blotched). No automated check
+  exists for the class: `FOREIGN_NOUNS` is anachronism-scoped and "fur"/
+  "fork" are correct, common fantasy/horror words everywhere else in the
+  pack (bear fur, a table fork used correctly); adding them would fail
+  validation on every legitimate use. Left as a review habit for new content
+  until a narrower signal is found.
+
+### Per-genre
+
+* **Horror:** the `figure` carry-clause joined three fields
+  (`{armament, emitters, extras}`, near-guaranteed together) where fantasy
+  and sci-fi join two and speak `emitters` in its own sentence; matched.
+  `EXTRAS_POOLS["undead"]`'s hospital-band value asserted a modern death and
+  reached medieval catacombs and sunken ships alike; dropped and replaced in
+  kind (no era/context need token exists to re-scope it safely). A spirit or
+  corpse already `submerged` could also be `"slowly dripping water"` or
+  `"dripping fresh blood"`; gated both to horror's existing derived `air`
+  ("not submerged") token. `VALUE_NEEDS["condition"]` was empty; added
+  `overgrown` -> `life` (round XIV's scifi deposit-condition pattern, ported;
+  horror has no frost/ice *condition* value to gate the way scifi/fantasy
+  do - its cold-only content is already situation-gated). `"rotting
+  windmill"` reached a churchyard and a field of grave markers; a
+  `funerary-place`/`rural-landmark` trait conflict scopes it out of the four
+  explicitly funerary environments only. `EXTRAS_POOLS["cursed object"]`'s
+  furnished resting surfaces (a display case, a dusty shelf) reached a reed
+  marsh and a flooded church nave; gated to `{structure, air}`, with a
+  place-neutral surface added to keep outdoor/underwater objects a place to
+  rest. Gore roughly tripled: 9 `"c"`-tagged situations and ~11 `_GORE`
+  values before this round; ~29 situations (undead's own situation count
+  went from ~15 to 43 total) and ~9 `_GORE` values after, genuinely graphic
+  (dismemberment, exposed organs, disembowelment) rather than merely
+  implied, tiered `event` where `TIER_WEIGHTS` rewards it, still fully
+  hidden by "No gore".
+* **Fantasy:** the same resting-surface gating applied to `EXTRAS_POOLS
+  ["relic"]` (a velvet cushion, a silk-draped table); the stone/altar
+  surfaces stay place-neutral, already fine outdoors and underwater.
+  `"forked tongue"` -> `"flicking a cloven tongue"` (X4). Deposit-condition
+  gating completed: `"overgrown"` -> `life` alongside the existing
+  `"frost-rimed"` -> `cold`.
+* **Sci-fi:** `"small body"` (asteroid/comet) fell through to `"celestial
+  body"`'s planet-scale volcanic vocabulary (`volcanic vent`, `lava
+  fissure`, `geyser vent` on a bare rock) - given its own pool, outgassing/
+  sublimation language only, and `"dust plume vent"` dropped the word
+  `"vent"` specifically (`"dust plume"`), which read as an engine port on a
+  natural body. `"sensor gauntlet"` (a worn sensor) and `"magnetic grapple"`
+  (a carried extra) both localise to a spacefarer's hand; a figure drawing
+  both fused into one wrist. Shared a `hand-mounted` trait across the two
+  fields rather than reword either value - `"magnetic grapple"` is also the
+  noun in the established `"latching onto a hull with magnetic grapples"`
+  situation, unaffected. Ground vehicles read as present-day military/
+  utility hardware (the recurring report): renamed the handful of terms with
+  no futuristic reading at all (`pintle-mounted gun`, `intake grille`,
+  `driver hatch`, `rear cargo door`, `front`/`tail beacon bar`, `angled
+  glacis armour plate`, `cargo bed`) and added repulsor/energy-weapon values
+  across form, appendages, emitters, armament and aperture - net wider, not
+  narrower. Discovered mid-edit: a ground vehicle's `form` and `appendages`
+  are scoped entirely through locomotion sub-groups (`wheeled/tracked`,
+  `hovering`, `flying`, `lander`, `underwater`, `legged`); the kind-level
+  pool is dead weight for those two fields, the same `SHADOWED` shape as X3
+  in a different field, caught by the validator and moved to the sub-group
+  that actually resolves.
+
+### Round XVI, measured
+
+Every check in "Build and test" (`AGENTS.md`) is green, including
+`coherence_sweep.py --gate` on both paths, `sample_distribution.py` (no
+kind/scale/motif ceiling breached), and `coherence_audit.py` (every
+archetype's clause-per-scene mean stayed within its pre-round shape;
+`structure`'s cap increase to 11 lands exactly at its own measured p95, not
+above it). `reach_audit.py --gate` reports the same class of gap as every
+prior round - a handful of values confined to a rare place-and-kind or
+place-and-subkind combination a 12000-seed sample did not happen to draw,
+including two of this round's own new sci-fi armament values; not a
+structural gap (the validator's `SHADOWED` check, which is exhaustive, not
+sampled, passed clean).
+
+## Round XVII: the 921-concern batch
+
+27 images the maintainer flagged by hand from a mixed sci-fi/fantasy/horror
+render test of round XVI, plus (new this round) a plain word/environment
+frequency sweep (2000 seeds per pack, `doc["environment"]` and a lowercased
+`text` substring count) run to turn "too many X" reports into a number
+instead of an impression - the same instrument class `sample_distribution.py`
+already is for sci-fi, applied ad hoc to all three packs since a dedicated
+per-pack version does not exist yet (left for a future round; see Known gaps
+in `AGENTS.md`).
+
+### Findings and fixes
+
+* **XVII1 A colour name that is an object, in horror's shared emitter-colour
+  pool.** `EMITTER_COLOR_POOLS["_default"]` (horror) carried `"lantern
+  amber"` - correct on `mortal`, where the emitter itself is a literal
+  lantern, but the same default pool backs `spirit`, `undead`, `cryptid`,
+  `eldritch horror`, `cursed object` and `haunted place` too, where the
+  emitter is `"pale inner light"` or `"cold spectral flame"`. "Lantern amber"
+  on an apparition read as a literal floating lantern rather than an amber
+  glow - the `colour-names-that-are-objects` class (round XI: "dusty rose",
+  "brick red"), missed because the value is genuinely correct on one of its
+  seven consumers. Renamed the default to `"warm amber"`; `mortal`'s own
+  override keeps the literal value. Measured: the share of horror scenes
+  containing the word "lantern" fell from 12.7% to 6.5% (2000-seed sweep,
+  seed 4242) - this also answers the maintainer's separate "too many lanterns
+  overall" report.
+* **XVII2 A kind-level pool key reached all three landmark subkinds.**
+  `APPENDAGE_POOLS["landmark"]` (horror) held `("rusted access ladder",
+  "broken sail")` at the kind level; `lonely lighthouse`, `rotting windmill`
+  and `rusted water tower` are its three subkinds, none with an override of
+  their own, so a lighthouse and a water tower both grew a windmill's sail.
+  Same shape as round XVI's X3 and the ground-vehicle `form`/`appendages`
+  finding: a kind-level default is a trap for every subkind that never
+  declared its own. Split into three subkind entries; `"broken sail"` stays
+  on `rotting windmill` only.
+* **XVII3 "Passenger" reads as a present-day airliner.** A `ghost starliner`
+  wreck (spoken `"ghost passenger-starship wreck"`) rendered as a crashed
+  commercial jet fuselage - a magenta paint stripe and window rows on a
+  tube-shaped hull in a desert, the standard "airliner crash" prior a
+  diffusion model reaches for on sight of "passenger" plus a tube hull. This
+  is the literal example `AGENTS.md`'s own review rule already named ("a
+  ghost passenger liner, a wreck" is not safe, because "wreck" names no
+  medium) - the pack had drifted from its own stated rule without anyone
+  reverifying the one live value it applied to. Renamed both spoken forms
+  that carried it: `"ghost starliner"` -> `"ghost liner-starship wreck"`,
+  and the live (non-wreck) `"starliner"` subkind -> `"interstellar liner
+  starship"`. Measured: the share of sci-fi scenes containing "passenger"
+  fell from 1.4% to 0% (2000-seed sweep).
+* **XVII4 The one "door" in a pool of hatches.** `APERTURE_POOLS["surface
+  vehicle"]` (sci-fi) - the same pool round XVI's ground-vehicle pass already
+  renamed for modern-day readings - still had `"side door portal"` sitting
+  among `"cabin canopy"`, `"pilot hatch"`, `"roof hatch"`, `"aft cargo
+  hatch"`: the only value in the list that says door instead of hatch/vane/
+  maw/port/canopy. On a submersible (`underwater` locomotion, staged "deep
+  underwater") it read as a literal door opening onto open ocean. Renamed to
+  `"side hull hatch"`, matching the pool's own naming convention.
+* **XVII5 A standard on a bare skeleton.** `EXTRAS_POOLS["undead"]`
+  (fantasy) - carried, not worn - held `("rusted manacle", "tattered
+  banner", "clinging grave dirt")` at the kind level, reaching every
+  `walking dead` subkind including the `lich`: a solitary undead spellcaster
+  carrying a banner with no army in frame read as a flag lashed to a
+  skeleton. Narrowed the kind default (dropped the banner, added
+  `"bone-carved talisman"`) and gave the two subkinds that plausibly lead
+  troops, `skeleton warrior` and `death knight`, their own entry that keeps
+  it - the same subkind-override shape as XVII2, applied before it shipped
+  rather than after a report.
+* **XVII6 A flying ship's situations were mostly altitude-neutral.**
+  `SITUATION_POOLS["flying ship"]` (fantasy) = the shared `_S_VESSEL_CORE`
+  (~17 situations written for a ship on water: "trailing a long banner",
+  "carrying a crowd of cheering passengers", "riding low under a heavy
+  load") plus `_S_AIRSHIP_EV_SKY`/`_S_AIRSHIP_ACT_SKY` (4 situations with an
+  explicit altitude cue). A flying cloud skiff whose draw landed in the
+  shared pool - better than 4-in-1 odds - carried no signal that it was
+  aloft at all, and rendered as a boat docked in the mangrove fen it was
+  staged in. Per `variety-is-kept-by-adding`, did not trim the shared pool
+  (still correct wherever a sailing ship draws it); added six more
+  sky-specific situations instead (`"banking hard around a spire of rock"`,
+  `"venting steam as it climbs"`, `"casting"`-free wording throughout - an
+  early draft's `"casting a long shadow over the ground below"` tripped both
+  the rendering denylist on `"shadow"` and the affordance lint on an
+  undeclared `"ground"` need, replaced with `"climbing steadily into open
+  sky"`), moving the ratio from roughly 4:1 to roughly 2:1.
+
+### Investigated, not changed
+
+* **"Too many motel scenes" (horror).** Measured at 3.5% of horror scenes by
+  environment share (2000-seed sweep) - within noise of the ~29-place pool's
+  uniform ~3.4% expectation. No structural weighting found; not a
+  reproducible bias, so left alone rather than cut on an impression (the
+  same caution `variety-is-kept-by-adding` asks for in the other direction).
+* **"Too much octopus" (sci-fi and horror).** No pool anywhere contains the
+  word; the read comes from several `alien creature` body-plan groups
+  (`tentacular`, `amorphous`, `radial form`, `mimic body`, `symbiotic body`,
+  `void dweller`, `filter swarm`) each defaulting to tentacle/sucker/frond
+  appendages, concentrated into water scenes by the `cephalopod` archetype's
+  existing (and correct) water-only gate. A real fix is diversifying each
+  body-plan group's non-tentacle appendage options (claw, fin, spine, wing
+  are already vocabulary elsewhere in the same pack) - a full-pool pass in
+  the shape of round XVI's ground-vehicle fix, not a spot rename, and left
+  for a dedicated round rather than forced here.
+* **"Very odd protrusions" / "stuff sprayed incoherently".** Plausible
+  render-time effects of long multi-part alien anatomy lists and
+  action+tool combinations (a foam sprayer sealing a hull breach); no single
+  traceable pool value found this round. Flagged for the maintainer's next
+  batch rather than guessed at.
+* **"Door open underwater".** One plausible source addressed by XVII4; no
+  second cause found in this batch.
+* The pre-existing `reach_audit.py --pack horror --gate` and `--pack fantasy
+  --gate` failures (a handful of never-drawn `sensors`/`situation`/
+  `primary_color` values, unrelated fields to every fix above) were
+  confirmed identical on `tmp/sceneweaver-fantasy` before this round's edits
+  (`git stash` + re-run) - pre-existing, not touched.
+
+### Round XVII, measured
+
+Every check in "Build and test" (`AGENTS.md`) is green: the full
+`unittest`/`pytest` suite, both genre validators
+(`test_horror_pack.py`/`test_fantasy_pack.py`), `reach_audit.py --pack
+scifi/fantasy/horror` (no new never-drawn values introduced by this round's
+six fixes; the two packs' pre-existing gaps are unchanged, see above). The
+word-frequency sweep is new maintainer tooling for this round only
+(`.omo/`-equivalent throwaway script, not committed) - a permanent per-pack
+`sample_distribution.py` is future work, not built this round.
+
+## Round XVIII: the 922-concern batch
+
+22 images from a mixed fantasy/horror render test of round XVII (no sci-fi in
+this batch). Six confirmed defects, all data-only, horror and fantasy only -
+sci-fi untouched, including where the same pattern was found in its own
+pools with no render evidence behind it (see "Investigated, not changed").
+
+### Findings and fixes
+
+* **XVIII1 Emitters and aperture shared one clause, in all six horror
+  archetypes.** `Sentence(text="{pronoun} bears {emitters, aperture}.")`
+  (and its `show`/`features`-adjacent siblings) joined a light source and a
+  mouth or opening in one "X and Y" clause everywhere: `dead`, `spirit`,
+  `creature`, `figure`, `object`, `furnishing`, `place`, and the stranger
+  fallback. Confirmed in render: a flesh mass's "single cold-white pulsing
+  inner light and a ring-shaped toothed maw" drew a glowing mouth - the
+  light read as coming from the opening beside it. A ghost's "single
+  sickly-green cold spectral flame" (meant as a body glow) read as a torch
+  held in an outstretched hand for the same reason - the maintainer's
+  "things are on fire strangely" and "floating candle" reports. Split into
+  two sentences everywhere (`"{pronoun} glimmers with {emitters}."` /
+  `"{pronoun} bears {aperture}."`, pronoun/verb form matched per archetype),
+  so a light is never grammatically anchored to an opening. Same two
+  fields, two sentences instead of one - no field lost, no `detail_cap`
+  change.
+* **XVIII2 "lantern amber" still collided on the one pool round XVII left
+  literal.** Round XVII kept `"lantern amber"` on horror's `mortal`
+  emitter-colour override, reasoning it was safe paired with the
+  `"hooded lantern"` emitter value - missed that a colour and an emitter are
+  drawn independently of each other, so it landed on `"guttering candle"`
+  just as often, and a possessed villager's "lantern amber guttering
+  candle" rendered as a second, literal lantern beside the candle. Unified
+  to `"warm amber"` everywhere; the object-noun colour no longer exists
+  anywhere in the pack.
+* **XVIII3 "a crown of" render-trap word, confirmed in render:** "a writhing
+  thing beneath the ice... unfurling a crown of tentacles" drew an octopus
+  wearing a literal jewelled crown. Removed the phrase from both packs'
+  cardinality-count vocabulary - the `"a crown"` class now offers
+  `"a cluster of"` (horror) / `"a ring of"` (fantasy), both already-safe
+  words used elsewhere in the same pack - and from the one hardcoded
+  situation string that used it outside the count system
+  (`"unfurling a crown of tentacles"` -> `"unfurling a writhing mass of
+  tentacles"`). Horror's `"tentacle-crowned body"` form value carried the
+  same risk as a bare adjective; renamed `"tentacle-topped body"`. Sci-fi
+  has its own `"halo crown"` / `"sensor crown"` part names at a higher word
+  share than either genre now carries - left untouched, see below.
+* **XVIII4 "thing beneath the ice" could only ever be drawn somewhere with
+  no ice.** Its only declared need was `cold`, and `"snowbound pine
+  woods"` was the *only* cold place in the whole pack - one with no water
+  affordance at all. Every single draw of this subkind therefore landed in
+  a place with nothing to be beneath (confirmed in render: the octopus
+  above stood in snowy pine woods, no ice or water in sight). Added `water`
+  to its need and a new place, `"frozen lake bed"`
+  (`submerged`, `floor`, `dark`, `cold`), so the subkind finally has
+  somewhere its own name is true - `variety-is-kept-by-adding` again: a
+  place added, not a subkind removed.
+* **XVIII5 "flooded church nave" fought its own staging suffix.** The
+  `underwater` band appends `", deep underwater"` to every place in it;
+  "flooded" reads as shallow and walkable, so the sentence asked for a
+  knee-deep nave and a fully submerged one at once - the maintainer's
+  "strange double-underwater issues" report, and the same place that drew
+  attention across two rounds now (round XVI's flesh mass, round XVII's
+  apparition). Renamed to `"drowned church nave"`, consistent with its two
+  band-mates (`"murky lake bottom"`, `"sunken ship hold"`, both already
+  unambiguous). It was also the only underwater place with no per-place
+  affordance override, so nothing else about it changed.
+* **XVIII6 A single "feather crest" rendered as one stray feather.**
+  Correctly classified `"a lone part"` (a bird has one crest), but "feather
+  crest" reads as "one feather," not "a crest made of feathers" - the
+  maintainer's "bird with a weird head feather" report on a phoenix.
+  Renamed to `"plumed crest"`, same cardinality, no count change.
+
+### Investigated, not changed
+
+* **The fantasy/horror `armament, extras` "carry" join** (two fields, one
+  clause) is the round-XVI baseline every genre already matches, not a new
+  defect - checked all three genres for any surviving three-field join
+  (the shape round XVI fixed) and found none. The "holding too much"
+  report traced mostly to XVIII1: an emitter reading as an *extra* held
+  object on top of what was actually in the carry clause.
+* **"Ship on land":** the only instance in this batch was a wrecked sky
+  galleon explicitly `"lying broken on a hillside"` - a dormant act,
+  correctly grounded. No live (non-wreck) vessel drawn off its required
+  affordance was found.
+* **"Random eyes":** every instance found was a `"cluster of...eyes"` /
+  `"bulging staring eyes"` on an eldritch-horror or amalgam kind, where a
+  scattered many-eyed face is the intended Lovecraftian read, not a defect.
+  No occurrence found on a kind where it would be incoherent.
+* **"Wet bony coverings":** no separate textual cause isolated; the most
+  likely contributor (a skeletal or drowned kind staged in the
+  self-contradictory "flooded church nave") is addressed by XVIII5.
+* **"Floating chalice":** no carry pool anywhere places a chalice in a
+  figure's hands; the only "chalice" in the pack is the `jewelled chalice`
+  relic subkind, itself a whole entity, already staged by round XVI's
+  resting-surface fix. Most likely the same render class as the
+  floating-candle finding (XVIII1) rather than a separate defect - not
+  independently reproduced in this batch.
+* **Sci-fi's own `{emitters, aperture}`-family joins** (nine archetypes,
+  some joining up to five fields at once) are structurally the same shape
+  as XVIII1 and could in principle suffer the same read. Left untouched:
+  zero reported instances against sci-fi in either concern batch, sci-fi's
+  apertures are mostly mechanical (vents, hatches) where a nearby glow is
+  often literally correct rather than a misread, and it is the most
+  mature, most heavily tested pack in the repo - editing it on
+  pattern-matching alone, with no render evidence, is exactly the
+  cross-pack risk the maintainer asked to avoid. Revisit only if a sci-fi
+  render ever shows the same conflation.
+
+### Round XVIII, measured
+
+Full `unittest`/`pytest` suite green (670 tests, 131192 subtests).
+`reach_audit.py --pack horror/fantasy --gate` reports the identical
+pre-existing gap as round XVII (confirmed unchanged by this round's edits) -
+no new never-drawn value from any of the six fixes above, including the new
+`"frozen lake bed"` place and the renamed `"drowned church nave"`. The
+word-frequency sweep (2000 seeds/pack, same throwaway script as round XVII):
+horror's `"lantern"` share fell further, 6.5% -> 4.1% (`"guttering candle"`
+no longer doubles as a lantern); `"crown"` fell to 1.4% in horror and 2.1% in
+fantasy, both now free of the render-trap phrase entirely (remaining hits
+are literal worn/held crowns - a lich's `"iron crown"`, a relic that *is* a
+`"jewelled crown"` - which are correct).
+
+## Round XIX: the 922-concern batch (part 2)
+
+53 images from a mixed sci-fi/fantasy/horror batch, the maintainer's render
+test of round XVIII plus fresh testing on all three genres together. Nine
+fixes this round - the first to touch all three packs in one round, though
+each fix stays inside its own pack; sci-fi and fantasy shared no code path
+that could let a fix in one cost the other.
+
+### Findings and fixes
+
+* **XIX1 Splitting the emitters/aperture clause (round XVIII) was necessary
+  but not sufficient.** "Glow in a mouth" was still reported: a diffusion
+  model attends across the whole prompt, not sentence by sentence, so an
+  unlocated "pulsing inner light" and a "ring-shaped toothed maw" still read
+  as one thing even in separate sentences - both describe the same
+  featureless silhouette, so the model puts the light where the mouth is.
+  Anchored every unlocated horror emitter to a body location other than the
+  face: `"cold spectral flame"` -> `"...in its chest"`,
+  `"pale inner light"` -> `"...in its chest"`, `"pulsing inner light"` ->
+  `"...beneath its hide"`, `"luminous pustule"` -> `"...on its flank"`.
+  Verified each phrase pluralizes correctly (`engine/grammar.py`'s
+  preposition-boundary rule needs the location phrase to start with one of
+  its recognised prepositions - "in", "beneath", "on" - immediately after
+  the noun, not after another adjective; an early draft, `"...deep in its
+  chest"`, pluralized "deep" instead of the noun and was caught by direct
+  testing before it shipped).
+* **XIX2 "dusty ledge" was still the fallback surface underwater.** Round
+  XVI declared it place-neutral on purpose, correctly for a reed marsh, but
+  dust does not settle underwater - a spirit board resting on a "dusty
+  ledge" in a "drowned church nave, deep underwater" rendered as a bone-dry
+  room with no water in it at all, confirming the maintainer's "that
+  drowned church still isn't looking right." Gated `"dusty ledge"` to `air`
+  (excludes submerged) and added `"silt-caked ledge"`, gated to `submerged`,
+  so a cursed object always has a surface, wet or dry.
+* **XIX3 A nest needs somewhere wild to nest.** `"guarding a clutch of
+  eggs"` (every dragon subkind, including a hydra) carried no place need at
+  all - confirmed in render: a marsh hydra guarding eggs in a cobbled
+  market square, between the stalls. Split it out of the shared
+  `_S_DRAGON_CALM` bucket into its own bucket requiring `life`, which
+  `settlement`/`cobbled market square` do not grant; `"grooming its scales"`
+  (needs nothing) stayed behind.
+* **XIX4 Walk-only creatures reached underwater and astral-void places
+  through a coarse kind-level gate.** `KIND_POOLS["underwater"]` lists
+  `"mythic beast"` and `"hybrid folk"` because some of their members swim
+  (kraken, hippocamp, merfolk, naga) - but the gate does not distinguish a
+  swimmer from `"unicorn"` (form stance `_WALK` only), confirmed in render:
+  "a huge untamed unicorn is charging headlong" through drowned city
+  streets. `value_stances`/`place_stances` correctly filters which
+  *situations* a walk-only form can do there, but does not exclude the
+  *subkind itself* from an incompatible place - a form-vs-place mismatch
+  the stance system was never wired to catch at that level. Gave the eight
+  walk-only members of `"hoofed beast"` and `"hybrid folk"`
+  (`unicorn`, `nightmare steed`, `silver stag`, `centaur`, `satyr`, `faun`,
+  `minotaur`, `gorgon`) a `ground` need via `_SUBKIND_NEEDS`, granted by
+  wilds/waterside/settlement/underground alike so nothing they already
+  correctly appear in is narrowed. Verified empirically (4000/6000-seed
+  targeted sweeps): zero walk-only subkinds reach `drowned city streets`
+  afterward, only the aquatic members do. A full audit of every remaining
+  walk-only subkind against every underwater/sky-only environment (giants,
+  most undead, constructs) is not done this round - scoped to the reported
+  kinds and their direct siblings; see Known gaps.
+* **XIX5 A full-throttle mishap needs room to have built up speed in.** Six
+  ground-vehicle situations (`"losing a wheel"`, `"spinning out"`,
+  `"throwing a track"`, `"ramming a barricade"`, `"climbing a dune ridge"`,
+  all "at full throttle"/"at speed", plus `"racing a storm front toward
+  shelter"`) carried no place need, confirmed in render: an amphibious
+  crawler "losing a wheel at full throttle" inside a "station docking ring
+  interior" - a tight, walled place `KIND_POOLS` allows a vehicle into for
+  loading, not racing through. Gated all six to `vast` (`"climbing a dune
+  ridge"` also needed `ground`, caught by the affordance lint on the word
+  "ridge" - the two zero-need situations that already had a place attached
+  to their name still needed the token spelled out).
+* **XIX6 A new cross-field trait: a hand can hold one thing.** "Someone
+  with a lantern stuck to their wrist while firing a bow," "holding too
+  much": a hand-held light (horror's `"hooded lantern"`/`"guttering
+  candle"`/`"handheld torch beam"`, fantasy's `"hooded lantern"`) is drawn
+  independently of armament, so it could land beside a bow at full draw or
+  a shotgun - both already occupying both hands. Declared `hand-occupying`
+  on the light values and a new `two-handed-weapon` trait on horror's
+  `shotgun`/`fire axe`/`hunting rifle`, conflicting with fantasy's existing
+  `bow-weapon` trait (`longbow`, `tiny bow`) - the same declarative
+  mechanism `bow-act`/`edged-weapon` already used, extended to a field
+  nobody had connected to it before rather than a new engine feature.
+* **XIX7 Fantasy's artifact pool was thin.** 15 subkinds across `relic`/
+  `monument`, each close to bare self-naming with only a kind-level
+  material/colour/markings pool behind it - the maintainer's "artifacts
+  kinda suck." Added three, each with its own `form` values (the one
+  per-subkind card an artifact needs; everything else already resolves at
+  the group level): `"black grail"` and `"singing harp"` (relic),
+  `"weeping idol"` (monument).
+
+### Investigated, not changed
+
+* **"Very odd protrusions" / "crystal protrusions."** Traced further than
+  round XVII's "diversify the tentacle vocabulary" note: `"alien creature"`'s
+  `detail_cap`/rotation is not obviously over-budget in field *count*
+  (comparable to sibling archetypes), but several small-scale fungal/
+  crystalline-growth subkinds stack multiple independently-counted part
+  fields at once (a filter stalk, four acid spore bursts, eight
+  light-sensing patches, three phosphorescent tendrils, a feeding slit - 17
+  individual named parts on one small body). This is a cardinality-budget
+  tension, not a vocabulary bug: the high-count values ("a dozen", "eight")
+  exist because "genuinely many" is the right description for some
+  creatures, and trimming them globally would cost the variety the
+  maintainer also asked to keep. Needs a body-plan-by-body-plan pass with
+  measurement, not a rushed cap change touching every scifi creature -
+  scoped out of this round, left for a dedicated one with this sharper
+  diagnosis to start from.
+* **"So many people spraying random stuff that makes no sense."** No single
+  traceable pool value found; `"sealing a hull breach with a foam sprayer"`
+  and `"spraying sealant on a seam"` are coherent as written. Likely a
+  diffusion-rendering limitation for the concept of a directed spray rather
+  than a text defect.
+* **"Stuff coming out of the dirt where there should not be dirt"
+  (sci-fi).** The word "dirt" does not appear anywhere in `data/scifi.py`;
+  not text-traceable.
+* **"Weird bone decorations on clothes."** `"sewn-on bone charms"` (a
+  horror markings value) is a coherent, thematically-intended folk-horror
+  detail; no defect found in the text.
+* **"Goat holding bow."** A faun's form is already `"goat-legged human
+  build"` - correctly bipedal with human arms. The quadrupedal-reading
+  render is most likely a model interpretation, not a text bug; no safer
+  rewording found without weakening the "goat-legged" cue that makes a
+  faun read as a faun at all.
+* **A vampire's dry velvet coat, rendered underwater with no waterlogged
+  cue.** Identified (`"bloodsucker"` has no submerged-appropriate material,
+  unlike `"drowned dead"`'s dedicated sodden rags) but not fixed this round
+  - lower confidence and impact than the other findings; noted for a future
+  pass rather than rushed.
+* **"A ramp down while a vehicle is moving and its engines are firing."**
+  Not reproduced from this batch's prompt text; no single situation or
+  value combination found that states both at once. Likely a rendering
+  combination rather than a text defect.
+
+### Round XIX, measured
+
+Full `unittest`/`pytest` suite green (670 tests, 131327 subtests).
+`reach_audit.py --pack scifi/fantasy/horror --gate` reports the same
+pre-existing gaps as round XVIII in sci-fi and horror, unchanged by this
+round's edits. Fantasy has one new entry, `"small lap harp"` (one of two
+`"singing harp"` form values) - the same rare-combination-not-sampled class
+already documented above (`"white-gold"`, the five unbucketed situations),
+not a structural gap; `singing harp` is one of eleven relic subkinds and the
+form is a straight coin flip within it. Verified directly (not just via the
+suite) that the two coherence fixes hardest to see from a diff alone hold:
+a 4000-seed sweep of `drowned city streets` before XIX4 drew `unicorn`
+three times and zero after, sourced only from `kraken`/`hippocamp`/
+`kelpie`/`giant sea turtle`/`selkie`/`naga`/`merfolk`; a 6000-seed sweep of
+every scene containing `"guarding a clutch of eggs"` after XIX3 drew it only
+in `life`-affording places, zero times in a settlement.
+
+## Round XX: the 922-concern batch (part 3)
+
+49 images, all three genres, no maintainer-supplied list this time - the
+brief was to scrutinize every image and find what round XIX missed, since
+the maintainer had reported real fixes not holding across rounds. Went
+through all 49 individually rather than sampling. 19 fixes; three are new
+mechanism-level findings (rounds XVII-XIX had established the pattern-vs-
+place-need class - this round found the class extends to hand-occupancy on
+extras and situations, not just armament, and a new "wrong half drawn first"
+class in hybrid-creature form wording), the rest are the same
+declared-need-is-missing shape applied to values that had slipped past three
+prior rounds of the same check.
+
+### Findings and fixes
+
+* **XX1 Round XIX's emitter fix held; round XVIII's request for it did not,
+  and the gap was one field wider than either round scoped.** Re-verified
+  in render: `#00560`/`#00566`/`#00591` (poltergeist, poltergeist, tentacled
+  abomination) all show their glow at the anchored body location, not the
+  mouth - round XIX's fix is confirmed working, not just tested. But
+  `"weeping with its face in its hands"` (fantasy `undead`, horror `dead`,
+  horror `spirit`) and `"cracking open a ribcage with both hands"` (horror
+  `dead`) put both hands to one job while the same entity could also be
+  drawn carrying armament or (for `spirit`, via its own `"{pronoun}
+  clutches {extras}"` sentence) an extra - confirmed in render, `#00534`'s
+  drowned revenant weeping with its face in its hands while also carrying a
+  reaping scythe. Reworded both to postures that need no hands at all
+  (`"hunched over in silent grief"`, `"cracking open a ribcage"` without
+  the hand count) rather than gating them, since a hand-count trait would
+  have meant re-drawing a beloved vivid phrase into a blander fallback most
+  of the time it fired.
+* **XX2 The maintainer flagged the replacement wording itself before it
+  shipped.** The first draft of XX1's fix, `"shoulders shaking with a
+  silent sob"`, describes motion a still frame cannot show. Replaced with
+  `"hunched over in silent grief"` - a posture, not a motion.
+* **XX3 Hand-occupancy (round XIX) was scoped to armament; extras and
+  situations needed it too.** Empirically swept (5000 seeds/pack): horror's
+  `spirit` kind still produced `"weeping with its face in its hands"` +
+  `"clutches a tarnished locket"` (fixed by XX1's reword) and five
+  `_S_SURVIVOR_ACT`/`_S_SURVIVOR_WALLS` situations
+  (`"checking a hunting rifle with shaking hands"`, `"loading shells into a
+  shotgun"`, `"clutching a first aid kit to their chest"`, `"bandaging a
+  bleeding arm"`, `"barricading a door"`) produced a hunting-rifle-handling
+  pose alongside an independently-drawn hand-held emitter (a lantern, a
+  torch beam) - confirmed in render, "loading shells into a shotgun" next
+  to "a single cold-white handheld torch beam" already somehow in the same
+  two hands. Tagged all five `two-handed-weapon`, reusing round XIX's
+  conflict with `hand-occupying` rather than inventing a new trait pair.
+  Re-swept after: 0 problems in 5000 seeds, fantasy and horror both.
+* **XX4 A render-trap word survived three rounds of review for this exact
+  class:** `"eyespot rosettes"` (a camouflage marking, like a moth wing's
+  false eye) - confirmed in render, `#00434`'s gelatinous mass grew a third
+  set of literal glowing eyes from what was meant to be a body marking.
+  Renamed `"concentric-ring rosettes"`, describing the same visual pattern
+  without the word "eye" in it.
+* **XX5 A form that names the animal half first drew two creatures instead
+  of one.** Confirmed in render: `#00506`'s centaur rendered as a complete
+  horse (with its own head) plus a separate human torso reaching up to pet
+  it, from the form text `"horse body below a human torso"` - "horse body"
+  read as a complete subject on its own, with "below a human torso" landing
+  as an unrelated second object rather than a fusion instruction. Compared
+  against the pack's own working examples: `gorgon` (`"human torso and arms
+  above a coiled serpent tail"`) and `naga` (the identical pattern) render
+  correctly, because the human half is named first and the animal half
+  trails as the modifier. Reworded `centaur` and the one other value with
+  the same animal-first shape, `merfolk` (`"long fish tail below a human
+  torso"`), to match the working pattern: `"human torso above a horse's
+  body"`, `"human torso above a long fish tail"`.
+* **XX6 A weapon-neutral situation still committed to a weapon shape a bow
+  cannot make.** Confirmed in render: `#00512`'s gorgon, carrying a
+  longbow, given `"charging with a lowered weapon"`, rendered holding a
+  pair of swords instead of the bow the text actually named - "lowered" and
+  "brandished high" read as bladed-weapon poses regardless of what
+  `armament` says. Round XV's existing `blade-act` trait already exists
+  for exactly this shape (conflicts with `bow-weapon`); the two situations
+  had just never been added to it. Added `"brandishing a weapon high"` and
+  `"charging with a lowered weapon"` to `_BLADE_ACTS`. Verified: 27 distinct
+  situations remain available to a bow-carrying `hybrid folk` entity across
+  an 8000-seed sweep, zero bad combinations - the fix excludes, it does not
+  starve.
+* **XX7-XX15: nine more instances of round XVII/XIX's "a situation names a
+  physical feature with no matching need" shape**, found by scanning every
+  situation's text for a surface/temperature word and cross-checking its
+  declared need (a script, not a re-read by eye - the same class had
+  already survived three rounds of manual review). Confirmed in render for
+  one: `#00472`'s burrowing horror "flattening itself against a rock" in
+  `"derelict shipyard orbit, out in open space"`, with nothing solid within
+  reach. Sci-fi: `"flattening itself against a rock"`, `"drilling a core
+  sample from the bedrock"`, `"crossing cracked ground"` -> need `ground`;
+  `"floating above a ruined floor"` -> needs `structure`; `"reversing out
+  of a gully"` -> needs `floor` (not `ground` - the one live render of this
+  situation, `#00461`, was a submersible in an ocean trench, which has
+  `floor` but not `ground`, and was already coherent); `"plunging through a
+  sheet of thin ice"`, `"tearing open along a frost-welded seam"`,
+  `"surfacing through a sheet of ice"` (already had `submerged`) -> need
+  `cold`. Fantasy: `"hammering at a rock face"` (dwarf) -> needs `ground`,
+  confirmed practically live (folk-kind is eligible for `interior` places,
+  which have no `ground`, unlike every other kind checked in this pass).
+  The scan also surfaced matches that were *not* fixed because a
+  kind-level restriction already made the place unreachable in practice
+  (verified per case, not assumed) - see "Investigated, not changed."
+
+### Investigated, not changed
+
+* **Every keyword-scan hit whose kind is already restricted to places that
+  all grant the matching need.** `"sitting slumped against a rock"` (giant,
+  needs `vast` already, and every `vast` place giant-kin can reach also has
+  `ground`), `"sliding slowly across the floor"` / `"dripping water onto
+  the floor"` (horror cursed object/furnishing, every reachable band has
+  `floor`), `"shedding a spray of rock chips"` and `"trailing waterfalls
+  from its floating rock"` (self-referential - the rock is the speaker's
+  own body, not a place feature). Checked each against `KIND_POOLS` x
+  `PLACE_AFFORDANCES` before deciding, not assumed safe from the wording
+  alone.
+* **`"banking hard around a spire of rock"` (round XIX's own addition) in
+  `"sea of clouds"`, which has no `ground`.** A real gap, but a soft one -
+  the other two `sky`-band places (`floating island archipelago`, a
+  mountain range) do have visible rock, so this fires wrong at most 1 time
+  in 3 for this one situation, and every candidate fix available right now
+  either reuses `ground` (which also carries a stance meaning - "the entity
+  stands on it" - this situation does not want to assert of an airborne
+  ship) or requires a new token whose only user would be this one value.
+  Left as a known, bounded soft spot rather than force a fix that either
+  overloads an existing token's meaning or adds a token for one line.
+* **`#00512`'s bow visibly not rendering as a bow even after XX6** was not
+  re-verified by render (fixing it changes which future seeds draw the
+  combination; it does not repaint `#00512` itself) - the fix is verified
+  by the situation/armament sweep in XX6, not by regenerating this specific
+  seed.
+* **Situation-vs-pose mismatches with no text contradiction to fix:**
+  `#00447` (siege mech shown firing, not "crouching to inspect wreckage"),
+  `#00478` (fire drake shown breathing fire, not "snapping at a hurled
+  spear"), `#00531` (revenant shown enthroned, not "clawing out of a stone
+  coffin"). In each, the situation text is internally coherent and the
+  entity's own identity (a mech with flame projectors, a *fire* drake, an
+  ancient revenant) supplies a stronger, always-available visual cue than
+  the specific momentary action asked for. This is a model fidelity limit
+  general to prompt-based image generation, not a pack defect - there is no
+  wording change that asks a fire-breathing dragon to reliably not breathe
+  fire in one frame. Flagged for the maintainer rather than claimed fixed.
+* **`#00596`'s "slumbering... sleeping breaths" tentacled abomination
+  rendered wide-eyed and alert.** `"bulging staring eyes"` is a permanent
+  anatomical descriptor (the eye *type*), not a state; asking it to also
+  read as closed/resting when the situation is dormant would require a
+  separate closed-eyes value for exactly this creature family's dormant
+  situations, which does not exist yet. Same category as the previous
+  bullet - flagged, not fixed blind.
+* **`#00594`'s cursed puzzle box, "glistening with fresh dew" while resting
+  on a "dusty ledge."** A soft material/condition tension (dew implies damp,
+  dust implies dry) rather than a contradiction on the scale of the
+  drowned-church-nave case XIX5 fixed; the render itself reads fine. Left
+  alone rather than force a rename with no confirmed defect behind it.
+* **`#00420`'s "soot-blackened" carrier starship rendering as a clean black
+  hull, not visibly charred**, and **`#00448`'s courier drone "shielding a
+  suited crewmate" with no crewmate in frame.** Neither is a text
+  contradiction - "soot-blackened" is a legitimate (if subtle) condition
+  word, and other situations in the pack already name something the frame
+  does not have to fully depict (a wreck "towing a disabled shuttlecraft in
+  a tractor beam" does not always show the shuttlecraft either). Flagged
+  as a possible pattern worth watching, not fixed on a guess.
+
+### Round XX, measured
+
+Full `unittest`/`pytest` suite green (670 tests, 131553 subtests).
+`reach_audit.py --pack scifi/fantasy/horror --gate` reports the same
+pre-existing gaps as round XIX in fantasy and horror, unchanged by this
+round. Sci-fi shows three additional never-drawn situations this round
+(`"rising slowly from the ground"`, `"cutting a snarl of cable away with a
+manipulator"`, `"lying half-buried under drifted dust"`) beyond round XIX's
+six - not a structural regression (the exhaustive, non-sampled `SHADOWED`
+check in the same test run is clean; this round's own `ground`/`cold`/
+`floor` additions shifted the RNG draw sequence enough that a 12000-seed
+sample missed three more rare place-and-situation combinations, the same
+`ground-vehicles-read-as-modern`-adjacent sampling-noise class documented
+since round XIII). Verified directly rather than assumed: a 5000-seed
+sweep of each of fantasy and horror found zero remaining hand-occupancy
+conflicts (XX3); an 8000-seed sweep confirmed a bow-carrying hybrid-folk
+entity still has 27 distinct situations available after XX6, none of them
+the excluded two.
+
+## Round XXI: the 923-concern batch
+
+The maintainer's next render test, including deliberate cross-genre mixes
+(a fantasy or horror entity wired into another genre's scene). Every image
+was reviewed; the four whose fault was not visible from the prompt alone
+were asked about (#22, #65, #110, #135).
+
+### Cross-genre: the guest speaks for itself
+
+A wired entity from another genre used to be spoken, placed and given an act
+by the *host* pack, which had never heard of it: a spacefarer was "It is a
+slight narrow frame, covered in ... suit", a drop pod drew the host's
+"charging headlong", colours lost their hyphens. Two genre-blind modules fix
+it once:
+
+- `engine/registry.py` - every `generate_scene`/`generate_entity` call
+  registers its pack by slug, so the pack that built a payload is known to
+  whichever pack receives it. The engine never names a genre.
+- `engine/foreign.py` - `voice_of` speaks a foreign entity through its own
+  pack (archetype, grammar, spoken forms); `guest_fits_place` places it by
+  its own stances and needs, translated into the host's words
+  (`STANCE_EQUIVALENTS`), trying the body's **primary stance** first
+  (`PRIMARY_STANCE_ORDER`: a spacefarer that walks and floats is put where it
+  can walk, not in a sea of clouds); `guest_situation` draws an act from the
+  guest's own repertoire that the host place can stage, preferring
+  place-neutral acts, honouring the guest's own rules in both directions and
+  the host's content filter; `mask_for_filter` drops guest values the host
+  filter excludes. An unregistered guest falls back to the old host handling.
+
+### New checks and guards
+
+- **`COLOURWORD`** (`tests/validate_data.py`): a colour named after a
+  substance is drawn as the substance ("molten gold" emitters drew lava at a
+  spacefarer's boots, "ember" hues drew fire, "sea green" water, "frost blue"
+  ice, "honey" honey). Allowed only where the pool key names a subject made of
+  it (`SUBSTANCE_COLOUR_HOMES`). Every shipped colour was renamed to a plain
+  hue.
+- **Colour/noun stutter** (moved to `engine/scene.py` in round XXII): a colour
+  companion that repeats a word of its noun is dropped ("pale-blue pale inner
+  light", "ember-orange ember eye", "cold-white cold spectral flame").
+- **Hands** (all three packs): an act that fills both hands, or a great
+  two-handed weapon, excludes held gear (`hands-busy`/`hand-held` in sci-fi,
+  `hands-busy`/`two-handed-weapon` vs `hand-occupying` in fantasy,
+  `held-item` in horror; revised in round XXII).
+- **Self-coloured horror materials**: a material naming a colour
+  ("yellowed bone", "peat-blackened hide") fixes it, as in the other packs.
+
+### Placement
+
+- Sci-fi: interior acts that name a hull, panel, cargo pod, compartment or
+  containment field need `structure`; new outdoor and underwater acts keep
+  the floors. "bending a survey mast" needs `ground`.
+- Fantasy: the blazing elemental plane holds only what fire cannot kill
+  (dragons, spirits, undead, constructs, artifacts); the frost giants' realm
+  can hold giant-kin; moss (conditions, materials, moss troll) stays out of
+  hot and cold places.
+- Horror: a motel needs a `road`, a ride or funhouse a `fairground`;
+  wallpaper, plaster and floorboards need a `room`; dew needs `sky`; the
+  flesh-walled chamber and crimson hallway are interiors (no gargantuan
+  subject).
+
+### Values
+
+- Sci-fi: `collar light strip` (was a lone "boot magnet ring"), `buckled hull
+  plating` (was a growth mat in vacuum), bandage tied on the figure's own
+  forearm, "waving a straggler" (was a refugee crowd), "ducking low and
+  backing away" (was "retreating behind cover", drawn through a window), a
+  star map projected from one palm (was shown to an envoy), "lone
+  interstellar diplomat" (the bare word drew a handshake partner).
+- Fantasy: bear and wolf tails; sprite/pixie wings named once; satyr and
+  faun human half first; death knight armoured; clockwork guardian brass
+  parts and furnace grate; chariot/siege tower parts, materials and
+  markings; tome, crown, orb, mirror and hourglass materials; apertures only
+  on what opens; cloud skiff never large, portal arch never small; a gleaming
+  thing is not weathered; visible artifact acts; more wyrm silhouettes and
+  dragon hides.
+- Horror: ride and funhouse split; skeletons unscarred; bog body shrivelled
+  and peat-coloured; spirit faces, bodies, dresses and lights varied, one
+  chest light at a time; tentacled forms without an octopus head; a
+  slumbering mass does not stare; stalkers masked; objects keep their own
+  parts, eyes and acts (a puzzle box slides its panels, a music box plays).
+
+### Scene Weaver outputs
+
+`prompt_json` wired into a text encoder rendered the JSON as the prompt
+(#143). Both outputs now carry tooltips: `prompt_text` is the prompt,
+`prompt_json` is structured data, not a prompt.
+
+### Model limits, not text
+
+#22 (a hand through a window) was a model artefact; its act was reworded
+anyway. Pose-vs-act mismatches with no text contradiction remain a model
+limit.
+
+## Round XXII: the 923-concern batch (part 2)
+
+The maintainer's render test of round XXI, 61 images including more
+cross-genre mixes. Twelve images were asked about; every answer is folded in.
+
+### Cross-genre placement
+
+- **Habitat** (`engine/foreign.py::habitat`): what every place the guest's
+  own genre puts its kind in has in common. A host place must afford it, read
+  through shared words and `AFFORDANCE_EQUIVALENTS` (`open-space`/`void`,
+  `aloft` -> `void`). An ogre and a brownie were on a space-station approach
+  lane; a space station hung in a sea of clouds.
+- **Shared trait words**: a host place trait that conflicts with a guest body
+  trait of the same name refuses the body (a towering elemental in a
+  crawlway).
+- Placement relaxes in three steps: primary stance and strict needs, any
+  stance and strict needs, any stance and a need the host has no word for.
+
+### Word echoes, in the state
+
+`engine/scene.py::_silence_word_echoes` replaces round XXI's render-time
+colour guard: a head modifier that repeats a word of the head noun ("an
+antique antique rocking chair") and a colour companion that repeats its host
+("pale-blue pale inner light") are silenced in the resolved state, so
+`prompt_json` and `prompt_text` agree.
+
+### Hands, again
+
+- Horror: survivors always drew a hand-held light, so a shotgun or fire axe
+  could never be drawn (pre-existing since round XX). A hands-free headlamp
+  joins the lights. The warden's named lantern takes one hand.
+  `both-hands-act` puts a carried weapon away. The priest carries no gun.
+- Fantasy: `hands-together` acts (prayer, a lute, a potion) put a two-handed
+  weapon or bow away; a quiver comes with a bow.
+
+### Faces and heads
+
+- A hidden face (a smooth-faced or veiled ghost) shows no mouth or eyes: with
+  both, two ghosts were drawn.
+- Horns or a crest do not fit a sealed bubble helmet.
+- Naga and gorgon name the human head; a centaur has no mane on its human
+  half; satyrs and fauns from round XXI.
+- Folk: helms and visors are the armoured roles'; casters wear mantles; a
+  non-caster's light is one gem amulet.
+
+### Places
+
+- Sci-fi: a cockpit holds no creature; a barricade stands on ground;
+  spores need life; stations lost their snow-like frost.
+- Fantasy: a charge needs ground and a walking body (a kelpie galloped along
+  a trench, a merfolk charged on its tail); floating stones need air; moss
+  needs air.
+- Horror: furniture needs a `room` (a portrait in a sewer); a fair can set up
+  in the village square; the void is spoken as a black void.
+
+### Values
+
+Render traps renamed after this batch and the maintainer's notes: a colour
+named after a substance (`COLOURWORD` now also catches "hellfire"); decals
+(drew text); "halo crown" (a crown); a "volley of arrows" (arrows in mid-air
+and an archer); a hunter's hide (a rider); a bone-handled knife (a bone);
+"hunting rifle" (an assault rifle); "hexapod" (four legs); a belt lantern
+was rejected before it shipped. Invisible acts replaced with visible ones;
+cursed objects' idle acts made unsettling; blade acts no longer name a second
+blade.
+
+### Reach
+
+The reach audit found values that could never be drawn; each was made
+reachable or removed: survivor weapons (above), an effigy's sensors (its eyes
+are its glowing emitter, so it has none), the fire and magma elementals'
+colours (their materials always name a colour), the lap harp, the ride and
+its acts.
+
+## Round XXIII: the 923 evening batch
+
+The maintainer's render test of round XXII, including cross-genre mixes, plus
+a standing request: alien moons were drawn as Earth's moon, and two of them as
+two Earth moons. Thirteen images were asked about; every answer is folded in.
+
+### Alien skies
+
+A moon or world named only by a colour is drawn as Earth's. Each one a place
+names now carries a feature no Earth sky holds (`_SPOKEN_ENVIRONMENT`): a
+ringed rust-red moon; a large banded pale-green moon beside a small ochre
+crescent, never two alike; a gas giant's storm bands; a ringed blue ocean
+world. Orbit places that named no world name one. A moonlet is "lumpy", a
+ringed world has "broad flat rings", a comet stream is ice grains and dust.
+
+### Cross-genre
+
+- A place trait now refuses a guest body under either genre's conflict
+  table (`_place_refuses_body`), and horror's drowned places carry the
+  shared word `aqueous`: a fire elemental burned in a drowned church nave
+  because horror, with no fire creature, never paired `aqueous` with
+  `combustion` itself. A guest's habitat is drawn from the places its own
+  genre would really put it, refusals included.
+- `engine/foreign.py::mask_for_place` drops a guest value, with its count and
+  colour, whose needs the host place fails: a "rain-soaked" coat brought rain
+  into a habitat ring.
+
+### Clones
+
+An act that names an unseen second person draws a clone of the subject: two
+elves for "whispering an incantation", an attacker in the ranger's own coat
+for "parrying a heavy blow", a tentacle for a falling colleague. Those acts
+were reworded to one figure in all three packs.
+
+### Coherence gates
+
+- Sci-fi: a wreck in mid-air only falls (a place trait, since the stance axis
+  reads an act against the body and never the place), with new falling acts
+  to keep the sky varied; a rooted growth's form, skin, markings, extras and
+  acts come from what it is (a crystal lattice was a fungal colony in bark
+  with scales, shaking its back); goggles and implants need an open face;
+  a named alien face keeps its own mouth and no horns; pristine is never
+  scrap-plated; lava does not shine pale cyan; only a lander burns through
+  re-entry; no live landing pad beside a wreck; an elevator anchor hangs over
+  a world (`near-world`); cargo pods stand where cargo berths.
+- Fantasy: a long or heavy weapon is set down for fine handwork, so giants
+  and fey gained a belt blade; a spellbook is a caster's; a guard and a draw
+  are blade acts; a limbless serpent has no claw act; an earth elemental does
+  not seep or swirl, and a "hulking" or "towering" shape is never small; moss
+  grows neither in a desert nor under the sea; bows, waterskins and linen need
+  air; a calm elemental does not erupt.
+- Horror: rain-soaked values need open sky; a poltergeist's dishes need a
+  room; the flesh-walled chamber has no papered wall; a slumbering maw is
+  shut; a lantern being smashed is the only lantern; the lantern warden
+  carries no gun.
+
+### Found on the way
+
+- Round XXII's "floating stones need air" never fired: `VALUE_NEEDS` had
+  copied `_SITUATION_NEEDS` before the line ran. It is a trait now
+  (`aqueous|floating-debris`), which also leaves the astral void its stones.
+- A subkind both packs name ("drowned revenant") answers to the host's rules
+  as well as its own: a fantasy one wired into a dry horror chapel was
+  re-drawn as a bone revenant by horror's water need. Fantasy's now needs
+  water too; no wired guest changes subject across every genre pair.
+- Two horror acts opened "with ..." and printed "is with a fresh handprint";
+  `tests/validate_data.py` now fails a situation that opens with a
+  preposition.
+- Render traps renamed: warp coil banks (drawn as legs), "bell-shaped" (a
+  bell), a sling (a hammer, a pistol, a rope), a gear crest (a clock face),
+  whisker barbels on a snake, route stripes (numbers), an ion-trace strip (a
+  laser), radiation trefoils, a nose cone (an aircraft), bloodshot eyes (a
+  bleeding face), a luminous outline (a second ghost).
+
+## Round XXIV: the 924 morning batch
+
+The maintainer's render test of round XXIII, the unclear images asked
+about, plus two requests: horror swarms (vermin coming at the viewer or
+crawling over a screaming victim) and pox, boils and lesions as gore; and
+artifacts, cursed objects and haunted places that were flagged for doing
+nothing dramatic.
+
+### New content
+
+- Horror kind `swarm` (group `vermin`: cockroaches, spiders, rats, snakes,
+  centipedes). A swarm is its bodies: no limb, eye, mouth or weapon pools.
+  Its acts come at the viewer, pour out of walls, drains, graves and logs, or
+  cover a screaming victim; the victim is a second body, so it is drawn as a
+  person, not a clone. Weighted below the other living kinds.
+- Horror mortal group `afflicted` (a plague-stricken villager, a pox-ridden
+  wanderer): the horror is their own body. Boils, pox scars and open lesions
+  are gore-tagged finishes on them, on other mortals and on the undead.
+  Survivors gained acts with a swarm on themselves.
+- Cursed objects, haunted places and relics in every pack gained dramatic
+  acts (a painted figure climbing out of its frame, a figure behind the mirror
+  glass, every pane lit at once, a relic hurling a rover); the quiet ones were
+  reworded or made rarer (`CONDITION_WEIGHTS`).
+
+### Cross-genre
+
+`mask_for_place` now fails a guest need the host has no word for: a horror
+chair "set against a wall of warped panelling" stood in a fantasy stone crypt,
+because fantasy has no `room`. The values this drops across all genre pairs
+are few and all read wrong in the host (wall backdrops, sun-bleaching,
+drifting debris).
+
+### Coherence gates
+
+- Sci-fi: pristine or new things show no worn markings or finishes, and never
+  crack open; scorch marks burn nowhere under water; a visor strip is not
+  worn inside a clear bubble helmet; a lithovore walks (it was a rooted plate
+  column with legs); a worm has no foot; a plated body is not a gel; legs come
+  in twos or more; a drone pinned under a plate needs a floor.
+- Fantasy: both-hands acts set every held weapon down; a gaunt body is not a
+  heavy one; a colossus, behemoth or elder dragon, and anything colossal,
+  needs a vast place; a river barge stays off the open sea; a marsh hydra
+  needs a shore; a wrecked airship's gasbag has come down (a new form); a
+  moving cart has its horses and a siege tower its soldiers; a chariot is
+  never colossal; fire-bearing emitters and air acts stay out of water.
+- Horror: a blade act needs a blade; one head covering per head (a hood, a
+  hat, a sack mask or a headlamp); dragging takes both hands; wallpaper and
+  panelling belong to homely rooms, and nothing stands behind furniture
+  drifting in the void; a small likeness is never large; a building's form
+  and walls are the same material; nothing is freshly scorched under water;
+  a mortuary slab is indoors.
+
+### Render traps renamed
+
+A "hospital starship" (a present-day hospital ship with a radio mast), a
+dorsal sensor "spine" (a giant boom), warp coil rings (wheels on a grounded
+ship), rusted banners (a field of red flags), bloodshot and axe-scarred
+giants (a bleeding face, an axe), a thrown satchel and a volley of arrows (the
+thrower and the archers), a snake's mouth on a naga (a snake's head), a
+"stone" fist on a bronze colossus, "dropping from the ceiling" (hanging in
+mid-air under dripping goop).
+
+### Known gaps closed
+
+A sea of clouds has no rock to bank around; a vampire is never placed
+underwater (its velvet drew dry); a generation ship stays in open space; a
+sampled audit of all three packs found no body placed where it cannot
+stand, so round XIX's walk-only note is retired.

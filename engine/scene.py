@@ -51,6 +51,7 @@ is spoken only to ``_meta.warnings``.
 """
 from __future__ import annotations
 
+import dataclasses
 import json
 import logging
 import random
@@ -69,6 +70,7 @@ try:
         RELATION_FIELD,
         RELATION_ANY,
         RULE_EXCLUDE,
+        RULE_REQUIRE,
         SCENE_NODE_SLOTS,
         SET_ALL_CLEAR,
         SET_ALL_OFF,
@@ -79,9 +81,11 @@ try:
         FieldDef,
         GenrePack,
         bind_address,
+        canonical_scene_filter,
         build_field_definitions,
         archetype_for,
         affordances_of,
+        spoken_value,
         archetype_name_for,
         build_resolution_definitions,
         filtered_pool,
@@ -113,6 +117,7 @@ except ImportError:  # pragma: no cover -- standalone/test context
         RELATION_FIELD,
         RELATION_ANY,
         RULE_EXCLUDE,
+        RULE_REQUIRE,
         SCENE_NODE_SLOTS,
         SET_ALL_CLEAR,
         SET_ALL_OFF,
@@ -123,9 +128,11 @@ except ImportError:  # pragma: no cover -- standalone/test context
         FieldDef,
         GenrePack,
         bind_address,
+        canonical_scene_filter,
         build_field_definitions,
         archetype_for,
         affordances_of,
+        spoken_value,
         archetype_name_for,
         build_resolution_definitions,
         filtered_pool,
@@ -146,7 +153,16 @@ except ImportError:  # pragma: no cover -- standalone/test context
     )
 
 from .budget import allowance_for, apply_budget
-from .prose import render_prose
+from .foreign import (
+    guest_fits_place,
+    guest_pack,
+    guest_situation,
+    mask_for_filter,
+    mask_for_place,
+    voice_of,
+)
+from .prose import head_phrase_spec, render_prose
+from .registry import register_pack
 from .grammar import head_noun
 from .resolution import ResolvedEntity, ResolvedRelation, ResolvedScene
 
@@ -570,7 +586,12 @@ def _environments_ruled_out_by_fixed_subjects(
             _locked_widget(definitions, widgets, definition.slot, name),
             _locked_widget(definitions, widgets, definition.slot, STANCE_FIELD),
         ))
+    guests: list[tuple[GenrePack, dict[str, str | None]]] = []
     for slot in sorted(promoted):
+        guest = guest_pack(pack, promoted[slot])
+        if guest is not None:
+            guests.append((guest, _payload_fields(guest, promoted[slot])))
+            continue
         fields = _payload_fields(pack, promoted[slot])
         subjects.append((
             fields.get(KIND_FIELD),
@@ -578,6 +599,20 @@ def _environments_ruled_out_by_fixed_subjects(
             fields.get(STANCE_FIELD),
         ))
     allowed = set(legal)
+    # A foreign guest narrows by what the two genres share -- its body's stances
+    # and its type's needs, read through the host's words -- since the host's
+    # own kind pools have never heard of it.
+    for guest, fields in guests:
+        for primary_only, strict in ((True, True), (False, True), (False, False)):
+            holders = {
+                environment for environment in allowed
+                if guest_fits_place(
+                    guest, pack, fields, environment, primary_only=primary_only, strict=strict
+                )
+            }
+            if holders:
+                allowed = holders
+                break
     for kind, value, form in subjects:
         if not kind or kind not in known_kinds:
             continue
@@ -767,6 +802,52 @@ def _silence_repeats(
                     value = replacement
                     values[name] = replacement
             taken.add(value)
+
+
+def _mask_drawn_wired_values(
+    rng: random.Random,
+    pack: GenrePack,
+    state: dict[str, str | None],
+    address_of: Mapping[str, FieldDef],
+    slot: int,
+    chosen: "frozenset[str]",
+    scene_filter: str,
+) -> None:
+    """Apply the scene's content filter to a wired entity's *drawn* values.
+
+    The Scene Entity node has no filter of its own, so a value it drew at random
+    reached a "No gore" scene intact -- a blood-soaked corpse passed straight
+    through. A drawn value is a draw, not a choice (the same reasoning that lets
+    a rule re-draw it), so a tag-scoped field whose value the filter masks is
+    re-drawn from the filtered pool, and a count partner is re-drawn with its
+    noun. A value the user locked on the Entity node is kept, and the kind and
+    the type are left to the constraint pass, because re-drawing either here
+    would strand every field it scopes.
+    """
+    identity = {KIND_FIELD, type_field(pack)}
+    for name in pack.entity_fields:
+        path = slot_path(slot, name)
+        value = state.get(path)
+        definition = address_of.get(path)
+        if value is None or name in chosen or definition is None:
+            continue
+        if not definition.tag_scoped or name in identity:
+            continue
+        scope = _scope_for(pack, state, path)
+        if value not in pool_for(pack, name, scope):
+            # A foreign or user-supplied value: the filter is not what excludes it.
+            continue
+        if value in filtered_pool(pack, name, scope, scene_filter):
+            continue
+        state[path] = _draw(rng, pack, definition, scope, scene_filter)
+        partner = pack.counts.get(name)
+        partner_path = slot_path(slot, partner) if partner else None
+        partner_def = address_of.get(partner_path) if partner_path else None
+        if partner_def is not None and partner not in chosen:
+            state[partner_path] = (
+                _draw(rng, pack, partner_def, _scope_for(pack, state, partner_path), scene_filter)
+                if state[path] is not None else None
+            )
 
 
 def _warn_masked_locks(
@@ -980,6 +1061,25 @@ def _banned_by_state(
     return banned, reasons
 
 
+def _required_targets(
+    pack: GenrePack, state: Mapping[str, str | None], slots: int
+) -> "set[str]":
+    """Every address a triggered ``require`` rule names as its target.
+
+    ``_banned_by_state`` turns a requirement into the exclusion of its
+    complement, which is exactly right for a field that holds a value and says
+    nothing about a field that holds none. This is the other half: the targets
+    that must hold one of the required values, empty or not.
+    """
+    required: set[str] = set()
+    for rule, slot, pair in _rule_bindings(pack, slots):
+        if rule.type != RULE_REQUIRE or not rule.requires_field:
+            continue
+        if state.get(bind_address(rule.field, slot, pair)) in rule.triggers:
+            required.add(bind_address(rule.requires_field, slot, pair))
+    return required
+
+
 def _apply_constraints(
     rng: random.Random,
     pack: GenrePack,
@@ -996,91 +1096,189 @@ def _apply_constraints(
     says. A rule set that has not settled by then is a *data* defect, so it is
     reported as a warning rather than silently accepted or endlessly retried.
     """
-    nulled: set[str] = set()
-    for _ in range(MAX_CONSTRAINT_PASSES):
-        banned, reasons = _banned_by_state(pack, state, address_of, scene_filter, slots)
+    # Round XVI: the re-offer step below fills a field the main loop nulled,
+    # but a freshly re-offered value can conflict with a field that settled
+    # earlier in the same pass while the target was still empty -- an
+    # "at rest" condition re-offered onto a place whose situation had already
+    # settled to a powered act, because nothing was banned while the
+    # condition read None. The outer loop below gives the main fixed point a
+    # second look whenever a re-offer actually changed something, so it can
+    # catch and redraw whatever the re-offered value now conflicts with,
+    # using the exact same banned-value logic rather than new machinery.
+    for _outer_pass in range(3):
+        refilled = False
+        nulled: set[str] = set()
+        for _ in range(MAX_CONSTRAINT_PASSES):
+            banned, reasons = _banned_by_state(pack, state, address_of, scene_filter, slots)
+            required = _required_targets(pack, state, slots)
 
-        changed = False
-        for target, forbidden in banned.items():
-            current = state.get(target)
-            if current is None or current not in forbidden:
-                continue
-            if target in locked_paths:
-                # The user named this value. It wins, and the rule's reason is
-                # reported -- to _meta.warnings, never to prompt_text.
-                for reason in reasons.get(target, ()):
-                    message = f"{target}: kept the locked value {current!r} ({reason})"
-                    if message not in warnings:
-                        warnings.append(message)
-                        LOGGER.warning("sceneweaver: %s", message)
-                continue
-            definition = address_of.get(target)
-            if definition is None:
-                continue
-            is_control = definition.base in _control_fields(pack) and definition.slot is not None
-            if is_control:
-                # Same reasoning as the first draw: a value the user locked on a
-                # field this control scopes has to survive a rule re-drawing the
-                # control out from under it, or the rule fixes one incoherence by
-                # making another.
-                forbidden = forbidden | _control_values_ruled_out_by_state(
-                    pack, definition.base, state, locked_paths, definition.slot
+            changed = False
+            # A requirement whose allowed set is the whole pool bans nothing, and
+            # still has an empty target to fill. Banned targets keep their order,
+            # so a scene no requirement touches draws exactly as it did.
+            for target in [*banned, *sorted(required - set(banned))]:
+                forbidden = banned.get(target, set())
+                current = state.get(target)
+                if current is None:
+                    # An exclusion has nothing to remove from an empty field, but
+                    # a requirement is unmet by one: a creature "wreathed in
+                    # creeping ivy" with no condition drawn is a live creature
+                    # standing in ivy. Fill it from the allowed values -- unless
+                    # the user chose the emptiness, which a locked path records.
+                    if target not in required or target in locked_paths:
+                        continue
+                elif current not in forbidden:
+                    continue
+                if target in locked_paths:
+                    # The user named this value. It wins, and the rule's reason
+                    # is reported -- to _meta.warnings, never to prompt_text.
+                    for reason in reasons.get(target, ()):
+                        message = f"{target}: kept the locked value {current!r} ({reason})"
+                        if message not in warnings:
+                            warnings.append(message)
+                            LOGGER.warning("sceneweaver: %s", message)
+                    continue
+                definition = address_of.get(target)
+                if definition is None:
+                    continue
+                is_control = (
+                    definition.base in _control_fields(pack) and definition.slot is not None
                 )
-            replacement = _draw(
-                rng, pack, definition, _scope_for(pack, state, target), scene_filter, forbidden
+                if is_control:
+                    # Same reasoning as the first draw: a value the user locked
+                    # on a field this control scopes has to survive a rule
+                    # re-drawing the control out from under it, or the rule
+                    # fixes one incoherence by making another.
+                    forbidden = forbidden | _control_values_ruled_out_by_state(
+                        pack, definition.base, state, locked_paths, definition.slot
+                    )
+                if current is None:
+                    # Filling a requirement: the field may not go unsaid again.
+                    definition = dataclasses.replace(definition, omission_weight=0.0)
+                replacement = _draw(
+                    rng, pack, definition, _scope_for(pack, state, target), scene_filter,
+                    forbidden,
+                )
+                if replacement is None and current is None:
+                    # No allowed value in this scope: the requirement cannot be
+                    # met, and re-drawing an empty field every pass would never
+                    # settle.
+                    continue
+                state[target] = replacement
+                if replacement is None:
+                    nulled.add(target)
+                changed = True
+                if is_control:
+                    _rescope_slot(
+                        rng, pack, state, address_of, locked_paths,
+                        scene_filter, definition.slot, {definition.base}, nulled,
+                    )
+            if not changed:
+                break
+        else:
+            message = (
+                f"constraint rules did not settle within {MAX_CONSTRAINT_PASSES} passes; "
+                "the scene is the state after the last pass"
             )
-            state[target] = replacement
-            if replacement is None:
-                nulled.add(target)
-            changed = True
-            if is_control:
-                _rescope_slot(
-                    rng, pack, state, address_of, locked_paths,
-                    scene_filter, definition.slot, {definition.base}, nulled,
+            warnings.append(message)
+            LOGGER.warning("sceneweaver: %s", message)
+
+        # **Re-offer what a rule emptied, once the scope is final.**
+        #
+        # A rule nulls a field against the state *at that moment*, and that
+        # state is not the state the scene ends in: a form is excluded while
+        # its slot still holds the subkind that scopes it, and the subkind is
+        # then re-drawn by the same fixed point. Seed 68 walked exactly that
+        # path -- a walker chassis excluded from a cramped room, then the
+        # subkind re-drawn to "courier drone", whose own pool holds two
+        # silhouettes that both stand there. The field stayed None because
+        # nothing went back to ask again.
+        #
+        # ``_rescope_slot``'s ``revive`` set covers the case where a control
+        # changes *after* the null in the same pass; it cannot cover a null
+        # that happens after the control has already settled. This does, and
+        # it is the same rule the repeat guard keeps: a field is re-drawn,
+        # never left empty, when the pool has something to give. A field
+        # whose pool is genuinely empty -- every weapon under "Peaceful" --
+        # draws None again here and stays silent, which is the outcome that
+        # was always correct.
+        if nulled:
+            banned, _reasons = _banned_by_state(pack, state, address_of, scene_filter, slots)
+            for target in sorted(nulled):
+                if state.get(target) is not None or target in locked_paths:
+                    continue
+                definition = address_of.get(target)
+                if definition is None:
+                    continue
+                state[target] = _draw(
+                    rng, pack, definition, _scope_for(pack, state, target), scene_filter,
+                    banned.get(target, frozenset()),
                 )
-        if not changed:
+                if state[target] is not None:
+                    refilled = True
+
+        # A field re-offered here holds a fresh value the fixed point above
+        # never saw, so a field that settled earlier -- while this one still
+        # read None and excluded nothing -- can now be in conflict with it.
+        # Give the fixed point another look; it stops as soon as a pass
+        # changes nothing, so this costs a whole extra round only on the rare
+        # scene that actually needs it.
+        if not refilled:
             break
-    else:
-        message = (
-            f"constraint rules did not settle within {MAX_CONSTRAINT_PASSES} passes; "
-            "the scene is the state after the last pass"
-        )
-        warnings.append(message)
-        LOGGER.warning("sceneweaver: %s", message)
-
-    # **Re-offer what a rule emptied, once the scope is final.**
-    #
-    # A rule nulls a field against the state *at that moment*, and that state is
-    # not the state the scene ends in: a form is excluded while its slot still
-    # holds the subkind that scopes it, and the subkind is then re-drawn by the
-    # same fixed point. Seed 68 walked exactly that path -- a walker chassis
-    # excluded from a cramped room, then the subkind re-drawn to "courier
-    # drone", whose own pool holds two silhouettes that both stand there. The
-    # field stayed None because nothing went back to ask again.
-    #
-    # ``_rescope_slot``'s ``revive`` set covers the case where a control changes
-    # *after* the null in the same pass; it cannot cover a null that happens
-    # after the control has already settled. This does, and it is the same rule
-    # the repeat guard keeps: a field is re-drawn, never left empty, when the
-    # pool has something to give. A field whose pool is genuinely empty -- every
-    # weapon under "Peaceful" -- draws None again here and stays silent, which
-    # is the outcome that was always correct.
-    if nulled:
-        banned, _reasons = _banned_by_state(pack, state, address_of, scene_filter, slots)
-        for target in sorted(nulled):
-            if state.get(target) is not None or target in locked_paths:
-                continue
-            definition = address_of.get(target)
-            if definition is None:
-                continue
-            state[target] = _draw(
-                rng, pack, definition, _scope_for(pack, state, target), scene_filter,
-                banned.get(target, frozenset()),
-            )
 
     _silence_head_noun_repeats(
         pack, state, address_of, locked_paths, rng, scene_filter, slots
     )
+    _silence_word_echoes(pack, state, locked_paths, slots)
+
+
+_FUNCTION_WORDS = frozenset({"a", "an", "the", "of", "and", "in", "on", "with", "its", "their"})
+
+
+def _shares_word(a: str, b: str) -> bool:
+    """Whether two phrases share a content word, hyphenated parts counted apart."""
+    shared = set(a.replace("-", " ").split()) & set(b.replace("-", " ").split())
+    return bool(shared - _FUNCTION_WORDS)
+
+
+def _silence_word_echoes(
+    pack: GenrePack, state: dict[str, str | None], locked_paths: "set[str]", slots: int
+) -> None:
+    """Silence a word the phrase it joins already says, in the state so the JSON agrees.
+
+    "an antique antique rocking chair" was an ``antique`` condition modifying
+    that subkind; "a pale-blue pale inner light" a colour on its own emitter.
+    A head modifier that shares a word with the head noun, and a colour
+    companion that shares one with its host, go unsaid.
+    """
+    for slot in range(1, slots + 1):
+        fields = {name: state.get(slot_path(slot, name)) for name in pack.entity_fields}
+        if fields.get(KIND_FIELD) is None:
+            continue
+
+        def said(name: str) -> str:
+            return spoken_value(pack, name, fields[name]) if fields.get(name) else ""
+
+        def silence(name: str) -> None:
+            path = slot_path(slot, name)
+            if path not in locked_paths:
+                state[path] = None
+                fields[name] = None
+
+        head = head_phrase_spec(pack, fields.get(KIND_FIELD), archetype_for(pack, fields))
+        if head is not None:
+            nouns = ((head.subject,) if head.subject else ()) + tuple(head.noun)
+            noun = next((n for n in nouns if fields.get(n)), None)
+            if noun is not None:
+                for name in head.modifiers:
+                    if name in fields and fields.get(name) and _shares_word(said(name), said(noun)):
+                        silence(name)
+        for name, spec in pack.entity_fields.items():
+            host = spec.renders_with
+            if host is None or name == pack.entity_fields[host].count_partner:
+                continue
+            if fields.get(name) and fields.get(host) and _shares_word(said(name), said(host)):
+                silence(name)
 
 
 def _silence_head_noun_repeats(
@@ -1216,11 +1414,16 @@ def generate_scene(
     bare call behaves like a freshly-dropped node: one subject. Pass ``None``
     explicitly for "no opinion", where every slot is left to its own widget.
     """
+    register_pack(pack)
     rng = random.Random(seed)
     widgets = dict(widgets or {})
     wired_entities = dict(wired_entities or {})
     warnings: list[str] = []
     overridden: list[str] = []
+    # The node hands over the label it shows ("No gore"); every draw below reads
+    # the filter it applies. ``_meta`` keeps the label, which is what was chosen.
+    filter_label = scene_filter
+    scene_filter = canonical_scene_filter(pack, scene_filter)
 
     # The *resolution* set, not the widget list: a supporting slot has fewer
     # widgets but the same fields, and a constraint rule must reach a field no
@@ -1276,6 +1479,10 @@ def generate_scene(
     per_slot_locked: dict[int, set[str]] = {}
     wired_supplied: dict[int, dict[str, str | None]] = {}
     wired_chosen: dict[int, "frozenset[str]"] = {}
+    #: A foreign guest's own view of its fields, in its own pack's schema. The
+    #: host state still carries the values (the field keys are shared), but the
+    #: guest is budgeted, masked and spoken by the pack that built it.
+    guests: dict[int, tuple[GenrePack, dict[str, str | None]]] = {}
 
     environment_def = definitions[ENVIRONMENT_FIELD]
     environment_widget = _widget_value(environment_def, widgets)
@@ -1300,8 +1507,18 @@ def generate_scene(
         locked_here: set[str] = set()
         per_slot_locked[slot] = locked_here
 
+        guest = guest_pack(pack, payload)
+        if payload is not None and guest is not None:
+            guest_fields = _payload_fields(guest, payload)
+            mask_for_filter(guest, guest_fields, _payload_locked(payload), scene_filter)
+            mask_for_place(
+                guest, pack, guest_fields, _payload_locked(payload), state.get(ENVIRONMENT_FIELD)
+            )
+            guests[slot] = (guest, guest_fields)
         if payload is not None:
             supplied = _payload_fields(pack, payload)
+            if guest is not None:
+                supplied = {name: guests[slot][1].get(name) for name in pack.entity_fields}
             chosen = _payload_locked(payload)
             wired_supplied[slot] = {name: supplied.get(name) for name in pack.entity_fields}
             wired_chosen[slot] = chosen
@@ -1329,6 +1546,7 @@ def generate_scene(
                 if name in chosen:
                     locked_paths.add(path)
                     locked_here.add(name)
+            _mask_drawn_wired_values(rng, pack, state, address_of, slot, chosen, scene_filter)
             if lost:
                 overridden.extend(lost)
                 message = (
@@ -1353,14 +1571,28 @@ def generate_scene(
         situation_def = definitions[key_for(slot, SITUATION_FIELD)]
         situation_widget = _widget_value(situation_def, widgets)
         situation_path = slot_path(slot, SITUATION_FIELD)
-        state[situation_path] = (
-            _resolve_one(
-                rng, pack, situation_def, situation_widget,
-                _scope_for(pack, state, situation_path), scene_filter, locked_paths,
+        # A foreign guest acts from its own repertoire when the host place can
+        # stage one of its acts; the host's default acts were written for things
+        # the host knows, which is how a drop pod came to be "charging headlong".
+        # A user's locked situation still wins.
+        guest_act = None
+        if slot in guests and situation_widget == RANDOM:
+            guest, guest_fields = guests[slot]
+            guest_act = guest_situation(
+                rng, guest, pack, guest_fields, state.get(ENVIRONMENT_FIELD), scene_filter,
             )
-            if state.get(slot_path(slot, KIND_FIELD)) is not None
-            else None
-        )
+        if guest_act is not None:
+            state[situation_path] = guest_act
+            locked_paths.add(situation_path)
+        else:
+            state[situation_path] = (
+                _resolve_one(
+                    rng, pack, situation_def, situation_widget,
+                    _scope_for(pack, state, situation_path), scene_filter, locked_paths,
+                )
+                if state.get(slot_path(slot, KIND_FIELD)) is not None
+                else None
+            )
 
     for first, second in relation_pairs(slots):
         key = relation_key(first, second)
@@ -1434,11 +1666,12 @@ def generate_scene(
     ]
     entities: list[ResolvedEntity] = []
     for position, slot in enumerate(occupied, start=1):
-        values = {name: state.get(slot_path(slot, name)) for name in pack.entity_fields}
+        voice = guests[slot][0] if slot in guests else pack
+        values = {name: state.get(slot_path(slot, name)) for name in voice.entity_fields}
         wired = sources[slot] == SOURCE_WIRED
-        archetype = _archetype_for(pack, values)
+        archetype = _archetype_for(voice, values)
         values = apply_budget(
-            pack, values,
+            voice, values,
             # A wired slot takes the top allowance for this scene -- what slot 1
             # gets -- rather than its own position's. Wiring a whole node in is
             # the request for depth; it is a promotion, never an exemption.
@@ -1505,7 +1738,7 @@ def generate_scene(
         "genre": pack.slug,
         "schema_version": JSON_SCHEMA_VERSION,
         "redrawn_fields": redrawn,
-        "filter_applied": scene_filter,
+        "filter_applied": filter_label,
         "overridden_fields": overridden,
         "warnings": warnings,
         # Which context sentence pattern the scene drew. Recorded so the
@@ -1544,6 +1777,7 @@ def generate_entity(
     both node classes: a rule written about an entity's material reaches this
     node too, without the pack having to say so twice.
     """
+    register_pack(pack)
     rng = random.Random(seed)
     widgets = dict(widgets or {})
     warnings: list[str] = []
@@ -1642,7 +1876,8 @@ def _to_json(pack: GenrePack, scene: ResolvedScene) -> dict[str, Any]:
             "source": entity.source,
             "genre": entity.genre,
             "archetype": archetype_name_for(
-                pack, {name: entity.get(name) for name in pack.entity_fields}
+                voice_of(entity.genre, pack),
+                {name: entity.get(name) for name in pack.entity_fields},
             ),
         }
         for name in pack.entity_fields:

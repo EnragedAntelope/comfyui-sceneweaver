@@ -58,9 +58,11 @@ CREATURE_FIELDS = {
 
 
 def entity(index: int = 1, *, fields: dict, situation: str | None = None,
-           source: str = "widgets") -> ResolvedEntity:
+           source: str = "widgets", genre: str = "scifi") -> ResolvedEntity:
+    # An entity is spoken by the pack its genre names (``engine.foreign.voice_of``),
+    # so a fixture-pack test builds a fixture-genre entity.
     return ResolvedEntity(
-        index=index, source=source, genre="scifi", fields=fields, situation=situation
+        index=index, source=source, genre=genre, fields=fields, situation=situation
     )
 
 
@@ -420,7 +422,8 @@ class CopulaTests(unittest.TestCase):
 
     def test_a_singular_subject_takes_is(self) -> None:
         text = render_entity(
-            entity(fields={"kind": "thing", "form": "fluted monolith"}, situation="drifting"),
+            entity(fields={"kind": "thing", "form": "fluted monolith"}, situation="drifting",
+                   genre="fixture"),
             self._pack(),
         )
         self.assertTrue(text.endswith("."), text)
@@ -428,7 +431,8 @@ class CopulaTests(unittest.TestCase):
 
     def test_a_plural_subject_takes_are(self) -> None:
         text = render_entity(
-            entity(fields={"kind": "thing", "form": "stacked ring tiers"}, situation="drifting"),
+            entity(fields={"kind": "thing", "form": "stacked ring tiers"}, situation="drifting",
+                   genre="fixture"),
             self._pack(),
         )
         self.assertIn("Stacked ring tiers are drifting", text)
@@ -489,7 +493,7 @@ class SeamTests(unittest.TestCase):
 
     def _render(self, pack: GenrePack) -> str:
         return render_entity(
-            entity(fields={"kind": "thing", "hue": "amber", "shape": "wedge"}), pack
+            entity(fields={"kind": "thing", "hue": "amber", "shape": "wedge"}, genre=pack.slug), pack
         )
 
     def test_a_pack_with_no_head_phrase_renders_every_field_as_a_clause(self) -> None:

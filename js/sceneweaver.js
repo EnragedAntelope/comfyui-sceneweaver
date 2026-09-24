@@ -607,10 +607,39 @@ export function drawReadout(node, ctx) {
   ctx.font = "11px sans-serif";
   ctx.textAlign = "left";
   ctx.fillStyle = "#9bb0c0";
+  const width = Math.max(0, node.size[0] - 16);
   lines.forEach((line, index) => {
-    ctx.fillText(line, 8, top + READOUT_PAD + READOUT_LINE_HEIGHT * (index + 1) - 3);
+    ctx.fillText(
+      fitReadoutLine(ctx, line, width),
+      8,
+      top + READOUT_PAD + READOUT_LINE_HEIGHT * (index + 1) - 3,
+    );
   });
   ctx.restore();
+}
+
+/**
+ * Shorten `text` with a trailing "..." until it fits `maxWidth` on `ctx`.
+ *
+ * A warning line is routinely wider than the node, and canvas text is not
+ * clipped by the node body: it ran straight over the node's right edge. The
+ * line is cut to the width the user gave the node rather than wrapped, because
+ * the footer height is reserved in `computeSize`, where no context exists to
+ * measure with; widening the node shows the rest.
+ */
+export function fitReadoutLine(ctx, text, maxWidth) {
+  if (typeof ctx.measureText !== "function") return text;
+  if (ctx.measureText(text).width <= maxWidth) return text;
+  const ellipsis = "...";
+  let low = 0;
+  let high = text.length;
+  while (low < high) {
+    const mid = Math.ceil((low + high) / 2);
+    const candidate = text.slice(0, mid).trimEnd() + ellipsis;
+    if (ctx.measureText(candidate).width <= maxWidth) low = mid;
+    else high = mid - 1;
+  }
+  return low > 0 ? text.slice(0, low).trimEnd() + ellipsis : ellipsis;
 }
 
 // ---------------------------------------------------------------------------

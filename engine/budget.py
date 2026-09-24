@@ -353,14 +353,24 @@ def apply_budget(
                 keep.add(name)
                 core_allowance -= 1
                 allowance -= 1
+        # A reserved slot is a count, not a share of whatever allowance the
+        # fixed head left unspent: an under-full head (a wreck that omitted
+        # ``condition``) used to let surplus allowance keep drawing rotation
+        # candidates one at a time until the whole budget was rotation, which
+        # is how a courier grew three greeble fields against
+        # ``detail_rotation_slots=1``. Bound the draw at ``reserved`` picks;
+        # any allowance rotation could not spend still falls through to the
+        # core-order pass below, unchanged.
         candidates = [n for n in rotation if n in heads and n not in keep]
-        while allowance > 0 and candidates:
+        picked = 0
+        while picked < reserved and allowance > 0 and candidates:
             pick = rng.choices(
                 candidates, weights=[rotation[n] for n in candidates], k=1
             )[0]
             keep.add(pick)
             candidates.remove(pick)
             allowance -= 1
+            picked += 1
         # A reserved slot nothing could fill falls back to the core order.
         for name in priority:
             if allowance <= 0:

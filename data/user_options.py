@@ -52,6 +52,15 @@ nothing draws from. The log says so when it happens.
 
 ``tags`` is optional and only meaningful for the filter-scoped fields. An
 untagged value reads as ``neutral`` and is drawn under all three filters.
+
+**One file, one section per genre.** The top-level ``pools``/``tags`` belong to
+the sci-fi pack, as they always have. Any other genre reads a section named by
+its slug, with the same shape inside::
+
+    {
+      "pools": {...},
+      "fantasy": {"pools": {"subkind": {"mythic beast": ["moon hare"]}}}
+    }
 """
 from __future__ import annotations
 
@@ -221,7 +230,9 @@ def _merge_tags(pack: GenrePack, requested: Mapping[str, Any]) -> dict[str, dict
     return tags
 
 
-def merge_user_options(pack: GenrePack, document: Mapping[str, Any]) -> GenrePack:
+def merge_user_options(
+    pack: GenrePack, document: Mapping[str, Any], sections: "tuple[str, ...]" = ()
+) -> GenrePack:
     """Return a new pack with ``document``'s options merged in.
 
     Split from :func:`apply_user_options` so a test can merge a document without
@@ -231,7 +242,7 @@ def merge_user_options(pack: GenrePack, document: Mapping[str, Any]) -> GenrePac
     tags = _merge_tags(pack, document.get("tags") or {})
     # A key starting with "_" is a comment: JSON has none, and the shipped
     # example file uses "_README" for its instructions.
-    unknown = {k for k in document if not k.startswith("_")} - {"pools", "tags"}
+    unknown = {k for k in document if not k.startswith("_")} - {"pools", "tags"} - set(sections)
     if unknown:
         _LOG.warning(
             "sceneweaver: user options contain unknown top-level key(s) %s; expected "
@@ -240,7 +251,13 @@ def merge_user_options(pack: GenrePack, document: Mapping[str, Any]) -> GenrePac
     return dataclasses.replace(pack, pools=pools, tags=tags)
 
 
-def apply_user_options(pack: GenrePack, path: Path | None = None) -> GenrePack:
+def apply_user_options(
+    pack: GenrePack,
+    path: Path | None = None,
+    *,
+    section: str | None = None,
+    sections: "tuple[str, ...]" = (),
+) -> GenrePack:
     """Return ``pack`` with any user-supplied options merged in.
 
     Called once, from the repo-root ``__init__.py``, between importing the pack
@@ -249,9 +266,13 @@ def apply_user_options(pack: GenrePack, path: Path | None = None) -> GenrePack:
     mutated pack.
     """
     document = load_user_options(path)
+    if section is not None:
+        document = document.get(section) if isinstance(document, Mapping) else None
+        if not isinstance(document, Mapping):
+            return pack
     if not document:
         return pack
-    merged = merge_user_options(pack, document)
+    merged = merge_user_options(pack, document, sections)
     added = sum(
         len(set(merged.pools.get(field, {}).get(kind, ())) - set(pack.pools.get(field, {}).get(kind, ())))
         for field, by_kind in merged.pools.items()

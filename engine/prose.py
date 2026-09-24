@@ -71,6 +71,7 @@ except ImportError:  # pragma: no cover -- standalone/test context
         spoken_value,
     )
 
+from .foreign import voice_of
 from .grammar import article_for, count_phrase, head_is_plural, with_article_if_singular
 from .resolution import ResolvedEntity, ResolvedRelation, ResolvedScene
 
@@ -121,7 +122,7 @@ def _template(pack: GenrePack, name: str, archetype: "Archetype | None" = None) 
 
 
 
-def _head_phrase_spec(
+def head_phrase_spec(
     pack: GenrePack, kind: str | None, archetype: "Archetype | None" = None
 ) -> HeadPhrase | None:
     """The opening noun phrase: the archetype's, else the pack's for this kind.
@@ -197,9 +198,11 @@ def entity_reference(entity: ResolvedEntity, pack: GenrePack) -> str:
 
     Uses the head-phrase noun chain, so an entity is referred to by the same
     word it was introduced with. Falls back through the chain and finally to the
-    entity's kind, so a slot always has a name to be related by.
+    entity's kind, so a slot always has a name to be related by. A foreign
+    entity is named in its own pack's words.
     """
-    head = _head_phrase_spec(pack, entity.kind, archetype_for(pack, entity.fields))
+    pack = voice_of(entity.genre, pack)
+    head = head_phrase_spec(pack, entity.kind, archetype_for(pack, entity.fields))
     candidates = head.noun if head is not None else ()
     if head is not None and head.subject is not None:
         # Named by what it was introduced as: a creature enters the scene as its
@@ -436,7 +439,7 @@ def _entity_parts(
     """
     archetype = archetype_for(pack, entity.fields)
     order = pack.prose.entity_clause_order
-    head = _head_phrase_spec(pack, entity.kind, archetype)
+    head = head_phrase_spec(pack, entity.kind, archetype)
 
     # 1. Soft adjectives: fold each onto the first anchor that has a value.
     attached: dict[str, list[str]] = {}
@@ -522,7 +525,12 @@ def _render_entity_sentences(entity: ResolvedEntity, pack: GenrePack) -> "list[s
     later leads say "It carries" would be talking about nothing, so such an
     entity falls back to the single-sentence shape -- which is exactly the case
     a minimal pack, or a slot whose head noun was cut, is in.
+
+    A foreign entity is spoken by the pack that built it: the host's stranger
+    grammar described a spacefarer as "a hard-suited silhouette, covered in ...
+    suit" and left its colours unhyphenated.
     """
+    pack = voice_of(entity.genre, pack)
     archetype = archetype_for(pack, entity.fields)
     subject, clauses, situation = _entity_parts(entity, pack)
     if not subject and not clauses and not situation:
@@ -643,8 +651,9 @@ def _context_sentence(scene: ResolvedScene, pack: GenrePack) -> str:
         return ""
     index = scene.context_sentence_index
     pattern = patterns[(index if index is not None else 0) % len(patterns)]
-    subject, _clauses, _situation = _entity_parts(scene.entities[0], pack)
-    grammar = _grammar(pack, archetype_for(pack, scene.entities[0].fields), subject)
+    voice = voice_of(scene.entities[0].genre, pack)
+    subject, _clauses, _situation = _entity_parts(scene.entities[0], voice)
+    grammar = _grammar(voice, archetype_for(voice, scene.entities[0].fields), subject)
     spoken = spoken_value(pack, CONTEXT_FIELD, scene.context)
     available = {
         CONTEXT_FIELD: spoken,
