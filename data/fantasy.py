@@ -736,7 +736,7 @@ _FORM_SERPENT_WYRM = (
     "long serpentine body", "coiled serpentine body with two clawed forelegs",
     "armoured burrowing serpentine body", "ridged serpentine body with a spiked tail",
     # Round XXI: wyrms read as one animal ("too similar"); more silhouettes.
-    "two-legged lindworm body with a coiling tail", "pale translucent-skinned cave-serpent body",
+    "two-legged lindworm body with a coiling tail", "long sinuous cave-serpent body",
     "frilled serpentine body on stubby clawed legs",
 )
 _FORM_SEA_SERPENT = (
@@ -827,8 +827,8 @@ FORM_POOLS: dict[str, tuple[str, ...]] = {
     "satyr": ("human torso above shaggy goat legs", "bearded human torso above goat legs"),
     "faun": ("human torso above goat legs", "slender human torso above goat legs"),
     "minotaur": ("bull-headed towering build", "bull-headed brawny build"),
-    "gorgon": ("human head, torso and arms above a coiled serpent tail", "two-legged scaled body"),
-    "naga": ("human head, torso and arms above a long serpent tail",),
+    "gorgon": ("human face, torso and arms above a coiled serpent tail", "two-legged scaled body"),
+    "naga": ("human face, torso and arms above a long serpent tail",),
     "harpy": ("feather-armed taloned build",),
     "merfolk": ("human torso above a long fish tail",),
     "selkie": ("sleek seal-like build", "lithe seal-skinned build"),
@@ -858,7 +858,7 @@ FORM_POOLS: dict[str, tuple[str, ...]] = {
     "golem": _FORM_GOLEM,
     "bronze colossus": ("towering statuesque body", "vast armoured statuesque body"),
     "animated armour": ("hollow plate-armoured body", "towering plate-armoured body"),
-    "clockwork guardian": ("clockwork humanoid body", "clockwork lion body"),
+    "clockwork guardian": ("clockwork humanoid body", "lion-headed clockwork humanoid body"),
     "living statue": ("statuesque humanoid body", "robed statuesque body"),
     "gargoyle": ("winged crouching stone body", "horned winged stone body"),
     # structure
@@ -1133,7 +1133,7 @@ MARKINGS_POOLS: dict[str, tuple[str, ...]] = {
     "giant-kin": ("ochre war paint", "ritual scarification", "blue woad swirls", "tribal bone charms"),
     "small folk": ("smeared war paint", "stolen heraldic badges", "bead-and-feather charms"),
     "hybrid folk": ("painted spiral tattoos", "gold arm bands", "braided hair beads"),
-    "folk": ("embroidered heraldry", "painted shield heraldry", "woven clan tartan",
+    "folk": ("embroidered heraldry", "stitched heraldic badge", "woven clan tartan",
              "tooled leather patterning", "silver clan jewellery"),
     "spirit or elemental": ("slowly shifting spiral patterning", "rippling bands of colour"),
     "undead": ("faded heraldry", "tarnished funeral jewellery", "grave-dirt streaking"),
@@ -1165,6 +1165,7 @@ SURFACE_DETAIL_POOLS: dict[str, tuple[str, ...]] = {
     "folk": ("travel dust", "battle-dented armour", "mud-spattered boots", "weathered skin",
              "neatly mended seams", "rain-soaked clothing"),
     "spirit or elemental": ("constantly shifting ripples", "trailing sparks of light"),
+    "earth elemental": ("chipped edges", "weathered wear", "moss in the seams"),
     "undead": ("exposed ribs", "peeling grave-worn skin", "rusted buckles", "cobwebbed joints"),
     "restless spirit": ("frayed translucent edges", "slowly rippling folds"),
     "construct": ("cracks sealed with gold", "moss in the seams", "chipped carving", "rust streaks"),
@@ -1191,8 +1192,8 @@ APPENDAGE_POOLS: dict[str, tuple[str, ...]] = {
     # dragon
     "winged dragon": ("curved horn", "swept-back horn", "leathery wing", "tattered wing",
                       "spiked tail", "dorsal spine", "neck frill", "cheek spike"),
-    "serpent wyrm": ("curved horn", "dorsal spine", "neck frill", "spiked tail", "whisker barbel"),
-    "sea wyrm": ("dorsal fin", "fin crest", "spiked tail", "whisker barbel"),
+    "serpent wyrm": ("curved horn", "dorsal spine", "neck frill", "spiked tail", "fin-like cheek frill"),
+    "sea wyrm": ("dorsal fin", "fin crest", "spiked tail", "fin-like cheek frill"),
     "many-headed dragon": ("serpent-headed neck", "dorsal spine", "spiked tail"),
     # mythic beast
     "unicorn": ("spiral horn", "feathered fetlock", "flowing tail"),
@@ -1274,7 +1275,7 @@ APPENDAGE_POOLS: dict[str, tuple[str, ...]] = {
     # construct
     "golem": ("boulder fist", "carved shoulder plate", "moss-grown shoulder"),
     "animated armour": ("plumed helm crest", "tattered surcoat"),
-    "clockwork guardian": ("spinning gear crest", "piston arm"),
+    "clockwork guardian": ("crest of spinning brass cogs", "piston arm"),
     "living statue": ("carved laurel crown", "draped stone cloak"),
     "gargoyle": ("stone wing", "curled horn"),
     # structure
@@ -1314,6 +1315,8 @@ EMITTER_POOLS: dict[str, tuple[str, ...]] = {
     "giant-kin": ("luminous runic tattoo", "ember eye"),
     "fire giant": ("smouldering brand", "ember eye"),
     "small folk": ("luminous eye", "enchanted gem"),
+    # A gnome's "pair of golden enchanted gems" was one glowing gem on the chest.
+    "gnome-kin": (),
     "winged fey": ("luminous wing vein", "enchanted gem"),
     "imp": ("ember eye", "smouldering horn tip"),
     "hybrid folk": ("luminous eye", "enchanted gem"),
@@ -1332,6 +1335,8 @@ EMITTER_POOLS: dict[str, tuple[str, ...]] = {
     "potion-brewer": ("enchanted gem amulet", "luminous rune tracery", "crackling spell orb"),
     "wandering scholar": ("enchanted gem amulet", "luminous rune tracery", "crackling spell orb"),
     "spirit or elemental": ("luminous core", "floating light orb"),
+    # A floating orb on an earth elemental was drawn as one molten eye.
+    "earth elemental": ("luminous crystal", "luminous core"),
     "fire elemental": ("white-hot core", "crackling spark"),
     "magma elemental": ("white-hot core", "molten crack"),
     "undead": ("ember eye socket", "cold luminous eye", "spectral flame"),
@@ -1355,12 +1360,12 @@ ARMAMENT_POOLS: dict[str, tuple[str, ...]] = {
     "roc": ("hooked talon", "tearing beak"),
     "great tusked boar": ("goring tusk",),
     "giant cave spider": ("venomous fang",),
-    "kraken": ("crushing beak",),
+    "kraken": ("barbed tentacle club",),
     "giant-kin": ("tree-trunk club", "iron-banded war maul", "great throwing stone", "stone-headed axe",
-                  "rusted cleaver"),
-    "small folk": ("notched short blade", "crude spear", "sling", "rusty dagger"),
+                  "rusted cleaver", "broad hunting knife"),
+    "small folk": ("notched short blade", "crude spear", "wooden slingshot", "rusty dagger"),
     "goblin shaman": ("crooked bone staff", "rusty dagger"),
-    "winged fey": ("thorn spear", "tiny bow"),
+    "winged fey": ("thorn spear", "tiny bow", "rose-thorn dagger"),
     "imp": ("barbed pitchfork",),
     "hybrid folk": ("longbow", "hunting spear", "curved sword"),
     "minotaur": ("double-bladed axe", "iron-bound club"),
@@ -1374,7 +1379,7 @@ ARMAMENT_POOLS: dict[str, tuple[str, ...]] = {
     "wood elf archer": ("longbow",),
     "dwarf": ("battle axe", "war hammer", "crossbow"),
     "orc": ("flail", "battle axe", "heavy cleaver"),
-    "halfling": ("dagger", "sling"),
+    "halfling": ("dagger", "wooden slingshot"),
     "knight": ("longsword", "kite shield", "war hammer"),
     "paladin": ("longsword", "flanged mace", "kite shield"),
     "cleric": ("flanged mace", "war hammer"),
@@ -1439,7 +1444,8 @@ APERTURE_POOLS: dict[str, tuple[str, ...]] = {
     "pegasus": ("soft muzzle", "flaring nostrils"),
     "winged beast": ("hooked beak", "curved beak"),
     "sphinx": ("serene human mouth",),
-    "sea beast": ("wide beaked mouth",),
+    "sea beast": ("hooked black beak",),
+    "hippocamp": ("soft muzzle", "flaring nostrils"),
     "giant-kin": ("gap-toothed mouth", "tusked underbite"),
     "small folk": ("needle-toothed grin", "gap-toothed grin"),
     "hybrid folk": ("grim-set mouth", "sharp-toothed smile"),
@@ -1469,8 +1475,8 @@ EXTRAS_POOLS: dict[str, tuple[str, ...]] = {
     POOL_DEFAULT_KEY: ("iron chain", "carved pedestal"),
     "dragon": ("broken chain collar", "old arrow shafts in its hide", "war saddle", "coins wedged between its scales"),
     "mythic beast": ("war saddle", "jewelled bridle", "broken chain collar", "rider's harness"),
-    "giant-kin": ("bone necklace", "bundle of logs", "iron chain belt", "sack slung over one shoulder"),
-    "small folk": ("stolen coin purse", "sack of loot", "bone necklace", "tinker's tool belt"),
+    "giant-kin": ("necklace of carved bone beads", "bundle of logs", "iron chain belt", "sack slung over one shoulder"),
+    "small folk": ("stolen coin purse", "sack of loot", "necklace of carved bone beads", "pouch of shiny buttons"),
     "winged fey": ("tiny woven satchel", "thistledown pouch", "stolen silver thimble"),
     # Carried, never worn: this slot is spoken "they carry ...".
     "hybrid folk": ("quiver of arrows", "leather satchel", "waterskin", "bone-carved talisman"),
@@ -1508,6 +1514,7 @@ OMITTED_POOLS: frozenset[tuple[str, str]] = frozenset({
     ("armament", "sacred site"), ("armament", "arcane tower"), ("armament", "dwelling"),
     ("armament", "land vehicle"), ("sensors", "land vehicle"), ("armament", "winged folk"),
     ("appendages", "relic"),
+    ("emitters", "gnome-kin"),
 })
 
 
@@ -1637,7 +1644,7 @@ CARDINALITY: dict[str, dict[str, str]] = {
             "tattered cape", "winged helm", "hooded mantle", "feathered hat",
             "flowing cape", "silver circlet", "horned helm", "braided beard clasp", "spiked collar",
             "fur mantle", "streaming tail", "iron crown", "plumed helm crest", "tattered surcoat",
-            "spinning gear crest", "carved laurel crown", "draped stone cloak", "drawbridge",
+            "crest of spinning brass cogs", "carved laurel crown", "draped stone cloak", "drawbridge",
             "curtain wall", "domed roof", "colonnade", "capstone lintel", "turf roof",
             "lantern gallery", "carved figurehead", "rudder fin", "canvas canopy", "spiked tail",
             "dorsal spine", "neck frill", "dorsal fin", "fin crest", "jewelled finial",
@@ -1649,7 +1656,7 @@ CARDINALITY: dict[str, dict[str, str]] = {
         ("a matched pair", (
             "jewelled arm band",
             "curved horn", "swept-back horn", "leathery wing", "tattered wing", "cheek spike",
-            "whisker barbel", "branching antler", "feathered wing", "bat wing", "broad wing",
+            "fin-like cheek frill", "branching antler", "feathered wing", "bat wing", "broad wing",
             "taloned foreleg", "webbed hoof", "clawed forepaw", "curved tusk", "hooked pedipalp",
             "webbed foreleg", "broad flipper", "long tusk", "pointed ear", "jutting tusk",
             "iron arm band", "large pointed ear", "short horn",
@@ -1702,7 +1709,7 @@ CARDINALITY: dict[str, dict[str, str]] = {
         ("a hand weapon", (
             "rune-etched greatsword", "great stone maul", "iron-capped battering ram",
             "longsword", "spear", "tree-trunk club", "iron-banded war maul", "great throwing stone",
-            "stone-headed axe", "rusted cleaver", "notched short blade", "crude spear", "sling",
+            "stone-headed axe", "rusted cleaver", "broad hunting knife", "notched short blade", "crude spear", "wooden slingshot",
             "thorn spear", "tiny bow", "barbed pitchfork", "longbow", "hunting spear",
             "curved sword", "double-bladed axe", "iron-bound club", "coral trident", "bone spear",
             "war hammer", "brass war hammer", "quarterstaff", "battle axe", "crossbow", "flanged mace", "rapier",
@@ -1710,12 +1717,12 @@ CARDINALITY: dict[str, dict[str, str]] = {
             "slender curved blade", "heavy cleaver", "recurve bow", "crooked bone staff",
             "jagged crystal club", "bronze sickle-sword", "gilded crook staff",
             "cracked shield", "reaping scythe", "bone staff", "halberd", "barbed tail spike",
-            "crushing beak", "tearing beak", "goring tusk", "boarding ram",
+            "barbed tentacle club", "tearing beak", "goring tusk", "boarding ram",
         )),
         ("a paired arm", (
             "scythed wheel hub",
             "raking claw", "curved fang", "iron-shod hoof", "hooked talon", "venomous fang",
-            "rusty dagger", "dagger",
+            "rusty dagger", "dagger", "rose-thorn dagger",
         )),
         ("a small set", ("ballista", "trebuchet", "mounted crossbow", "bronze ballista")),
     ),
@@ -1759,7 +1766,7 @@ _S_DRAGON_EV_BREATH = (
     "spewing a torrent of flame", "unleashing a gout of roaring fire",
 )
 _S_DRAGON_EV_AIR = (
-    "shaking arrows loose from its hide", "breathing a stream of crackling lightning",
+    "bristling with broken arrow shafts along its flank", "breathing a stream of crackling lightning",
 )
 #: Freezing breath where the place is cold; in a warm place it iced everything over.
 _S_DRAGON_EV_COLD = ("exhaling a blast of freezing breath",)
@@ -1826,7 +1833,7 @@ _S_BEAST_EV_WAR = (
     "whirling round to face a sudden threat",
 )
 _S_BEAST_EV_WAR_LIFE = ("thrashing through tangled undergrowth",)
-_S_BEAST_EV_AIR_WAR = ("shaking arrows loose from its hide",)
+_S_BEAST_EV_AIR_WAR = ("bristling with broken arrow shafts along its flank",)
 _S_BEAST_EV = ("bolting in sudden alarm", "bellowing a warning")
 _S_BEAST_EV_AIR = ("leaping clear over a fallen log",)
 _S_BEAST_ACT = (
@@ -1886,7 +1893,7 @@ _S_SMALL_ACT = (
     "counting stolen coins", "sharpening their crooked weapon", "juggling three pebbles",
     "sniffing a strange root", "grinning with too many teeth",
     "tinkering with a tiny contraption", "stirring a bubbling potion", "peering out from a hiding place",
-    "tying a clumsy knot", "rummaging through a sack of loot",
+    "polishing a stolen trinket on their sleeve", "rummaging through a sack of loot",
 )
 _S_SMALL_IDLE = ("sitting cross-legged on a stone", "yawning hugely")
 _S_SMALL_EV2 = (
@@ -1905,14 +1912,14 @@ _S_FEY_CALM = ("sprinkling a trail of sparkling dust",)
 
 # --- hybrid folk ---
 _S_HYBRID_EV_WAR = (
-    "brandishing a weapon high", "charging with a lowered weapon", "lunging forward with a snarl",
-    "shielding their face from a blow",
+    "brandishing a weapon high", "charging with a lowered weapon", "lunging forward with a battle cry",
+    "raising an arm against a gust of grit",
 )
 _S_HYBRID_EV = ("recoiling in alarm", "leaping back into cover", "spinning to face a sudden threat")
 _S_HYBRID_ACT = (
-    "turning to face an intruder", "standing guard with folded arms", "calling out a warning",
+    "turning sharply at a sudden sound", "standing guard with folded arms", "calling out a warning",
     "tracing a pattern in the air with one hand", "glaring with narrowed eyes",
-    "raising a hand in warning", "honing their weapon", "whispering a spell",
+    "raising a hand in warning", "honing their weapon", "murmuring a spell over cupped hands",
 )
 _S_HYBRID_CALM = (
     "offering a gift with open hands", "laughing with their head thrown back",
@@ -1936,7 +1943,7 @@ _S_DRYAD_EV_LIFE = ("stepping out from the bark of an oak",)
 
 # --- folk ---
 _S_FOLK_EV_WAR = (
-    "drawing a weapon with a flourish", "loosing an arrow at full draw", "parrying a heavy blow",
+    "drawing a weapon with a flourish", "loosing an arrow at full draw", "raising their weapon into a guard",
     "charging forward with a battle cry", "diving into a forward roll", "casting a crackling spell",
     "rallying defenders with a raised weapon", "leaping into a desperate lunge",
 )
@@ -1945,11 +1952,11 @@ _S_FOLK_EV = ("sprinting forward in long strides", "catching a thrown satchel", 
              "unleashing a burst of arcane power")
 _S_FOLK_ACT = (
     "studying a weathered map", "sharpening their weapon on a whetstone", "stringing a longbow",
-    "counting coins into a pouch", "whispering an incantation", "mixing a potion in a glass flask",
+    "counting coins into a pouch", "murmuring an incantation with eyes closed", "mixing a potion in a glass flask",
     "bandaging a wounded arm", "scanning the horizon with a spyglass", "leading a horse by the reins",
     "poring over an ancient tome", "shouldering a heavy pack", "testing the edge of their weapon",
 )
-_S_FOLK_CALM = ("strumming a lute", "kneeling in prayer", "sharing a laugh with a companion")
+_S_FOLK_CALM = ("strumming a lute", "kneeling in prayer", "laughing and slapping one knee")
 _S_FOLK_IDLE = ("pausing to catch their breath", "resting with their arms folded")
 _S_FOLK_EV_FIRE_CAMP = ("stamping out a campfire",)
 _S_FOLK_ACT_GROUND = ("tracking footprints in the mud", "planting a banner in the earth")
@@ -2021,6 +2028,11 @@ _S_UNDEAD_EV_GROUND = ("rising from a shallow grave",)
 _S_UNDEAD_EV_WALLS = ("clawing out of a stone coffin", "reaching through iron bars")
 _S_UNDEAD_ACT_WALLS = ("kneeling before a toppled throne",)
 _S_WALKDEAD_EV = ("shambling forward with arms outstretched", "tearing loose from a tangle of roots")
+_S_UNDEAD_DEEP = (
+    "drifting slowly through the dark water", "trailing strands of weed from its limbs",
+    "rising slowly off the seabed", "stirring a slow cloud of silt as it moves",
+    "turning slowly in a cold current",
+)
 _S_UNDEAD_ACT2 = ("raising a tarnished crown in salute", "brushing old dust from its shoulders")
 _S_RESTLESS_EV = ("wailing with its mouth stretched wide", "reaching out with translucent hands",
                   "fading into a curl of vapour")
@@ -2172,6 +2184,16 @@ _S_ARTIFACT_ACT2 = (
 _S_ARTIFACT_EV_GROUND = ("half-sunk into the ground and still sinking",)
 _S_ARTIFACT_IDLE_WALLS = ("embedded in a stone altar",)
 _S_ARTIFACT_EV_SHORE = ("rising from a pool of still water",)
+#: The seabed lost its dust, candles and sparks to the air they need; these are
+#: what a relic does there instead.
+_S_ARTIFACT_ACT_DEEP = (
+    "trailing a thin stream of silver bubbles", "pulsing with light that ripples through the water around it",
+    "sending a slow ring of ripples through the water", "shedding a faint cloud of glittering silt",
+)
+_S_ARTIFACT_DORMANT_DEEP = (
+    "half-buried in drifting silt", "crusted with pale barnacles", "draped in swaying strands of weed",
+    "circled by a slow shoal of small silver fish", "resting on the seabed among pale anemones",
+)
 _S_ARTIFACT_DORMANT = ("resting under a thick layer of dust", "lying forgotten among old bones",
                        "wrapped in cobwebs")
 
@@ -2226,7 +2248,9 @@ _BUCKETS = (
     (_S_SEA_ACT_SHORE, "activity", "n", _SHORE, _SWIM, ""),
     (_S_SEA_ACT_DEEP, "activity", "n", _DEEP, _SWIM, ""),
     (_S_SEA_EV_DEEP, "event", "n", _DEEP, _SWIM, ""),
-    (_S_SEA_IDLE_DEEP, "idle", "n", _DEEP, _A, ""),
+    # An activity, not idle: at idle weight a sea serpent on the seabed was
+    # the rarest draw in the pack and the reach gate missed it.
+    (_S_SEA_IDLE_DEEP, "activity", "n", _DEEP, _A, ""),
     (_S_HYDRA_EV_WAR, "event", "c", _A, _A, ""),
     (_S_HYDRA_ACT, "activity", "n", _A, _A, ""),
     (_S_HYDRA_ACT_SHORE, "activity", "n", _SHORE, _WALK, ""),
@@ -2344,6 +2368,7 @@ _BUCKETS = (
     (_S_UNDEAD_ACT2, "activity", "n", _A, _A, ""),
     (_S_WALKDEAD_EV, "event", "c", _A, _WALK, ""),
     (_S_RESTLESS_EV, "event", "n", _A, _A, ""),
+    (_S_UNDEAD_DEEP, "activity", "n", _DEEP, _A, ""),
     (_S_RESTLESS_ACT_WALLS, "activity", "n", _WALLS, _FLOAT, ""),
     (_S_UNDEAD_DORMANT, "idle", "n", _A, _A, "d"),
     (_S_UNDEAD_DORMANT_WALLS, "idle", "n", _WALLS, _A, "d"),
@@ -2410,6 +2435,8 @@ _BUCKETS = (
     (_S_ARTIFACT_EV_GROUND, "event", "n", _GROUND, _A, ""),
     (_S_ARTIFACT_IDLE_WALLS, "idle", "n", _WALLS, _A, ""),
     (_S_ARTIFACT_EV_SHORE, "event", "n", _SHORE, _A, ""),
+    (_S_ARTIFACT_ACT_DEEP, "activity", "n", _DEEP, _A, ""),
+    (_S_ARTIFACT_DORMANT_DEEP, "idle", "n", _DEEP, _A, "d"),
     (_S_ARTIFACT_DORMANT, "idle", "n", _A, _A, "d"),
     (_S_ARTIFACT_EV_COLD, "event", "n", _COLD, _A, ""),
     (_S_ARTIFACT_ACT_COLD, "activity", "n", _COLD, _A, ""),
@@ -2471,7 +2498,7 @@ SITUATION_POOLS: dict[str, tuple[str, ...]] = {
     POOL_DEFAULT_KEY: (
         "turning to look back", "standing alert with its head raised", "circling warily",
         "recoiling in alarm", "rising to its full height", "resting with its head lowered",
-        "shaking arrows loose from its hide", "charging headlong",
+        "bristling with broken arrow shafts along its flank", "charging headlong",
     ),
     "dragon": _S_DRAGON_CORE,
     "winged dragon": (
@@ -2533,11 +2560,11 @@ SITUATION_POOLS: dict[str, tuple[str, ...]] = {
     ),
     "undead": _S_UNDEAD_CORE + _S_BONES_EV + _S_BONES_ACT + _S_BONES_DORMANT,
     # A heap of bones is a skeleton's; a mummy "lying in a heap of bones" drew one.
-    "walking dead": _S_UNDEAD_CORE + _S_WALKDEAD_EV,
+    "walking dead": _S_UNDEAD_CORE + _S_WALKDEAD_EV + _S_UNDEAD_DEEP,
     "skeleton warrior": (
         _S_UNDEAD_CORE + _S_WALKDEAD_EV + _S_BONES_EV + _S_BONES_ACT + _S_BONES_DORMANT
     ),
-    "restless spirit": _S_UNDEAD_CORE + _S_RESTLESS_EV + _S_RESTLESS_ACT_WALLS,
+    "restless spirit": _S_UNDEAD_CORE + _S_RESTLESS_EV + _S_RESTLESS_ACT_WALLS + _S_UNDEAD_DEEP,
     "construct": _S_CONSTRUCT_CORE,
     "gargoyle": _S_CONSTRUCT_CORE + _S_GARGOYLE_EV_SKY,
     "structure": _S_STRUCTURE_CORE,
@@ -2564,11 +2591,12 @@ SITUATION_POOLS: dict[str, tuple[str, ...]] = {
         _S_ARTIFACT_EV + _S_ARTIFACT_EV_WAR + _S_ARTIFACT_ACT + _S_ARTIFACT_IDLE
         + _S_ARTIFACT_IDLE_WALLS + _S_ARTIFACT_EV_SHORE + _S_ARTIFACT_DORMANT + _S_ARTIFACT_EV2
         + _S_ARTIFACT_ACT2 + _S_ARTIFACT_EV_GROUND + _S_ARTIFACT_EV_COLD + _S_ARTIFACT_ACT_COLD
+        + _S_ARTIFACT_ACT_DEEP + _S_ARTIFACT_DORMANT_DEEP
     ),
     "monument": (
         _S_ARTIFACT_EV + _S_ARTIFACT_EV_WAR + _S_ARTIFACT_EV2 + _S_ARTIFACT_EV_GROUND
         + _S_ARTIFACT_EV_COLD + _S_ARTIFACT_ACT_COLD + _S_MONUMENT_ACT + _S_MONUMENT_IDLE
-        + _S_ARTIFACT_DORMANT
+        + _S_ARTIFACT_DORMANT + _S_ARTIFACT_ACT_DEEP + _S_ARTIFACT_DORMANT_DEEP
     ),
 }
 
@@ -3027,6 +3055,9 @@ _SUBKIND_NEEDS: dict[str, frozenset[str]] = {
     "sylph": _SKY,
     "undine": frozenset({"water"}),
     "water elemental": frozenset({"water"}),
+    # The same subkind in the horror pack needs water; wired into a horror
+    # chapel, a fantasy one was re-drawn by the host's rule as a bone revenant.
+    "drowned revenant": frozenset({"water"}),
     "city gate": _WALLS,
     "dwarven stronghold gate": _WALLS,
     "elven tree palace": _LIFE,
@@ -3227,7 +3258,7 @@ _add_traits("armament", {
     )},
     **{v: ("unbladed-weapon",) for v in (
         "war hammer", "quarterstaff", "flanged mace", "kite shield", "gnarled staff", "flail",
-        "crossbow", "iron-bound club", "sling", "barbed pitchfork", "tree-trunk club",
+        "crossbow", "iron-bound club", "wooden slingshot", "barbed pitchfork", "tree-trunk club",
         "iron-banded war maul", "great throwing stone", "cracked shield", "bone staff",
         "great stone maul",
     )},
@@ -3283,7 +3314,7 @@ _HANDS_BUSY = (
     "scanning the horizon with a spyglass", "poring over an ancient tome", "testing the edge of their weapon",
     "strumming a lute", "shouldering a heavy pack", "planting a banner in the earth",
     "counting stolen coins", "sharpening their crooked weapon", "juggling three pebbles",
-    "tinkering with a tiny contraption", "stirring a bubbling potion", "tying a clumsy knot",
+    "tinkering with a tiny contraption", "stirring a bubbling potion", "polishing a stolen trinket on their sleeve",
     "rummaging through a sack of loot", "picking a lock", "fitting a stolen ring onto a finger",
     "honing their weapon", "weaving a garland", "carving a small wooden totem",
     "braiding flowers into their hair", "offering a gift with open hands",
@@ -3307,7 +3338,7 @@ _HANDS_TOGETHER = (
     "studying a weathered map", "scanning the horizon with a spyglass", "weaving a garland",
     "carving a small wooden totem", "braiding flowers into their hair", "offering a gift with open hands",
     "juggling three pebbles", "tinkering with a tiny contraption", "stirring a bubbling potion",
-    "tying a clumsy knot", "rummaging through a sack of loot", "picking a lock",
+    "polishing a stolen trinket on their sleeve", "rummaging through a sack of loot", "picking a lock",
     "fitting a stolen ring onto a finger", "counting stolen coins",
 )
 _add_traits(SITUATION_FIELD, {v: ("hands-together",) for v in _HANDS_TOGETHER})
@@ -3323,8 +3354,6 @@ _add_traits("armament", {
 _add_traits("extras", {"quiver of arrows": ("archery-kit",)})
 # "a calm earth elemental is lashing a banner to shreds".
 _add_traits("condition", {"calm": ("placid",)})
-# Stones do not float in water (a chalice raised a ring of them underwater).
-_SITUATION_NEEDS["raising a ring of floating stones around itself"] = _AIR
 # "a large ... hourglass": "large" is a size claim a small thing cannot make.
 _add_traits("scale", {"large": ("big-scale",)})
 # A towering spirit is large however its scale was said.
@@ -3956,6 +3985,168 @@ PROSE = ProseSpec(
         "extras": "{a_value}",
     },
 )
+
+
+# ---------------------------------------------------------------------------
+# Round XXIII -- the 923 evening batch
+# ---------------------------------------------------------------------------
+
+# ``VALUE_NEEDS`` copied ``_SITUATION_NEEDS`` before round XXII added to it, so
+# the floating stones kept rising underwater. A trait, not an air need: the
+# astral void has no air and stones float there well enough.
+_add_traits(SITUATION_FIELD, {"raising a ring of floating stones around itself": ("floating-debris",)})
+# A bow is not loosed, a waterskin not filled and linen not worn at the bottom
+# of a kelp forest (#611).
+VALUE_NEEDS.setdefault("armament", {}).update({
+    v: _AIR for v in ("longbow", "recurve bow", "tiny bow", "crossbow", "wooden slingshot")
+})
+VALUE_NEEDS["extras"]["waterskin"] = _AIR
+VALUE_NEEDS.setdefault("material", {})["draped linen robes"] = _AIR
+# Rain on a coat indoors (#629) came in as rain.
+VALUE_NEEDS.setdefault("surface_detail", {})["rain-soaked clothing"] = frozenset({"sky"})
+
+# Smoke from a sea serpent's nostrils, ivy and dust on the seabed: acts that
+# take place out of the water, and said so only in their words. A trait, since
+# the astral void has no air and keeps its dust and sparks.
+for _v in (
+    "sniffing the air with flared nostrils",
+    "trailing a curl of smoke from its nostrils",
+    "streaked with lichen and weather",
+    "wreathed in creeping ivy",
+    "sprouting a young tree from one cracked flank",
+    "dozing with a curl of smoke above its nostrils",
+    "snoring beneath a drift of fallen leaves",
+    "sniffing the air",
+    "scenting something on the wind",
+    "tearing a sapling out by the roots",
+    "sprinkling a trail of sparkling dust",
+    "tracing a pattern in the air with one hand",
+    "braiding flowers into their hair",
+    "pausing to catch their breath",
+    "resting against a tree",
+    "trailing a stream of sparks",
+    "hanging motionless in the air",
+    "sending ripples through the air around it",
+    "whipping up a spiral of leaves",
+    "parting a curtain of hanging moss",
+    "gathering a swirl of dust",
+    "reaching for a guttering candle",
+    "resting beneath a layer of dust",
+    "brushing old dust from its shoulders",
+    "brushing dust from its shoulders",
+    "holding a lantern aloft",
+    "standing motionless under a coat of dust",
+    "covered in climbing ivy",
+    "throwing off a shower of sparks",
+    "calling a swirl of embers around itself",
+    "lifting dust into a slow spiral",
+    "spinning slowly in the air",
+    "wreathed in drifting sparks",
+    "gathering dust on a forgotten shelf",
+    "resting under a thick layer of dust",
+    "wrapped in cobwebs",
+    "splitting the air with a thin crack of white light",
+    "drawing wisps of smoke into itself",
+    "casting a slow-moving pattern of sparks",
+    "drawing a slow spiral of dust around its base",
+    "standing silent in a ring of trampled grass",
+):
+    _add_traits(SITUATION_FIELD, {_v: ("air-borne",)})
+# #595 a ranger parried with a longbow; #546 a sling was "drawn with a flourish"
+# and became a pistol. A guard and a draw are made with a blade.
+_add_traits(SITUATION_FIELD, {v: ("blade-act",) for v in (
+    "raising their weapon into a guard", "drawing a weapon with a flourish",
+)})
+_add_traits("armament", {v: ("edged-weapon",) for v in ("broad hunting knife", "rose-thorn dagger")})
+_add_traits("armament", {"wooden slingshot": ("unbladed-weapon",)})
+# #607 a cleaver held while counting coins; #542 a spear held while tinkering.
+# A long or heavy weapon is set down for fine work; a blade stays sheathed.
+_FINE_HANDWORK = (
+    "tinkering with a tiny contraption", "counting stolen coins", "counting stolen coins on thick fingers",
+    "counting coins into a pouch", "picking a lock", "fitting a stolen ring onto a finger",
+    "juggling three pebbles", "polishing a stolen trinket on their sleeve", "rummaging through a sack of loot",
+    "stirring a bubbling potion", "mixing a potion in a glass flask", "weaving a garland",
+    "carving a small wooden totem", "braiding flowers into their hair", "studying a weathered map",
+    "poring over an ancient tome", "bandaging a wounded arm", "strumming a lute",
+    "offering a gift with open hands", "scanning the horizon with a spyglass",
+    "stirring a huge iron cauldron",
+)
+_add_traits(SITUATION_FIELD, {v: ("fine-handwork",) for v in _FINE_HANDWORK})
+_add_traits(SITUATION_FIELD, {"counting stolen coins on thick fingers": ("hands-busy", "hands-together")})
+_add_traits("armament", {v: ("long-weapon",) for v in (
+    "hunting spear", "crude spear", "thorn spear", "bone spear", "coral trident", "spear",
+    "quarterstaff", "gnarled staff", "bone staff", "crooked bone staff", "gilded crook staff",
+    "halberd", "barbed pitchfork", "reaping scythe", "tree-trunk club", "iron-banded war maul",
+    "great stone maul", "iron-bound club", "battle axe", "double-bladed axe", "stone-headed axe",
+    "notched axe", "rusted cleaver", "heavy cleaver", "kite shield", "cracked shield",
+    "great throwing stone", "jagged crystal club",
+)})
+_add_traits("extras", {"stolen silver thimble": ("hand-occupying",)})
+# #546 a halfling scout with a chained spellbook.
+_CASTERS = (
+    "sorcerer", "hedge witch", "druid", "necromancer", "cleric", "high elf mage", "orc shaman",
+    "dwarf runesmith", "potion-brewer", "wandering scholar",
+)
+_add_traits("subkind", {
+    v: ("non-caster",)
+    for group in ("adventurer", "elf", "dwarf", "orc", "halfling") for v in SUBKIND_GROUPS[group]
+    if v not in _CASTERS
+})
+_add_traits("extras", {"chained spellbook": ("spellbook",)})
+# #586 a limbless cave-serpent raked the air with a claw.
+_add_traits("form", {v: ("limbless-body",) for v in _FORM_SERPENT_WYRM + _FORM_SEA_SERPENT if "leg" not in v})
+_add_traits(SITUATION_FIELD, {v: ("claw-act",) for v in (
+    "raking the air with a clawed swipe", "raking a castle rampart with its claws",
+    "digging into the ground with its claws",
+)})
+# #582 a tiny hulking earth elemental seeping through a crack.
+_add_traits("form", {
+    v: ("inherently-vast",) for pool in FORM_POOLS.values() for v in pool
+    if v.split()[0] in ("hulking", "towering")
+})
+_add_traits("subkind", {"earth elemental": ("solid-body",)})
+_add_traits(SITUATION_FIELD, {v: ("fluid-act",) for v in (
+    "seeping through a narrow crack", "stretching into a thin ribbon", "rippling like disturbed water",
+    "drifting in a slow spiral", "spinning into a howling vortex", "twisting into a tight spiral",
+    "raging in a tight whirl", "swirling around a fallen banner", "sending ripples through the air around it",
+    "resting in a slow swirl", "coiling around a toppled column", "curling around a toppled statue",
+    "whipping up a spiral of leaves", "trailing a stream of sparks", "shrinking to a faint flicker",
+    "flickering in and out of sight",
+)})
+# #615 a calm storm elemental erupting in a sudden flare.
+_add_traits(SITUATION_FIELD, {v: ("violent-act",) for v in (
+    "erupting in a sudden flare", "flaring up in a sudden surge", "swelling to twice its size",
+    "bursting apart and reforming", "spinning into a howling vortex", "raging in a tight whirl",
+    "crashing down in a spray of fragments", "shattering a toppled statue with a crack of force",
+    "lashing a nearby banner to shreds",
+)})
+# #621 moss on a watchtower in a red sandstone canyon.
+_add_traits("surface_detail", {v: ("plant-growth",) for v in ("moss in the seams", "ivy climbing the walls")})
+_add_traits(ENVIRONMENT_FIELD, {v: ("arid-place",) for v in (
+    "red sandstone canyon", "desert of shifting dunes", "salt-crusted wasteland", "volcanic ashlands",
+    "petrified forest",
+)})
+
+TRAIT_CONFLICTS = TRAIT_CONFLICTS + (
+    ("fine-handwork", "long-weapon"),
+    ("non-caster", "spellbook"),
+    ("limbless-body", "claw-act"),
+    ("solid-body", "fluid-act"),
+    ("arid-place", "plant-growth"),
+    ("aqueous", "floating-debris"),
+    ("aqueous", "plant-growth"),
+    ("aqueous", "air-borne"),
+)
+TRAIT_REASONS.update({
+    "fine-handwork|long-weapon": "a long or heavy weapon is set down for fine work",
+    "non-caster|spellbook": "a spellbook is a caster's",
+    "limbless-body|claw-act": "a body with no limbs has no claws",
+    "solid-body|fluid-act": "a body of stone does not seep or swirl",
+    "arid-place|plant-growth": "moss does not grow in a desert",
+    "aqueous|floating-debris": "stones do not float in water",
+    "aqueous|plant-growth": "moss does not grow under the sea",
+    "aqueous|air-borne": "smoke, dust and sparks do not hang in water",
+})
 
 
 FANTASY_PACK = GenrePack(

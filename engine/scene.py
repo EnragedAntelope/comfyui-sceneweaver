@@ -153,7 +153,14 @@ except ImportError:  # pragma: no cover -- standalone/test context
     )
 
 from .budget import allowance_for, apply_budget
-from .foreign import guest_fits_place, guest_pack, guest_situation, mask_for_filter, voice_of
+from .foreign import (
+    guest_fits_place,
+    guest_pack,
+    guest_situation,
+    mask_for_filter,
+    mask_for_place,
+    voice_of,
+)
 from .prose import head_phrase_spec, render_prose
 from .registry import register_pack
 from .grammar import head_noun
@@ -1504,6 +1511,9 @@ def generate_scene(
         if payload is not None and guest is not None:
             guest_fields = _payload_fields(guest, payload)
             mask_for_filter(guest, guest_fields, _payload_locked(payload), scene_filter)
+            mask_for_place(
+                guest, pack, guest_fields, _payload_locked(payload), state.get(ENVIRONMENT_FIELD)
+            )
             guests[slot] = (guest, guest_fields)
         if payload is not None:
             supplied = _payload_fields(pack, payload)

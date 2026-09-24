@@ -2338,3 +2338,77 @@ reachable or removed: survivor weapons (above), an effigy's sensors (its eyes
 are its glowing emitter, so it has none), the fire and magma elementals'
 colours (their materials always name a colour), the lap harp, the ride and
 its acts.
+
+## Round XXIII: the 923 evening batch
+
+The maintainer's render test of round XXII, including cross-genre mixes, plus
+a standing request: alien moons were drawn as Earth's moon, and two of them as
+two Earth moons. Thirteen images were asked about; every answer is folded in.
+
+### Alien skies
+
+A moon or world named only by a colour is drawn as Earth's. Each one a place
+names now carries a feature no Earth sky holds (`_SPOKEN_ENVIRONMENT`): a
+ringed rust-red moon; a large banded pale-green moon beside a small ochre
+crescent, never two alike; a gas giant's storm bands; a ringed blue ocean
+world. Orbit places that named no world name one. A moonlet is "lumpy", a
+ringed world has "broad flat rings", a comet stream is ice grains and dust.
+
+### Cross-genre
+
+- A place trait now refuses a guest body under either genre's conflict
+  table (`_place_refuses_body`), and horror's drowned places carry the
+  shared word `aqueous`: a fire elemental burned in a drowned church nave
+  because horror, with no fire creature, never paired `aqueous` with
+  `combustion` itself. A guest's habitat is drawn from the places its own
+  genre would really put it, refusals included.
+- `engine/foreign.py::mask_for_place` drops a guest value, with its count and
+  colour, whose needs the host place fails: a "rain-soaked" coat brought rain
+  into a habitat ring.
+
+### Clones
+
+An act that names an unseen second person draws a clone of the subject: two
+elves for "whispering an incantation", an attacker in the ranger's own coat
+for "parrying a heavy blow", a tentacle for a falling colleague. Those acts
+were reworded to one figure in all three packs.
+
+### Coherence gates
+
+- Sci-fi: a wreck in mid-air only falls (a place trait, since the stance axis
+  reads an act against the body and never the place), with new falling acts
+  to keep the sky varied; a rooted growth's form, skin, markings, extras and
+  acts come from what it is (a crystal lattice was a fungal colony in bark
+  with scales, shaking its back); goggles and implants need an open face;
+  a named alien face keeps its own mouth and no horns; pristine is never
+  scrap-plated; lava does not shine pale cyan; only a lander burns through
+  re-entry; no live landing pad beside a wreck; an elevator anchor hangs over
+  a world (`near-world`); cargo pods stand where cargo berths.
+- Fantasy: a long or heavy weapon is set down for fine handwork, so giants
+  and fey gained a belt blade; a spellbook is a caster's; a guard and a draw
+  are blade acts; a limbless serpent has no claw act; an earth elemental does
+  not seep or swirl, and a "hulking" or "towering" shape is never small; moss
+  grows neither in a desert nor under the sea; bows, waterskins and linen need
+  air; a calm elemental does not erupt.
+- Horror: rain-soaked values need open sky; a poltergeist's dishes need a
+  room; the flesh-walled chamber has no papered wall; a slumbering maw is
+  shut; a lantern being smashed is the only lantern; the lantern warden
+  carries no gun.
+
+### Found on the way
+
+- Round XXII's "floating stones need air" never fired: `VALUE_NEEDS` had
+  copied `_SITUATION_NEEDS` before the line ran. It is a trait now
+  (`aqueous|floating-debris`), which also leaves the astral void its stones.
+- A subkind both packs name ("drowned revenant") answers to the host's rules
+  as well as its own: a fantasy one wired into a dry horror chapel was
+  re-drawn as a bone revenant by horror's water need. Fantasy's now needs
+  water too; no wired guest changes subject across every genre pair.
+- Two horror acts opened "with ..." and printed "is with a fresh handprint";
+  `tests/validate_data.py` now fails a situation that opens with a
+  preposition.
+- Render traps renamed: warp coil banks (drawn as legs), "bell-shaped" (a
+  bell), a sling (a hammer, a pistol, a rope), a gear crest (a clock face),
+  whisker barbels on a snake, route stripes (numbers), an ion-trace strip (a
+  laser), radiation trefoils, a nose cone (an aircraft), bloodshot eyes (a
+  bleeding face), a luminous outline (a second ghost).

@@ -234,7 +234,10 @@ def _place_refuses_body(
     body: set[str] = set()
     for name, value in fields.items():
         body |= _traits_of(guest, name, value)
-    return any(a in place and b in body for a, b in host.trait_conflicts)
+    # Either genre's rule counts: the host may never pair the two words itself
+    # (a drowned church is ``aqueous`` in a genre with no fire creature).
+    conflicts = set(host.trait_conflicts) | set(guest.trait_conflicts)
+    return any(a in place and b in body for a, b in conflicts)
 
 
 def guest_fits_place(
@@ -262,11 +265,14 @@ def guest_fits_place(
         stances, supported_stances(host, environment), blocked_stances(host, environment)
     ):
         return False
-    if host is not guest:
-        if not _needs_met(habitat(guest, fields), host, environment, unknown_ok=not strict):
-            return False
-        if _place_refuses_body(guest, host, fields, environment):
-            return False
+    if host is not guest and not _needs_met(
+        habitat(guest, fields), host, environment, unknown_ok=not strict
+    ):
+        return False
+    # Asked of the guest's own places too, so its habitat is drawn from the
+    # places its own genre would really put it.
+    if _place_refuses_body(guest, host, fields, environment):
+        return False
     name = type_field(guest)
     value = fields.get(name) if name is not None else None
     if name is not None and value:
@@ -300,6 +306,34 @@ def mask_for_filter(
         partner = guest.counts.get(name)
         if partner and partner not in chosen:
             fields[partner] = None
+
+
+def mask_for_place(
+    guest: GenrePack,
+    host: GenrePack,
+    fields: "dict[str, str | None]",
+    chosen: "frozenset[str]",
+    environment: "str | None",
+) -> None:
+    """Drop the guest values whose needs the host place fails, read through shared words.
+
+    The guest drew its coat and its gear without knowing where it would stand: a
+    "rain-soaked trench coat" brought rain into a habitat ring. Omitted, with its
+    count and colour, for the reason ``mask_for_filter`` omits.
+    """
+    if environment is None:
+        return
+    identity = {KIND_FIELD, type_field(guest), STANCE_FIELD}
+    for name in guest.entity_fields:
+        value = fields.get(name)
+        if value is None or name in chosen or name in identity:
+            continue
+        if _needs_met(resolved_needs(guest, name, value), host, environment, unknown_ok=True):
+            continue
+        fields[name] = None
+        for other, other_spec in guest.entity_fields.items():
+            if other_spec.renders_with == name and other not in chosen:
+                fields[other] = None
 
 
 def _entity_state(guest: GenrePack, fields: Mapping[str, "str | None"]) -> dict[str, "str | None"]:

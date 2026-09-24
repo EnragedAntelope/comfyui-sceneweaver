@@ -17,6 +17,7 @@ from data import horror as H
 from data.fantasy import FANTASY_PACK
 from data.horror import HORROR_PACK
 from data.scifi import SCIFI_PACK
+from engine.foreign import guest_fits_place
 from engine.scene import generate_entity, generate_scene
 from scripts.builtin_options import builtin_pools
 from tests.boundary import negation_findings, rendering_findings
@@ -166,6 +167,38 @@ class HorrorCrossGenreTests(unittest.TestCase):
             with self.subTest(seed=seed):
                 self.assertTrue(text.startswith("A horror scene"))
                 self.assertEqual(document["entities"][0]["genre"], "scifi")
+
+    def test_a_guest_fire_elemental_is_never_placed_underwater(self) -> None:
+        # A drowned church is ``aqueous``, which the guest's own genre pairs
+        # against ``combustion``; a fire elemental burned there (#597).
+        payload = next(
+            payload for seed in range(2000)
+            for _text, payload in [generate_entity(seed, FANTASY_PACK)]
+            if payload["fields"].get("subkind") == "fire elemental"
+        )
+        for primary_only, strict in ((True, True), (False, True), (False, False)):
+            self.assertFalse(guest_fits_place(
+                FANTASY_PACK, HORROR_PACK, payload["fields"], "drowned church nave",
+                primary_only=primary_only, strict=strict,
+            ))
+        self.assertTrue(guest_fits_place(
+            FANTASY_PACK, HORROR_PACK, payload["fields"], "abandoned chapel"
+        ))
+
+    def test_a_guest_drops_gear_the_host_place_cannot_hold(self) -> None:
+        # A "rain-soaked" coat brought rain indoors; the host has no sky there.
+        seen = 0
+        for seed in range(300):
+            _text, payload = generate_entity(seed, HORROR_PACK)
+            if "rain-soaked" not in " ".join(str(v) for v in payload["fields"].values()):
+                continue
+            seen += 1
+            _t, document = generate_scene(seed, SCIFI_PACK, wired_entities={1: payload},
+                                          widgets={"environment": "crew quarters"}, entity_count=1)
+            with self.subTest(seed=seed):
+                values = " ".join(str(v) for v in document["entities"][0].values())
+                self.assertNotIn("rain-soaked", values)
+        self.assertGreater(seen, 0)
 
 
 if __name__ == "__main__":

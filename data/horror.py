@@ -452,7 +452,7 @@ SUBKIND_GROUPS: dict[str, tuple[str, ...]] = {
     "skeletal dead": ("walking skeleton", "bone revenant"),
     "drowned dead": ("drowned revenant", "waterlogged corpse"),
     # spirit
-    "apparition": ("ghost", "spectral bride", "weeping apparition", "smooth-faced apparition"),
+    "apparition": ("ghost", "spectral bride", "weeping apparition", "blank-faced apparition"),
     "wrathful spirit": ("wraith", "banshee", "poltergeist", "shade spirit"),
     # cryptid
     "cursed beast": ("werewolf", "hellish black hound", "bog lurker"),
@@ -514,7 +514,7 @@ FORM_POOLS: dict[str, tuple[str, ...]] = {
     "drowned dead": ("swollen dripping frame", "weed-draped stooped frame"),
     # spirit
     "apparition": ("translucent drifting figure", "veiled floating figure",
-                   "flickering half-seen figure", "slender figure with long lank hair"),
+                   "half-seen translucent figure", "slender figure with long lank hair"),
     "wrathful spirit": ("tattered billowing shape", "long-limbed contorted shape",
                         "hooded drifting shape", "figure bent backwards at the waist"),
     # cryptid
@@ -530,7 +530,10 @@ FORM_POOLS: dict[str, tuple[str, ...]] = {
     # "tentacle-topped" drew an octopus head on a body.
     "tentacled horror": ("writhing tentacled mass", "hunched many-limbed body trailing tentacles",
                          "vast slug-like body ringed with tentacles"),
-    "many-eyed horror": ("bulging eye-studded mass", "quivering heap of eye-studded flesh"),
+    "many-eyed horror": ("bulging eye-studded mound", "quivering heap of eye-studded flesh"),
+    # A lump with one eye doing nothing readable: the abomination has a body.
+    "many-eyed abomination": ("hunched spider-limbed body studded with eyes",
+                              "tall stooped body covered in blinking eyes"),
     "amalgam": ("lurching body of fused limbs", "towering knot of bone and sinew"),
     # mortal
     "mortal": ("tall lean build", "heavy-set build", "wiry build", "stooped build"),
@@ -743,7 +746,7 @@ EMITTER_POOLS: dict[str, tuple[str, ...]] = {
     # a location for the model to merge.
     POOL_DEFAULT_KEY: ("pinprick eye", "spectral flame in its chest"),
     "undead": ("reflective eye", "sunken pinprick eye"),
-    "spirit": ("inner light in its chest", "luminous outline", "light behind its eyes",
+    "spirit": ("inner light in its chest", "luminous shimmer", "light behind its eyes",
                "hollow burning eye"),
     "cryptid": ("reflective eye", "burning eye"),
     "eldritch horror": ("luminous vein along its flank", "luminous pustule on its flank"),
@@ -793,7 +796,7 @@ SENSOR_POOLS: dict[str, tuple[str, ...]] = {
     # An effigy's eyes are its glowing emitter; a hare's ears were drawn on a straw man.
     "effigy": (),
     "eldritch horror": ("bulging eye", "wet black eye"),
-    "mortal": ("wide staring eye", "bloodshot eye"),
+    "mortal": ("wide staring eye", "dark-circled sleepless eye"),
     # "eye behind a mask" put a mask on an investigator.
     "stalker": ("wide staring eye", "eye behind a mask"),
     "cult": ("wide staring eye", "eye behind a mask"),
@@ -882,6 +885,8 @@ CONDITION_POOLS: dict[str, tuple[str, ...]] = {
     "bloodsucker": ("ancient", "gaunt", "pallid", "blood-soaked", "entombed"),
     "spirit": ("sorrowful", "wrathful", "ancient", "restless"),
     "cryptid": ("starving", "wounded", "ancient", "blood-soaked", "mangy"),
+    # Straw is not wounded or starving.
+    "effigy": ("ancient", "weathered", "filthy"),
     "eldritch horror": ("newly awakened", "ancient", "writhing", "slumbering"),
     "mortal": ("exhausted", "wild-eyed", "wounded", "grim", "blood-soaked", "rain-soaked"),
     "survivor": ("exhausted", "wild-eyed", "wounded", "grim", "rain-soaked"),
@@ -982,7 +987,7 @@ CARDINALITY: dict[str, dict[str, str]] = {
     ),
     "emitters": _cardinality(
         ("a lone part", ("spectral flame in its chest", "inner light in its chest",
-                         "luminous outline",
+                         "luminous shimmer",
                          "luminous vein along its flank",
                          "hooded lantern", "guttering candle", "handheld torch beam",
                          "faint inner light", "lamp in an upstairs window", "flickering porch lamp",
@@ -1009,7 +1014,7 @@ CARDINALITY: dict[str, dict[str, str]] = {
             "flared sniffing nostril", "twitching tall ear",
             "staring eye", "milky dead eye", "sunken eye", "unblinking red-rimmed eye",
             "cold pale eye", "hollow black eye", "sorrowful eye", "clouded white eye",
-            "wide staring eye", "bloodshot eye", "eye behind a mask",
+            "wide staring eye", "dark-circled sleepless eye", "eye behind a mask",
             "painted glass eye", "watching painted eye",
         )),
         ("an array", ("bulging eye", "wet black eye")),
@@ -1116,6 +1121,8 @@ _S_SPIRIT_WALLS = (
 _S_SPIRIT_EV_WALLS = ("slamming every door in the room",)
 _S_SPIRIT_ACT_WATER = ("standing on the surface of the black water",)
 _S_SPIRIT_ACT_GRAVE = ("kneeling beside a weathered headstone",)
+#: A drowned place lost its candle and dust acts to the air they need.
+_S_SPIRIT_ACT_DEEP = ("drifting slowly through the murky water", "trailing a slow cloud of silt behind it")
 _S_POLTERGEIST_EV = ("hurling dishes across the room", "stacking chairs into a crooked tower")
 
 # --- cryptids ---
@@ -1129,7 +1136,7 @@ _S_CRYPTID_ACT = (
     "circling slowly at a distance", "sniffing at a trail", "crouching low and still",
     "watching with its head cocked", "pacing back and forth", "tilting its head as it watches",
     "stalking forward in a low crouch", "twitching at a distant sound",
-    "creeping closer one step at a time", "turning away and then back again",
+    "creeping closer one step at a time", "tilting its head at an unnatural angle",
 )
 _S_CRYPTID_IDLE = ("standing impossibly still", "watching from a distance", "waiting half-hidden")
 _S_CRYPTID_LIFE = (
@@ -1160,7 +1167,7 @@ _S_ELDRITCH_EV = (
 )
 _S_ELDRITCH_EV_GORE = (
     "swallowing a struggling victim whole", "trailing strips of torn flesh",
-    "pulling a body apart at the joints", "sinking its teeth into a still-twitching torso",
+    "dragging a limp body along the floor", "sinking its teeth into a still-twitching torso",
     "leaving a trail of half-digested remains",
 )
 _S_ELDRITCH_ACT = (
@@ -1234,13 +1241,14 @@ _S_OBJECT_EV = (
 _S_OBJECT_ACT = (
     "turning a fraction by itself", "rocking gently by itself", "weeping dark tears",
     "dripping water onto the floor", "trembling faintly", "shedding flakes of old paint",
-    "reflecting a pale figure behind the viewer", "with a fresh handprint in the dust on it",
+    "reflecting a pale figure behind the viewer", "marked by a small handprint in its dust",
     "leaning at an impossible angle", "gathering a ring of dead flies",
     "shifting when nobody looks", "beaded with cold condensation", "rattling faintly on its own",
 )
-_S_OBJECT_IDLE = ("with long scratches gouged into the wall behind it", "facing the wall")
+_S_OBJECT_IDLE = ("standing before long scratches gouged into the wall", "facing the wall")
 _S_OBJECT_DORMANT = ("gathering dust under a sheet",)
 _S_OBJECT_DORMANT_ANY = ("leaking a thin trickle of black fluid",)
+_S_OBJECT_DORMANT_DEEP = ("half-buried in drifting silt", "crusted with pale barnacles")
 _S_KEEPSAKE_DORMANT = ("lying forgotten in a drawer",)
 _S_DOLL_ACT = ("turning its head toward the viewer", "sitting up by itself")
 _S_BOX_ACT = ("playing a tune nobody wound", "creaking open by itself")
@@ -1317,6 +1325,7 @@ _BUCKETS = (
     (_S_SPIRIT_EV_WALLS, "event", "n", _WALLS, _A, ""),
     (_S_SPIRIT_ACT_WATER, "activity", "n", _SHORE, _FLOAT, ""),
     (_S_SPIRIT_ACT_GRAVE, "activity", "n", _GRAVE, _A, ""),
+    (_S_SPIRIT_ACT_DEEP, "activity", "n", _DEEP, _A, ""),
     (_S_POLTERGEIST_EV, "event", "n", _WALLS, _A, ""),
     (_S_CRYPTID_EV, "event", "n", _A, _A, ""),
     (_S_CRYPTID_EV_WAR, "event", "c", _A, _WALK, ""),
@@ -1358,6 +1367,7 @@ _BUCKETS = (
     (_S_OBJECT_IDLE, "idle", "n", _WALLS, _A, ""),
     (_S_OBJECT_DORMANT, "idle", "n", _WALLS, _A, "d"),
     (_S_OBJECT_DORMANT_ANY, "idle", "n", _A, _A, "d"),
+    (_S_OBJECT_DORMANT_DEEP, "idle", "n", _DEEP, _A, "d"),
     (_S_KEEPSAKE_DORMANT, "idle", "n", _WALLS, _A, "d"),
     (_S_DOLL_ACT, "activity", "n", _A, _A, ""),
     (_S_BOX_ACT, "activity", "n", _A, _A, ""),
@@ -1379,7 +1389,7 @@ _S_DEAD_CORE = (
 )
 _S_SPIRIT_CORE = (
     _S_SPIRIT_EV + _S_SPIRIT_ACT + _S_SPIRIT_HOVER + _S_SPIRIT_IDLE + _S_SPIRIT_WALLS + _S_SPIRIT_EV_WALLS
-    + _S_SPIRIT_ACT_WATER + _S_SPIRIT_ACT_GRAVE
+    + _S_SPIRIT_ACT_WATER + _S_SPIRIT_ACT_GRAVE + _S_SPIRIT_ACT_DEEP
 )
 _S_CRYPTID_CORE = (
     _S_CRYPTID_EV + _S_CRYPTID_EV_WAR + _S_CRYPTID_ACT + _S_CRYPTID_IDLE + _S_CRYPTID_LIFE
@@ -1394,6 +1404,7 @@ _S_MORTAL_CORE = (
 )
 _S_OBJECT_CORE = (
     _S_OBJECT_EV + _S_OBJECT_ACT + _S_OBJECT_IDLE + _S_OBJECT_DORMANT + _S_OBJECT_DORMANT_ANY
+    + _S_OBJECT_DORMANT_DEEP
 )
 _S_PLACE_CORE = _S_PLACE_EV + _S_PLACE_ACT + _S_PLACE_IDLE + _S_PLACE_DORMANT
 
@@ -1657,6 +1668,7 @@ _FORM_KEY_STANCES: dict[str, frozenset[str]] = {
     "watcher": _WALK, "moth-winged watcher": _FLY_WALK, "hollow-eyed stag": _WALK,
     "crawler": _CRAWL, "effigy": _WALK,
     "tentacled horror": frozenset({"walks", "swims", "rests"}), "many-eyed horror": _WALK,
+    "many-eyed abomination": _CRAWL,
     "amalgam": _WALK,
     "mortal": _WALK, "possessed villager": _CRAWL,
 }
@@ -1864,9 +1876,9 @@ _add_traits("material", {
 _add_traits("primary_color", {v: ("states-a-colour",) for pool in PRIMARY_COLOR_POOLS.values() for v in pool})
 
 # Round XXII -- a face that is hidden has no mouth or eyes to show: a
-# "smooth-faced apparition" or "veiled floating figure" given a screaming mouth
+# "blank-faced apparition" or "veiled floating figure" given a screaming mouth
 # and lights behind its eyes was drawn as two ghosts, one for each face.
-_add_traits("subkind", {"smooth-faced apparition": ("face-hidden",)})
+_add_traits("subkind", {"blank-faced apparition": ("face-hidden",)})
 _add_traits("form", {"veiled floating figure": ("face-hidden",)})
 _add_traits("aperture", {v: ("face-feature",) for v in APERTURE_POOLS["spirit"]})
 _add_traits("sensors", {v: ("face-feature",) for v in SENSOR_POOLS["spirit"]})
@@ -2383,6 +2395,77 @@ PROSE = ProseSpec(
         "extras": "{a_value}",
     },
 )
+
+
+# ---------------------------------------------------------------------------
+# Round XXIII -- the 923 evening batch
+# ---------------------------------------------------------------------------
+
+# Rain came indoors with a "rain-soaked" coat (#579, #629).
+_RAIN = frozenset({"sky"})
+VALUE_NEEDS.setdefault("material", {}).update({
+    "rain-soaked trench coat": _RAIN, "rain-soaked cassock": _RAIN,
+})
+VALUE_NEEDS.setdefault("condition", {})["rain-soaked"] = _RAIN
+VALUE_NEEDS.setdefault("surface_detail", {})["rain-soaked clothing"] = _RAIN
+# Candles, dust, ivy and wind on the floor of a drowned church: acts that take
+# place in air, and said so only in their words.
+for _v in (
+    "sniffing the air like an animal",
+    "sniffing the air hungrily",
+    "rushing forward in a sudden gust of cold air",
+    "hovering motionless in the air",
+    "tasting the air with a dozen tongues",
+    "smashing a lantern at their feet",
+    "setting down a single candle",
+    "burning herbs in an iron bowl",
+    "laying out cards by candle stub",
+    "praying quietly by candle stub",
+    "marked by a small handprint in its dust",
+    "belching dust from within",
+    "standing with a candle burning behind one pane",
+    "swallowed by creeping ivy",
+    "trailing a thin curl of chimney smoke",
+    "creaking in a steady wind",
+    "sagging under heavy rain",
+):
+    VALUE_NEEDS[SITUATION_FIELD][_v] = VALUE_NEEDS[SITUATION_FIELD].get(_v, frozenset()) | frozenset({"air"})
+# #636 a poltergeist hurled dishes "across the room" on a fishing pier.
+VALUE_NEEDS[SITUATION_FIELD].update({
+    "hurling dishes across the room": frozenset({"room", "structure"}),
+    "stacking chairs into a crooked tower": frozenset({"room", "structure"}),
+})
+# #644 floral wallpaper in a flesh-walled chamber: its walls are flesh, and
+# furniture belongs in the rooms of the otherworld that have any.
+PLACE_AFFORDANCES["flesh-walled chamber"] = PLACE_AFFORDANCES["otherworld"] - {"room"}
+# A drowned place is ``aqueous``, the shared trait word another genre's fire
+# creature refuses: a fire elemental burned in a drowned church nave (#597).
+_add_traits(ENVIRONMENT_FIELD, {v: ("aqueous",) for v in _ENV_UNDERWATER})
+# #637 a stuffed body on a post stays on its post.
+VALUE_STANCES["form"]["sagging stuffed body on a post"] = frozenset({"rests"})
+
+# #579 a lantern-bearing warden with a rifle as well.
+# #641 a stalker "smashing a lantern at their feet" with a lit lantern in hand.
+_add_traits(SITUATION_FIELD, {"smashing a lantern at their feet": ("lantern-act",)})
+_add_traits(SITUATION_FIELD, {v: ("firearm",) for v in (
+    "checking a bolt-action rifle with shaking hands", "loading shells into a shotgun",
+)})
+_add_traits("emitters", {v: ("lantern-light",) for v in ("hooded lantern", "guttering candle")})
+# #640 a slumbering amalgam screaming with its maw open.
+_add_traits("aperture", {v: ("gaping",) for v in ("ring-shaped toothed maw", "gaping mouth")})
+
+TRAIT_CONFLICTS = TRAIT_CONFLICTS + (
+    ("lantern-hand", "firearm"),
+    ("lantern-act", "lantern-light"),
+    ("lantern-hand", "lantern-act"),
+    ("inactive", "gaping"),
+)
+TRAIT_REASONS.update({
+    "lantern-hand|firearm": "one hand holds the lantern, and a rifle needs two",
+    "lantern-act|lantern-light": "the lantern being smashed is the only one",
+    "lantern-hand|lantern-act": "the warden does not smash the lantern they are named for",
+    "inactive|gaping": "a slumbering thing keeps its maw shut",
+})
 
 
 HORROR_PACK = GenrePack(

@@ -207,8 +207,8 @@ _Last verified: 2026-09-23_
     one reports "value not in list". Release notes live in commit messages,
     never in the README (maintainer's rule).
   - Not fixed in round XIV (no clean fix yet): a generation ship can still be
-    drawn landed on a surface, and "lunar far-side orbit" can render as the
-    lunar surface despite the open-space staging suffix.
+    drawn landed on a surface. "lunar far-side orbit" is spoken as orbit over
+    an ochre, ice-streaked moon since round XXIII; unverified in a render.
   - There is **no core-nodes-only example workflow.** The two graphs in
     `example_workflows/` are the maintainer's real Krea2 graphs, saved from a
     running ComfyUI, so they are known-good wiring but need a specific
@@ -391,6 +391,13 @@ _Last verified: 2026-09-23_
     are silenced in the resolved state so the JSON agrees with the prose;
     hands, faces and helmets, furniture placement and many render-trap values
     were fixed per image. Detail: `docs/architecture.md` ("Round XXII").
+  - **Round XXIII** (2026-09-23, still on `tmp/sceneweaver-fantasy`) answers
+    the 923 evening batch. Alien moons and orbit worlds carry features no
+    Earth sky holds; a place trait refuses a guest under either genre's
+    conflicts and `mask_for_place` drops guest values the host place cannot
+    support; acts naming an unseen second person (drawn as clones) were
+    reworded; the validator fails a situation opening with a preposition.
+    Detail: `docs/architecture.md` ("Round XXIII").
   - The substance-adjective render-trap class (item 3 above) is checked only
     for colours (`COLOURWORD`); in other fields an author still catches it by
     eye.

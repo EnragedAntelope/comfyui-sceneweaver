@@ -340,6 +340,16 @@ def check_situations(pack: G.GenrePack, report: Report) -> None:
                 f"{MIN_SITUATIONS_PER_KIND}; its actions will visibly repeat",
             )
         report.notes.append(f"  situations {kind:<22} {len(values):>3}")
+    # A situation follows "is": "a doll is with a fresh handprint on it" shipped.
+    for value in G.pool_options(pack, G.SITUATION_FIELD):
+        if value.split()[0] in _PREPOSITIONS:
+            report.fail("SITUATION", f"{value!r} opens with a preposition and cannot follow 'is'")
+
+
+_PREPOSITIONS = frozenset({
+    "with", "in", "on", "at", "by", "from", "under", "beside", "near", "against",
+    "among", "inside", "of", "for", "behind", "beneath",
+})
 
 
 #: Frame-meta markers that name a thing's own invisibility. Only the frame half of
