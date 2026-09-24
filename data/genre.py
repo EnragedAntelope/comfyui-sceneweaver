@@ -34,7 +34,7 @@ from __future__ import annotations
 
 import re
 from collections import OrderedDict
-from dataclasses import MISSING, dataclass, field, fields as dataclass_fields
+from dataclasses import MISSING, dataclass, field, fields as dataclass_fields, replace
 from itertools import combinations
 from string import Formatter
 from types import MappingProxyType
@@ -53,6 +53,8 @@ NONE = "None"
 #: ``scene_filter``: a tag-based pre-pass that masks pools before any draw.
 #: "Peaceful" yields a ship with no weapons *described*, not "an unarmed ship".
 SCENE_FILTERS: tuple[str, ...] = ("Any", "Peaceful", "Conflict")
+#: The control widget that carries the filter.
+SCENE_FILTER_KEY = "scene_filter"
 DEFAULT_SCENE_FILTER = "Any"
 
 
@@ -1109,6 +1111,18 @@ class GenrePack:
     value_stances: Mapping[str, Mapping[str, frozenset[str]]] = field(default_factory=dict)
     #: ``{affordance: stances the place supports}``.
     place_stances: Mapping[str, frozenset[str]] = field(default_factory=dict)
+    #: ``{affordance: stances a place that affords it can never support}``,
+    #: whatever its other affordances grant. A body that *has* a blocked stance
+    #: is kept out of the place entirely: a wheeled robot at rest is still a
+    #: wheeled robot on the sea floor.
+    #:
+    #: Support is a union, so a seabed that affords ``floor`` (a diver walks it,
+    #: a wreck rests on it) also supported rolling, and a wheeled security robot
+    #: was drawn across a hydrothermal vent field. Water does not stop a body
+    #: resting or walking on the bottom; it stops a wheel. Removing ``floor``
+    #: instead cost every legitimate seabed act at once. A block is subtracted
+    #: after the union, so it reaches the stance rules and type feasibility alike.
+    place_stance_blocks: Mapping[str, frozenset[str]] = field(default_factory=dict)
     #: ``{field: {value: tier}}`` -- how much a value is worth looking at.
     #:
     #: Every other mechanism in this pack can only *remove* a value. None of
@@ -1208,6 +1222,20 @@ class GenrePack:
     prose: ProseSpec = field(
         default_factory=lambda: ProseSpec(scene_order=(), entity_clause_order=())
     )
+    #: ``{label shown on the node: the filter it applies}``, in dropdown order.
+    #:
+    #: The filter is one tag axis, and a genre may say what its ends mean: horror
+    #: shows "No gore" / "Any" / "Gore only" over the same Peaceful / Any /
+    #: Conflict masking, so a gore value is tagged ``conflict_only`` exactly as a
+    #: weapon act is. A saved workflow stores the label, so a label, once shipped,
+    #: is a compatibility surface like a dropdown value.
+    scene_filter_labels: Mapping[str, str] = field(
+        default_factory=lambda: OrderedDict((name, name) for name in SCENE_FILTERS)
+    )
+    #: The label a freshly dropped node starts on.
+    scene_filter_default: str = DEFAULT_SCENE_FILTER
+    #: The filter widget's tooltip when the labels are the genre's own.
+    scene_filter_tooltip: str = ""
 
     def __post_init__(self) -> None:
         if not _IDENTIFIER_RE.match(self.slug):
@@ -1259,6 +1287,9 @@ class GenrePack:
         object.__setattr__(self, "value_traits", _freeze_nested_sets(self.value_traits))
         object.__setattr__(self, "value_stances", _freeze_nested_sets(self.value_stances))
         object.__setattr__(self, "place_stances", _freeze_sets(self.place_stances))
+        object.__setattr__(
+            self, "place_stance_blocks", _freeze_sets(self.place_stance_blocks)
+        )
         object.__setattr__(self, "value_tiers", _freeze_nested(self.value_tiers))
         object.__setattr__(self, "tier_weights", _freeze(self.tier_weights))
         object.__setattr__(
@@ -1314,6 +1345,7 @@ class GenrePack:
             if self.part_keywords else _EMPTY_MAP,
         )
         object.__setattr__(self, "part_lint_fields", tuple(self.part_lint_fields))
+        self._validate_scene_filter()
         self._validate_structure()
         self._validate_archetypes()
         self._validate_scopes()
@@ -1368,6 +1400,22 @@ class GenrePack:
                     )
                 field_groups[class_name] = derived
         object.__setattr__(self, "pool_groups", groups)
+
+    def _validate_scene_filter(self) -> None:
+        object.__setattr__(
+            self, "scene_filter_labels", OrderedDict(self.scene_filter_labels)
+        )
+        applied = list(self.scene_filter_labels.values())
+        if sorted(applied) != sorted(SCENE_FILTERS):
+            raise ValueError(
+                f"scene_filter_labels must map one label to each of {list(SCENE_FILTERS)}, "
+                f"got {applied}"
+            )
+        if self.scene_filter_default not in self.scene_filter_labels:
+            raise ValueError(
+                f"scene_filter_default {self.scene_filter_default!r} is not one of the "
+                f"labels {list(self.scene_filter_labels)}"
+            )
 
     def _validate_structure(self) -> None:
         """Shape checks only -- never pool *contents*.
@@ -1580,6 +1628,17 @@ class GenrePack:
                 raise ValueError(
                     f"place_stances names {affordance!r}, which no place affords"
                 )
+        for affordance, blocked in self.place_stance_blocks.items():
+            if affordance not in provided:
+                raise ValueError(
+                    f"place_stance_blocks names {affordance!r}, which no place affords"
+                )
+            for stance in blocked:
+                if stance not in supported:
+                    raise ValueError(
+                        f"place_stance_blocks[{affordance!r}] names {stance!r}, which no "
+                        "place supports"
+                    )
         for trigger, target in self.trait_conflicts:
             if not trigger or not target:
                 raise ValueError("a trait conflict names an empty trait")
@@ -2571,9 +2630,11 @@ def _stance_scope(pack: GenrePack, kind: str, value: str | None) -> dict[str, st
 
 
 def form_can_stand(pack: GenrePack, environment: str, form: str) -> bool:
-    """Whether ``form`` has a stance ``environment`` supports; a form with none is unconstrained."""
+    """Whether ``form`` can be in ``environment``; a form with no stances is unconstrained."""
     stances = pack.value_stances.get(STANCE_FIELD, {}).get(form)
-    return not stances or bool(stances & supported_stances(pack, environment))
+    return not stances or stances_fit(
+        stances, supported_stances(pack, environment), blocked_stances(pack, environment)
+    )
 
 
 def type_can_stand(pack: GenrePack, environment: str, kind: str, value: str | None) -> bool:
@@ -2748,15 +2809,33 @@ def _expand_affordances(pack: GenrePack) -> tuple[ConstraintRule, ...]:
 
 
 def supported_stances(pack: GenrePack, environment: str) -> frozenset[str]:
-    """Every stance the affordances of ``environment`` support."""
+    """Every stance the affordances of ``environment`` support, less any it blocks."""
+    affordances = affordances_of(pack, environment)
     supported: set[str] = set()
-    for affordance in affordances_of(pack, environment):
+    for affordance in affordances:
         supported |= set(pack.place_stances.get(affordance, ()))
+    for affordance in affordances:
+        supported -= set(pack.place_stance_blocks.get(affordance, ()))
     return frozenset(supported)
 
 
 #: The earlier private name, kept so existing callers do not churn.
 _supported_stances = supported_stances
+
+
+def blocked_stances(pack: GenrePack, environment: str) -> frozenset[str]:
+    """Every stance a body may not have at all in ``environment`` (``place_stance_blocks``)."""
+    blocked: set[str] = set()
+    for affordance in affordances_of(pack, environment):
+        blocked |= set(pack.place_stance_blocks.get(affordance, ()))
+    return frozenset(blocked)
+
+
+def stances_fit(
+    stances: "frozenset[str] | set[str]", support: frozenset[str], blocked: frozenset[str]
+) -> bool:
+    """Whether a body with ``stances`` can be in a place: one supported, none blocked."""
+    return bool(stances & support) and not (stances & blocked)
 
 
 def _expand_stances(pack: GenrePack) -> tuple[ConstraintRule, ...]:
@@ -2783,12 +2862,13 @@ def _expand_stances(pack: GenrePack) -> tuple[ConstraintRule, ...]:
         environment: _supported_stances(pack, environment)
         for environment in environments
     }
+    blocks = {environment: blocked_stances(pack, environment) for environment in environments}
     blocked: dict[frozenset[str], list[str]] = {}
     for environment in environments:
         disallowed = tuple(
             value
             for value, stances in form_stances.items()
-            if stances and not (stances & support[environment])
+            if stances and not stances_fit(stances, support[environment], blocks[environment])
         )
         if disallowed:
             blocked.setdefault(frozenset(disallowed), []).append(environment)
@@ -2860,6 +2940,7 @@ def _expand_feasibility(pack: GenrePack) -> tuple[ConstraintRule, ...]:
     blocked_kinds: dict[str, list[str]] = {}
     for environment in pool_options(pack, ENVIRONMENT_FIELD):
         support = supported_stances(pack, environment)
+        blocks = blocked_stances(pack, environment)
         affords = affordances_of(pack, environment)
         stuck: set[str] = set()
         for kind in pack.kinds:
@@ -2867,7 +2948,8 @@ def _expand_feasibility(pack: GenrePack) -> tuple[ConstraintRule, ...]:
             for value in types_by_kind[kind] or (None,):
                 forms = forms_by_type[(kind, value)]
                 stands = not forms or any(
-                    not stances.get(form) or bool(stances[form] & support) for form in forms
+                    not stances.get(form) or stances_fit(stances[form], support, blocks)
+                    for form in forms
                 )
                 if value is not None and not stands:
                     stuck.add(value)
@@ -2947,6 +3029,23 @@ _FILTER_ALLOWS: Mapping[str, frozenset[str]] = MappingProxyType({
     "Peaceful": frozenset({TAG_NEUTRAL, TAG_PEACEFUL_ONLY}),
     "Conflict": frozenset({TAG_NEUTRAL, TAG_CONFLICT_ONLY}),
 })
+
+
+def canonical_scene_filter(pack: GenrePack, value: str) -> str:
+    """The filter a node's label applies: ``"No gore"`` -> ``"Peaceful"``.
+
+    A canonical name is accepted as itself, so a script, a test or an older
+    saved graph that passes ``"Peaceful"`` keeps working on any genre.
+    """
+    if value in SCENE_FILTERS:
+        return value
+    try:
+        return pack.scene_filter_labels[value]
+    except KeyError:
+        raise ValueError(
+            f"unknown scene_filter {value!r}; expected one of "
+            f"{[*pack.scene_filter_labels, *SCENE_FILTERS]}"
+        ) from None
 
 
 def allowed_tags(scene_filter: str) -> frozenset[str]:
@@ -3112,7 +3211,7 @@ _CONTROL_SPECS: "OrderedDict[str, tuple[FieldSpec, tuple[str, ...]]]" = OrderedD
     [
         ("seed", (_SEED_SPEC, ())),
         (ENTITY_COUNT_KEY, (_ENTITY_COUNT_SPEC, ())),
-        ("scene_filter", (_SCENE_FILTER_SPEC, SCENE_FILTERS)),
+        (SCENE_FILTER_KEY, (_SCENE_FILTER_SPEC, SCENE_FILTERS)),
     ]
 )
 
@@ -3197,6 +3296,14 @@ def build_field_definitions(pack: GenrePack, slots: int) -> "OrderedDict[str, Fi
             # Options depend on how many slots this node has, which the spec
             # cannot know: the same contract serves a pack with two.
             options = entity_count_options(slots)
+        if name == SCENE_FILTER_KEY:
+            # A genre names the ends of its own filter axis.
+            options = tuple(pack.scene_filter_labels)
+            spec = replace(
+                spec,
+                default=pack.scene_filter_default,
+                tooltip=pack.scene_filter_tooltip or spec.tooltip,
+            )
         definitions[name] = _definition(
             key=name, path=name, base=name, spec=spec, options=options
         )

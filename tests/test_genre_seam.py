@@ -59,6 +59,7 @@ from data.genre import (
     spoken_value,
 )
 from data.scifi import SCIFI_PACK
+from engine import registry
 from engine.budget import apply_budget
 from engine.scene import SOURCE_WIDGETS, SOURCE_WIRED, generate_entity, generate_scene
 from nodes.scene_entity import build_entity_node
@@ -515,16 +516,19 @@ class CrossGenreWiringTests(unittest.TestCase):
         self.assertEqual(document["_meta"]["genre"], "fixture")
         self.assertEqual(document["entities"][1]["genre"], "fixture")
 
-    def test_the_scene_still_owns_what_is_happening(self) -> None:
-        """The entity node describes what a thing *is*; the situation and the
-        relations belong to the scene whatever genre the entity came from."""
-        _, document = _scene(8, **{entity_socket_key(1): self.scifi_entity})
-        situation = document["entities"][0]["situation"]
-        if situation is not None:
-            fixture_situations = {
-                v for vs in FIXTURE_PACK.pools["situation"].values() for v in vs
-            }
-            self.assertIn(situation, fixture_situations)
+    def test_a_guest_acts_from_its_own_repertoire_or_the_scenes(self) -> None:
+        """A registered guest's act comes from its own pack when the host place
+        can stage one (``engine.foreign.guest_situation``), else from the scene's."""
+        known = {
+            v for pack in (FIXTURE_PACK, SCIFI_PACK) for vs in pack.pools["situation"].values()
+            for v in vs
+        }
+        for seed in range(12):
+            _, document = _scene(seed, **{entity_socket_key(1): self.scifi_entity})
+            situation = document["entities"][0]["situation"]
+            with self.subTest(seed=seed):
+                if situation is not None:
+                    self.assertIn(situation, known)
 
     def test_a_foreign_entity_does_not_derange_the_native_slots(self) -> None:
         _, document = _scene(8, **{entity_socket_key(1): self.scifi_entity})
@@ -619,11 +623,21 @@ class ForeignEntityIntoShippedSceneTests(unittest.TestCase):
         seen = {self._scene(seed)[1]["environment"] for seed in range(30)}
         self.assertGreater(len(seen), 1)
 
-    def test_the_entity_uses_the_packs_stranger_grammar(self) -> None:
-        """Without a ``_default`` archetype it would fall through to the bare
-        ProseSpec and be \"clad in\" its own hide; with one it is spoken
-        through the pack's declared stranger grammar."""
+    def test_a_known_guest_is_spoken_by_its_own_pack(self) -> None:
+        """A registered guest is spoken through its own pack, not the host's
+        stranger grammar (the fixture pack declares no archetypes)."""
         _, document = self._scene(3)
+        self.assertNotEqual(document["entities"][0]["archetype"], POOL_DEFAULT_KEY)
+
+    def test_an_unknown_guest_uses_the_packs_stranger_grammar(self) -> None:
+        """An unregistered guest falls back to the host's declared stranger
+        grammar rather than the bare ProseSpec ("clad in" its own hide)."""
+        saved = registry._PACKS.pop(FIXTURE_PACK.slug, None)
+        try:
+            _, document = self._scene(3)
+        finally:
+            if saved is not None:
+                registry.register_pack(saved)
         self.assertEqual(document["entities"][0]["archetype"], POOL_DEFAULT_KEY)
 
     def test_the_entity_keeps_its_own_genre_tag(self) -> None:

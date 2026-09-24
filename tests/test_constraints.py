@@ -192,6 +192,9 @@ def _drawable_values(field: str) -> set[str]:
             values.update(pool_for(SCIFI_PACK, field, scope))
     for environment in pool_for(SCIFI_PACK, ENVIRONMENT_FIELD):
         values.update(pool_for(SCIFI_PACK, field, {ENVIRONMENT_FIELD: environment}))
+    # A count is drawn from the pool its noun's cardinality class keys.
+    for class_name in SCIFI_PACK.cardinality_counts:
+        values.update(SCIFI_PACK.pools.get(field, {}).get(class_name, ()))
     # ``None`` reads the ``_default`` pool, which is drawable and not the union
     # of the per-kind ones: a wired foreign-genre entity resolves through it.
     values.update(pool_for(SCIFI_PACK, field, None))

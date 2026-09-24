@@ -227,11 +227,13 @@ class RenderingIsRejectedTests(unittest.TestCase):
         )
 
     def test_a_planted_negation_fails_the_prose_sweep(self) -> None:
-        # Planted in ``condition``: universal, ``_default``-keyed and drawn for
+        # Planted in ``accent_color``: its only pool is ``_default``, drawn for
         # every kind, so the probe is reached rather than merely present.
         # ``markings`` would not do -- every kind overrides it, so a value added
-        # to its ``_default`` is authored into a pool nothing ever reads.
-        pack = _pack_with("condition", "missing every hull plate")
+        # to its ``_default`` is authored into a pool nothing ever reads -- and
+        # since round XV neither would ``condition``, whose made kinds declare
+        # their own key (validator check 32).
+        pack = _pack_with("accent_color", "missing every hull plate")
         caught = any(negation_findings(text) for _, _, text in _sweep_texts(pack, seeds=SWEEP_SEEDS))
         self.assertTrue(caught)
 
