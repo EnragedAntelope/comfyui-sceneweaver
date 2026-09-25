@@ -555,6 +555,15 @@ def _control_values_ruled_out_by_locks(
     return frozenset(legal - allowed)
 
 
+#: ``(primary_only, strict, any_stance, by_type_only)``, tightest first. The
+#: last three keep a guest's needs when no host place supports its stances,
+#: rather than letting it go anywhere.
+_GUEST_RUNGS: tuple[tuple[bool, bool, bool, bool], ...] = (
+    (True, True, False, False), (False, True, False, False), (False, False, False, False),
+    (False, True, True, False), (False, False, True, False), (False, True, True, True),
+)
+
+
 def _environments_ruled_out_by_fixed_subjects(
     pack: GenrePack,
     definitions: Mapping[str, FieldDef],
@@ -603,11 +612,12 @@ def _environments_ruled_out_by_fixed_subjects(
     # and its type's needs, read through the host's words -- since the host's
     # own kind pools have never heard of it.
     for guest, fields in guests:
-        for primary_only, strict in ((True, True), (False, True), (False, False)):
+        for primary_only, strict, any_stance, by_type_only in _GUEST_RUNGS:
             holders = {
                 environment for environment in allowed
                 if guest_fits_place(
-                    guest, pack, fields, environment, primary_only=primary_only, strict=strict
+                    guest, pack, fields, environment, primary_only=primary_only,
+                    strict=strict, any_stance=any_stance, by_type_only=by_type_only,
                 )
             }
             if holders:

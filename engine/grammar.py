@@ -55,11 +55,13 @@ __all__ = [
 #:
 #: The preposition list includes the directional ones (along, beside, past,
 #: toward, within, into) because a context clause uses them where the older
-#: list only had "of/with/on/...".
+#: list only had "of/with/on/...". "above", "below", "among", "amid" and
+#: "atop" joined when "twin gasbags above a long hull" took "a" and "human
+#: torso above goat legs" lost it.
 _TAIL_RE = re.compile(
     r"\s+(?:of|with|on|in|at|from|for|to|and|over|under|around|through|"
     r"beneath|across|behind|between|along|beside|past|toward|within|into|"
-    r"bearing|trailing|carrying|holding)\b"
+    r"bearing|trailing|carrying|holding|above|below|among|amid|atop)\b"
 )
 
 #: Participles that end a noun phrase's head when they follow a noun:
@@ -74,6 +76,23 @@ _PARTICIPLE_BOUNDARY: frozenset[str] = frozenset({
     "rising", "crawling", "parked", "tethered", "spent", "parted", "split",
 })
 
+#: Irregular past participles. With every "-ed" word they end the head when a
+#: preposition follows: "coins wedged between its scales" heads on *coins*,
+#: "halls woven into a giant tree" on *halls*. The preposition is what makes it
+#: safe: "tall carved standing stone" keeps its adjective.
+_IRREGULAR_PARTICIPLES: frozenset[str] = frozenset({
+    "woven", "broken", "frozen", "fallen", "hidden", "sunken", "stolen", "torn",
+    "worn", "drawn", "grown", "thrown", "bitten", "eaten", "forgotten", "shaken",
+    "spun", "hung", "strung", "bound", "wound", "sewn", "sown", "strewn", "cut",
+    "set", "shut", "slung", "stuck",
+})
+
+#: "-ed" nouns: "a flower bed of", "a steed with".
+_ED_NOUNS: frozenset[str] = frozenset({
+    "bed", "shed", "sled", "reed", "steed", "seed", "weed", "speed", "feed",
+    "creed", "breed", "deed", "need", "red",
+})
+
 #: A determiner never precedes a participle that ends the head: "a spent
 #: booster" and "a docking ring" are one noun phrase, not a head plus a verb.
 _DETERMINERS: frozenset[str] = frozenset({
@@ -82,6 +101,16 @@ _DETERMINERS: frozenset[str] = frozenset({
 })
 
 _WORD_RE = re.compile(r"\S+")
+
+
+def _participle_before_preposition(words: list, index: int) -> bool:
+    """Whether ``words[index]`` is a past participle that a preposition follows."""
+    word = words[index].group().lower()
+    if index + 1 >= len(words) or word in _ED_NOUNS:
+        return False
+    if not (word in _IRREGULAR_PARTICIPLES or (word.endswith("ed") and len(word) > 4)):
+        return False
+    return bool(_TAIL_RE.match(" " + words[index + 1].group()))
 
 
 def _first_boundary(phrase: str) -> int:
@@ -97,7 +126,10 @@ def _first_boundary(phrase: str) -> int:
         boundary = match.start()
     words = list(_WORD_RE.finditer(phrase))
     for index, word_match in enumerate(words):
-        if index == 0 or word_match.group().lower() not in _PARTICIPLE_BOUNDARY:
+        word = word_match.group().lower()
+        if index == 0 or not (
+            word in _PARTICIPLE_BOUNDARY or _participle_before_preposition(words, index)
+        ):
             continue
         if words[index - 1].group().lower() in _DETERMINERS:
             continue

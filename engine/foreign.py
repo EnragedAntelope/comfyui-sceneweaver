@@ -71,14 +71,22 @@ STANCE_EQUIVALENTS: Mapping[str, str] = {
 }
 
 #: A place word one genre has and another does not, said in the nearest shared
-#: word: open space and a void between worlds are the same emptiness, and a
-#: thing built to hang above a world belongs in that emptiness too -- a space
-#: station read wrong in a sea of clouds.
-AFFORDANCE_EQUIVALENTS: Mapping[str, str] = {
-    "open-space": "void",
-    "void": "open-space",
-    "aloft": "void",
+#: word, first match wins: open space and a void between worlds are the same
+#: emptiness, and a thing built to hang above a world belongs in that emptiness
+#: too -- a space station read wrong in a sea of clouds. A genre with neither
+#: has only the sky to hang it in: a rogue planet was put in a manor ballroom.
+AFFORDANCE_EQUIVALENTS: Mapping[str, tuple[str, ...]] = {
+    "open-space": ("void", "sky"),
+    "void": ("open-space", "sky"),
+    "aloft": ("void", "sky"),
+    "deep-space": ("void", "sky"),
 }
+
+#: A need every place of a genre meets when the genre has no emptiness at all:
+#: horror has no word for gravity because nothing in it is ever weightless, and
+#: the unknown word failed every flying ship's strict placement.
+_UNIVERSAL_WITHOUT_EMPTINESS: frozenset[str] = frozenset({"gravity"})
+_EMPTINESS: frozenset[str] = frozenset({"open-space", "void"})
 
 _GUEST_SLOT = 1
 
@@ -162,8 +170,12 @@ def _needs_met(
     vocabulary = _host_affordance_words(host)
     here = affordances_of(host, environment)
     for need in needs:
-        if need not in vocabulary and AFFORDANCE_EQUIVALENTS.get(need) in vocabulary:
-            need = AFFORDANCE_EQUIVALENTS[need]
+        if need not in vocabulary:
+            if need in _UNIVERSAL_WITHOUT_EMPTINESS and not vocabulary & _EMPTINESS:
+                continue
+            need = next(
+                (word for word in AFFORDANCE_EQUIVALENTS.get(need, ()) if word in vocabulary), need
+            )
         if need in vocabulary:
             if need not in here:
                 return False
@@ -248,24 +260,31 @@ def guest_fits_place(
     *,
     primary_only: bool = False,
     strict: bool = False,
+    any_stance: bool = False,
+    by_type_only: bool = False,
 ) -> bool:
     """Whether a host place can hold this guest body: its stances and its type's needs.
 
     ``primary_only`` asks the stricter question -- can it stand the way it
     mostly stands -- which the placement tries first. ``strict`` fails a need
     the host has no word for (a space station has nowhere to be in a genre
-    with no open space), and the placement relaxes it last.
+    with no open space), and the placement relaxes it last. ``any_stance`` is
+    the last resort, a place that meets the needs whatever the body's stances:
+    a war galley no host shore let float was put in a cloud deck instead.
+    ``by_type_only`` drops the habitat inference and keeps only what the type
+    itself needs: a sunken submersible's seabed floor is a word fantasy's water
+    never grants, and without it the wreck went into an apothecary's workshop.
     """
     stances = translate_stances(guest_body_stances(guest, fields), host)
     if primary_only:
         first = primary_stance(guest, host, fields)
         if first is not None:
             stances = frozenset({first})
-    if stances and not stances_fit(
+    if stances and not any_stance and not stances_fit(
         stances, supported_stances(host, environment), blocked_stances(host, environment)
     ):
         return False
-    if host is not guest and not _needs_met(
+    if host is not guest and not by_type_only and not _needs_met(
         habitat(guest, fields), host, environment, unknown_ok=not strict
     ):
         return False

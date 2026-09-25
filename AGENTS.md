@@ -13,7 +13,9 @@ _Last verified: 2026-09-24_
 - **Status:** **live at v0.5.0.** `main` carries the fantasy pack
   (`data/fantasy.py`) and the horror pack (`data/horror.py`), both on the same
   genre contract sci-fi proved, plus ten rounds (XV-XXIV) of maintainer
-  ComfyUI render tests against all three packs. The repo is public at
+  ComfyUI render tests against all three packs. Round XXV (the first
+  batch tested from `main`) is on `tmp/sceneweaver-round-xxv`, awaiting the
+  maintainer's render test. The repo is public at
   `EnragedAntelope/comfyui-sceneweaver`, published to the ComfyUI Registry; the
   full pre-release history stays local only, in the `coherence-round-*` and
   `tmp/*` branches. Round XV added contract pieces, each genre-agnostic:
@@ -384,6 +386,14 @@ _Last verified: 2026-09-24_
     boils and lesions as gore); objects, places and relics in every pack
     gained dramatic acts; `mask_for_place` now fails a guest need the host has
     no word for. Detail: `docs/architecture.md` ("Round XXIV").
+  - **Round XXV** (2026-09-24) answers
+    the 924 noon batch. An object's act shows a cause (a witness it acts on,
+    what it does to the place, how it is held); cross-genre placement reads
+    `open-space` as `sky` in a genre with neither it nor `void`, treats an
+    unknown `gravity` as met there, and keeps a guest's needs when no host
+    place fits its stances; head detection ends at a past participle before a
+    preposition and at `above`/`below`/`among`. Detail: `docs/architecture.md`
+    ("Round XXV").
   - The substance-adjective render-trap class (item 3 above) is checked only
     for colours (`COLOURWORD`); in other fields an author still catches it by
     eye.
@@ -565,6 +575,10 @@ that reads a gitignored file passes locally and fails on a clean checkout.
 - **A situation must be legible in one still frame**, from outside the subject
   and without an actor the scene has not described; see the three tests in
   `docs/architecture.md`.
+- **An object acts on something.** A cursed object, relic or artifact shows a
+  witness it acts on, what it does to the place, or how it is held; an effect
+  with no cause in the frame reads as noise, and "someone" draws a
+  disembodied hand. Name the witness. `docs/architecture.md` ("Round XXV").
 - **A situation must be the most interesting thing in the frame.** If someone
   standing there would not look up, it is `idle`. The four tests (camera, actor,
   frame, mechanism) say whether a situation can be *drawn*; `value_tiers` says

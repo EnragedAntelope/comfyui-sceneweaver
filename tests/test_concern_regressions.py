@@ -14,6 +14,7 @@ from typing import Callable, Mapping
 from data import fantasy as FANTASY
 from data.genre import GenrePack, affordances_of, group_of, pool_for, resolved_needs
 from data.fantasy import FANTASY_PACK
+from data.horror import HORROR_PACK
 from data.scifi import SCIFI_PACK
 from engine.grammar import head_is_plural
 from engine.scene import generate_entity, generate_scene
@@ -57,7 +58,7 @@ _WORLD_TYPES = (
 _BUILT_SCENERY = (
     "scatter of dead hulls", "distant station with a row of lights",
     "swarm of support landers at a safe distance", "scatter of navigation beacons",
-    "distant formation holding station", "single derelict turning end over end",
+    "distant formation holding station", "distant wrecked starship turning end over end",
 )
 #: Robot forms with no legs, so a leg appendage on one is bolted to nothing.
 _LEGLESS_FORMS = (
@@ -906,6 +907,157 @@ CONCERNS: tuple[Concern, ...] = (
         and bool(re.search(r"(sword|mace|hammer|staff|axe|dagger|rapier|flail|shield)",
                            said(r, "armament"))),
         widgets={"entity1_kind": "folk"}, pack=FANTASY_PACK,
+    ),
+    # Round XXV -- the 924 noon batch.
+    Concern(
+        "a swarm is a pile of bodies, or a few large insects",
+        lambda r, d, t: "bodies" in said(r, "form") or bool(r.get("scale")),
+        widgets={"entity1_kind": "swarm"}, pack=HORROR_PACK,
+    ),
+    Concern(
+        "a rat swarm sheds husks",
+        lambda r, d, t: "husk" in t.lower(),
+        widgets={"entity1_kind": "swarm", "entity1_subkind": "swarm of rats"}, pack=HORROR_PACK,
+    ),
+    *(
+        Concern(
+            f"a {subkind} is made of brass",
+            lambda r, d, t: said(r, "material") == "tarnished brass",
+            widgets={"entity1_kind": "cursed object", "entity1_subkind": subkind}, pack=HORROR_PACK,
+        )
+        for subkind in ("porcelain doll", "antique rocking chair", "grandfather clock", "spirit board")
+    ),
+    Concern(
+        "a mirror has a glass door",
+        lambda r, d, t: "door" in said(r, "aperture"),
+        widgets={"entity1_kind": "cursed object", "entity1_subkind": "cracked mirror"}, pack=HORROR_PACK,
+    ),
+    Concern(
+        "a cursed object just trembles, drips or rattles",
+        lambda r, d, t: said(r, "situation") in (
+            "trembling faintly", "dripping water onto the floor", "rattling faintly on its own",
+            "shifting when nobody looks", "beaded with cold condensation",
+        ),
+        widgets={"entity1_kind": "cursed object"}, pack=HORROR_PACK,
+    ),
+    Concern(
+        "a priest carries a survivor's headlamp and map",
+        lambda r, d, t: said(r, "emitters") == "headlamp" or "map" in said(r, "situation"),
+        widgets={"entity1_kind": "mortal", "entity1_subkind": "village priest"}, pack=HORROR_PACK,
+    ),
+    Concern(
+        "a cult high priest wears a work apron",
+        lambda r, d, t: "apron" in said(r, "material") or said(r, "emitters") == "headlamp",
+        widgets={"entity1_kind": "mortal", "entity1_subkind": "cult high priest"}, pack=HORROR_PACK,
+    ),
+    Concern(
+        "a flashlight is raised under a lit headlamp",
+        lambda r, d, t: "flashlight" in said(r, "situation") and said(r, "emitters") == "headlamp",
+        widgets={"entity1_kind": "mortal", "entity1_subkind": "lone survivor"}, pack=HORROR_PACK,
+    ),
+    Concern(
+        "a ghost slams the doors of a room on a village square",
+        lambda r, d, t: "in the room" in said(r, "situation"),
+        widgets={"environment": "boarded-up village square", "entity1_kind": "spirit"}, pack=HORROR_PACK,
+    ),
+    Concern(
+        "a relic flares as a disembodied hand reaches for it",
+        lambda r, d, t: "someone" in said(r, "situation"),
+        widgets={"entity1_kind": "artifact"}, pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a lich wears a visor, chainmail or a soldier's blade",
+        lambda r, d, t: said(r, "aperture") == "rusted visor" or said(r, "material") == "rusted chainmail"
+        or said(r, "armament") in ("rusted longsword", "notched axe", "reaping scythe"),
+        widgets={"entity1_kind": "undead", "entity1_subkind": "lich"}, pack=FANTASY_PACK,
+    ),
+    Concern(
+        "an elven tree palace is a plaster cottage with chimneys",
+        lambda r, d, t: bool(re.search(r"(plaster|chimney)", t.lower())),
+        widgets={"entity1_kind": "structure", "entity1_subkind": "elven tree palace"}, pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a giant's gear bears scarification",
+        lambda r, d, t: "scarification" in said(r, "markings"),
+        widgets={"entity1_kind": "giant-kin"}, pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a pegasus burns with ember plumage",
+        lambda r, d, t: "ember" in t.lower(),
+        widgets={"entity1_kind": "mythic beast", "entity1_subkind": "pegasus"}, pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a hellhound wears a bridle or a saddle",
+        lambda r, d, t: bool(re.search(r"(bridle|saddle|harness)", t.lower())),
+        widgets={"entity1_kind": "mythic beast", "entity1_subkind": "hellhound"}, pack=FANTASY_PACK,
+    ),
+    Concern(
+        "an airship sails through a crypt",
+        lambda r, d, t: said(r, "subkind") in FANTASY.SUBKIND_GROUPS["flying ship"],
+        widgets={"environment": "catacomb crypt", "entity1_kind": "vessel"}, pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a flying ship lurches like a boat on the ground",
+        lambda r, d, t: r.get("situation") in FANTASY._S_VESSEL_EV + FANTASY._S_VESSEL_ACT,
+        widgets={"entity1_kind": "vessel", "entity1_subkind": "cloud skiff"}, pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a monk with no blade raises a weapon with a flourish",
+        lambda r, d, t: r.get("situation") in FANTASY._WEAPON_ACTS and not r.get("armament"),
+        widgets={"entity1_kind": "folk", "entity1_subkind": "monk"}, pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a banshee drags a chain across a coral reef",
+        lambda r, d, t: said(r, "subkind") == "banshee",
+        widgets={"environment": "coral reef grotto", "entity1_kind": "undead"}, pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a dragon has a single raking claw",
+        lambda r, d, t: said(r, "armament") in ("raking claw", "curved fang")
+        and said(r, "armament_count") == "a single",
+        widgets={"entity1_kind": "dragon"}, pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a troll's bare hide bears metal accents",
+        lambda r, d, t: said(r, "accent_color") in ("gold", "silver", "bronze", "copper", "pewter"),
+        widgets={"entity1_kind": "giant-kin", "entity1_subkind": "river troll"}, pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a hydra has a coins wedged between its scales",
+        lambda r, d, t: bool(re.search(r"\ba (coins|halls)\b", t)),
+        widgets={"entity1_kind": "dragon", "entity1_subkind": "hydra"}, pack=FANTASY_PACK,
+    ),
+    Concern(
+        "an alien artifact drifts in a cloud deck",
+        lambda r, d, t: said(r, "kind") == "alien artifact",
+        widgets={"environment": "acid cloud deck"},
+    ),
+    Concern(
+        "a small planet is drawn as a boulder",
+        lambda r, d, t: said(r, "scale") in ("small", "tiny"),
+        widgets={"entity1_kind": "celestial body"},
+    ),
+    Concern(
+        "a tracked hauler rolls on wheels",
+        lambda r, d, t: "wheel" in said(r, "form"),
+        widgets={"entity1_kind": "surface vehicle", "entity1_subkind": "tracked hauler"},
+    ),
+    Concern(
+        "a wreck is field-repaired",
+        lambda r, d, t: said(r, "condition") == "field-repaired",
+        widgets={"entity1_kind": "wreck"},
+    ),
+    Concern(
+        "a starship spins out standing on the ground",
+        lambda r, d, t: said(r, "situation") in (
+            "spinning out with a thruster stuck open", "slewing hard as a hull section tears away"),
+        widgets={"environment": "toxic seep basin", "entity1_kind": "starship"},
+    ),
+    Concern(
+        "a gravlift flyer rocks over a boulder",
+        lambda r, d, t: said(r, "situation") in (
+            "rocking over a boulder", "grinding up a rocky slope", "cresting a rise in a cloud of dust"),
+        widgets={"entity1_kind": "surface vehicle", "entity1_form": "blunt gravlift wedge"},
     ),
 )
 

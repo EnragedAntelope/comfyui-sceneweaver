@@ -2481,3 +2481,94 @@ A sea of clouds has no rock to bank around; a vampire is never placed
 underwater (its velvet drew dry); a generation ship stays in open space; a
 sampled audit of all three packs found no body placed where it cannot
 stand, so round XIX's walk-only note is retired.
+
+## Round XXV: the 924 noon batch
+
+The maintainer's render test of v0.5.0 from `main`, single entities first and a
+few three-genre scenes. The clearest message was about objects: cursed
+objects, relics and alien artifacts were "just there", or flared, sparked and
+swirled "for no apparent reason".
+
+### An object's act shows a cause
+
+An object cannot act the way a creature does, and an effect with no cause in
+the frame reads as noise. Its acts now show one of three things:
+
+- **a witness it acts on** -- a woman recoiling, a priest holding it at arm's
+  length, a kneeling explorer bathed in its light, a knight reaching for it;
+- **what it does to the place** -- a room torn apart around it, the grass
+  withering in a circle, a crater carved beneath it, work lights snuffed out;
+- **how it is held** -- chains hung with warding charms, a circle of salt, a
+  quarantine cordon, a rune-etched cage.
+
+The witness is a named person in the act, never "someone": "flaring as someone
+reaches for it" drew a disembodied hand. Quiet acts that only trembled, dripped
+or rattled were retired; each object kept a few eerie ones of its own (a doll
+turning its head, a clock racing backwards), and every retired act was replaced.
+
+### Placement across genres
+
+- An **equivalent** is now a fallback chain: `open-space`, `aloft` and
+  `deep-space` read as `void` in fantasy and as `sky` in horror, which has
+  neither. A rogue planet was put in a manor ballroom because no horror word
+  matched and the relaxed rung let it go anywhere.
+- A genre with no emptiness at all has no word for `gravity` either, and every
+  flying ship failed its strict placement in horror; gravity is met everywhere
+  in such a genre.
+- Two last-resort rungs keep a guest's needs when no host place supports its
+  stances: first its habitat, then its type's own needs. A war galley went
+  into a cloud deck and a sunken submersible into an apothecary's workshop.
+- An open landscape (vast ground, no structure) refuses a hand-sized horror
+  keepsake: a cursed box in a dune sea was drawn the size of a house.
+
+### Coherence gates
+
+- Horror: a swarm names its tiny creatures and takes no scale ("countless
+  bodies" drew a pile of corpses; "large" drew large roaches); rats shed no
+  husks; each cursed object has its own materials (a brass rocking chair, a
+  brass doll) and openings (a mirror with a glass door); a priest and a cult
+  high priest carry candles and lanterns, not a survivor's headlamp, and the
+  high priest wears vestments; a flashlight is not raised under a lit headlamp;
+  a door-slamming act needs a room; one clown face per funhouse front; slime
+  needs air; a brick hall is built of brick; a keepsake's own acts (held,
+  dropped, nailed into a crate) never reach a grandfather clock.
+- Fantasy: a flying ship needs sky and speaks only airborne acts (a treetop
+  pass needs trees); a banshee
+  stays out of water; a kit with no blade takes no blade act, and a blade act
+  fills an empty armament; a lich carries a staff and wears robes; a tree
+  palace and a dwarven gate have their own materials and features; embers
+  belong to the firebird; a hellhound has a collar, not a bridle; claws and
+  fangs come in pairs; an armful of logs leaves no hand for a weapon; a metal
+  accent is a fitting on gear, not a patch of hide; a solid elemental does not
+  seep; an indoor surface needs a room (fantasy's interior places now afford
+  one); a giant is measured far more often; a tree palace or a mountain gate
+  has no cottage chimney or washing line; a fortified bridge crosses water.
+- Sci-fi: an alien artifact is never adrift in a cloud deck; a planet is never
+  "small"; a wreck is never field-repaired; a tracked hauler runs on tracks; a
+  ring, a torus and a drydock turn in space; a spin-out happens in space, and
+  the surface has an airborne twin; ground-contact acts are not a flyer's;
+  sand scours only in air, frost needs cold, tube-flora needs life; a
+  "derelict" in the background is a wrecked starship by name (a vault's
+  derelict was drawn as a second vault).
+- Grammar: a past participle before a preposition ends a head ("coins wedged
+  between its scales" had taken "a"), and `above`, `below`, `among`, `amid` and
+  `atop` end one too ("a twin gasbags above a long hull").
+
+### Render traps renamed
+
+Feathered feelers (bird feathers), a missile tube (a missile), a wrist-mounted
+arc emitter (a handgun), a woven carbon weave (wicker), a periscope tube (a
+cannon), "grinding to a halt" (an angle grinder), a sensor beam (a water jet),
+"hosing dust" (a hose on a panel), "cryogenic" (a snowstorm indoors), a
+"puzzle" box (a jigsaw), "bronze ballista" (brass spheres), "iron arm band" (a
+mechanical bracer), a "luminous core" (a loose floating orb), a moss-covered
+statue (moss on the giant), a "long banner" (garbled text), abstract alien
+body plans (an incoherent glob), a moon-sized impactor (a moon hanging over a
+crater), a volley of arrows (arrows from every direction), mooring booms (legs
+planted on the planet below).
+
+### Tooling
+
+`scripts/replay_batch.py` replays every Scene Weaver in a graph and picks the
+one whose prompt was recorded (a graph may hold one per genre), and matches a
+recorded JSON output by its seed.
