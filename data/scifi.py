@@ -1278,7 +1278,7 @@ MATERIAL_POOLS: dict[str, tuple[str, ...]] = {
         "brushed alloy plate", "matte polymer shell",
         "ceramic armour plate",
         "chrome-finished casing", "carbon fibre shell", "welded scrap plate",
-        "anodised alloy panel", "rubber-sealed armour panel",
+        "anodised alloy panel", "gasket-sealed alloy plating",
         "segmented alloy plating", "armoured ceramic plating", "composite armour shell",
     ),
     "alien artifact": (
@@ -3514,7 +3514,7 @@ _SITUATION_WRECK = (
     "giving way under a salvage drone's cutting beam",
     "sending a slide of rubble and debris down at the viewer",
     "buckling as its main girder gives way",
-    "splitting along its spine as a hull plate tears away",
+    "splitting down its length as a hull plate tears away",
     "tearing open along a frost-welded seam",
     "crumbling into a field of drifting debris",
     # Shared-core actions a wreck takes anywhere.
@@ -4343,7 +4343,7 @@ SITUATION_TIERS: dict[str, str] = {
     "giving way under a salvage drone's cutting beam": "event",
     'sending a slide of rubble and debris down at the viewer': 'event',
     "buckling as its main girder gives way": "event",
-    "splitting along its spine as a hull plate tears away": "event",
+    "splitting down its length as a hull plate tears away": "event",
     "tearing open along a frost-welded seam": "event",
     "crumbling into a field of drifting debris": "event",
 }
@@ -5582,7 +5582,7 @@ VALUE_NEEDS["situation"].update({
     "shattering into a spray of fragments": frozenset({}),  # _default
     "shearing a tread on a jagged edge": frozenset({}),  # flying,hovering,legged,surface vehicle,underwater,wheeled/tracked
     "shearing in half along its central truss": frozenset({}),  # space station
-    "splitting along its spine as a hull plate tears away": frozenset({}),  # wreck
+    "splitting down its length as a hull plate tears away": frozenset({}),  # wreck
     "shedding a crust of dust as it moves": frozenset({}),  # alien artifact
     "shedding flakes of light over a kneeling explorer": frozenset({}),  # alien artifact
     "shedding spores in a slow cloud": frozenset({}),  # alien creature,diffuse being
@@ -8921,7 +8921,7 @@ DORMANT_ACTS: frozenset[str] = frozenset({
     "tearing open along a rusted seam", "pinning a salvage drone beneath a buckled plate",
     "giving way under a salvage drone's cutting beam",
     "sending a slide of rubble and debris down at the viewer", "buckling as its main girder gives way",
-    "splitting along its spine as a hull plate tears away", "tearing open along a frost-welded seam",
+    "splitting down its length as a hull plate tears away", "tearing open along a frost-welded seam",
     "crumbling into a field of drifting debris", "coming apart along one long seam",
     "shattering into a spray of fragments", "being examined by a survey drone",
     "breaking up as it falls through the cloud tops",

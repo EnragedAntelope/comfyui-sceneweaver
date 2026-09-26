@@ -463,6 +463,7 @@ python scripts/reach_audit.py --pack fantasy --gate --seeds 30000
 python scripts/reach_audit.py --pack horror --gate --seeds 30000
 python scripts/sample_distribution.py --seeds 1000
 python scripts/coherence_audit.py --seeds 2000
+python scripts/concern_audit.py --seeds 600 --gate
 python scripts/coherence_sweep.py --gate
 python scripts/coherence_sweep.py --gate --path unwired
 npm ci && npm run test:frontend
