@@ -17,8 +17,8 @@ _Last verified: 2026-09-26_
   batch tested from `main`) and XXVI shipped as v0.5.1; round XXVI still awaits
   the maintainer's render test. The repo is public at
   `EnragedAntelope/comfyui-sceneweaver`, published to the ComfyUI Registry; the
-  full pre-release history stays local only, in the `coherence-round-*` and
-  `tmp/*` branches. Round XV added contract pieces, each genre-agnostic:
+  full pre-release history stays local only: a git bundle of every branch,
+  kept outside the repo, and the `coherence-round-*` branches. Round XV added contract pieces, each genre-agnostic:
   validator checks 32 (`FALLTHROUGH`) and 33 (`CARRYPART`), `place_stance_blocks`,
   a `require` rule that fills an empty target, genre filter labels
   (`scene_filter_labels`), the scene filter reaching a wired entity's drawn
