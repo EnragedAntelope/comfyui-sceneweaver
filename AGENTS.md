@@ -10,12 +10,12 @@ genre is a data module and two registration lines.
 
 _Last verified: 2026-09-26_
 
-- **Status:** **live at v0.5.0.** `main` carries the fantasy pack
+- **Status:** **live at v0.5.1.** `main` carries the fantasy pack
   (`data/fantasy.py`) and the horror pack (`data/horror.py`), both on the same
   genre contract sci-fi proved, plus ten rounds (XV-XXIV) of maintainer
   ComfyUI render tests against all three packs. Rounds XXV (the first
-  batch tested from `main`) and XXVI are on `tmp/sceneweaver-round-xxv`; round
-  XXVI awaits the maintainer's render test. The repo is public at
+  batch tested from `main`) and XXVI shipped as v0.5.1; round XXVI still awaits
+  the maintainer's render test. The repo is public at
   `EnragedAntelope/comfyui-sceneweaver`, published to the ComfyUI Registry; the
   full pre-release history stays local only, in the `coherence-round-*` and
   `tmp/*` branches. Round XV added contract pieces, each genre-agnostic:
