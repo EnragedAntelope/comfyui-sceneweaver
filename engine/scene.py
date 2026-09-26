@@ -101,6 +101,7 @@ try:
         FIRST_ENDPOINT,
         slot_key,
         slot_path,
+        resolved_needs,
         type_feasible,
         type_field,
     )
@@ -148,12 +149,14 @@ except ImportError:  # pragma: no cover -- standalone/test context
         RELATION_ANY_POSITION,
         slot_key,
         slot_path,
+        resolved_needs,
         type_feasible,
         type_field,
     )
 
 from .budget import allowance_for, apply_budget
 from .foreign import (
+    best_habitat,
     guest_fits_place,
     guest_pack,
     guest_situation,
@@ -556,11 +559,12 @@ def _control_values_ruled_out_by_locks(
 
 
 #: ``(primary_only, strict, any_stance, by_type_only)``, tightest first. The
-#: last three keep a guest's needs when no host place supports its stances,
-#: rather than letting it go anywhere.
+#: last two keep a guest's needs when no host place supports its stances,
+#: rather than letting it go anywhere; past them the places most like one of
+#: its homes, among those its type's own needs allow (``best_habitat``).
 _GUEST_RUNGS: tuple[tuple[bool, bool, bool, bool], ...] = (
     (True, True, False, False), (False, True, False, False), (False, False, False, False),
-    (False, True, True, False), (False, False, True, False), (False, True, True, True),
+    (False, True, True, False), (False, False, True, False),
 )
 
 
@@ -623,6 +627,17 @@ def _environments_ruled_out_by_fixed_subjects(
             if holders:
                 allowed = holders
                 break
+        else:
+            # A sunken submersible's seabed floor is a word fantasy's water never
+            # grants; its type still needs water, so it is not put in a workshop.
+            typed = {
+                environment for environment in allowed
+                if guest_fits_place(
+                    guest, pack, fields, environment,
+                    strict=True, any_stance=True, by_type_only=True,
+                )
+            }
+            allowed = best_habitat(guest, pack, fields, typed or allowed) or allowed
     for kind, value, form in subjects:
         if not kind or kind not in known_kinds:
             continue
@@ -652,13 +667,56 @@ def _locked_widget(
     return value if _is_locked(value) else None
 
 
+def _environments_ruled_out_by_state(
+    pack: GenrePack, state: Mapping[str, "str | None"], slots: int
+) -> "frozenset[str]":
+    """Places that cannot hold a subject the scene already has, by its kind and type.
+
+    A guest kind the host has never heard of narrows nothing here; its placement
+    was settled before the first draw.
+    """
+    name = type_field(pack)
+    known_kinds = set(pool_options(pack, KIND_FIELD))
+    subjects = [
+        (state.get(slot_path(slot, KIND_FIELD)),
+         state.get(slot_path(slot, name)) if name is not None else None)
+        for slot in range(1, slots + 1)
+    ]
+    subjects = [(kind, value) for kind, value in subjects if kind in known_kinds]
+    if not subjects:
+        return frozenset()
+    return frozenset(
+        environment for environment in pool_options(pack, ENVIRONMENT_FIELD)
+        if not all(_place_holds(pack, environment, kind, value, None) for kind, value in subjects)
+    )
+
+
 def _place_holds(pack: GenrePack, environment: str, kind: str, value: Any, form: Any) -> bool:
-    """Whether ``environment`` can hold this kind, type and form together."""
+    """Whether ``environment`` can hold this kind, type and form together.
+
+    The form's own needs and the pack's trait conflicts count too: a locked
+    "half-buried" hull was placed at a deep-sea vent, and a lighthouse on a
+    flooded street, where a rule could only warn about it (#1316, #1275).
+    """
     if kind not in pool_for(pack, KIND_FIELD, {ENVIRONMENT_FIELD: environment}):
         return False
     if value is not None and not type_feasible(pack, environment, kind, value):
         return False
-    return form is None or form_can_stand(pack, environment, form)
+    if form is not None and not (
+        form_can_stand(pack, environment, form)
+        and resolved_needs(pack, STANCE_FIELD, form) <= affordances_of(pack, environment)
+    ):
+        return False
+    place = set(pack.value_traits.get(ENVIRONMENT_FIELD, {}).get(environment, ()))
+    if not place:
+        return True
+    body: set[str] = set()
+    for name, held in ((KIND_FIELD, kind), (type_field(pack), value), (STANCE_FIELD, form)):
+        if name is not None and held:
+            body |= set(pack.value_traits.get(name, {}).get(held, ()))
+    return not any(
+        (a in place and b in body) or (b in place and a in body) for a, b in pack.trait_conflicts
+    )
 
 
 def _normalized_head(value: str) -> str:
@@ -1099,13 +1157,19 @@ def _apply_constraints(
     scene_filter: str,
     slots: int,
     warnings: list[str],
+    sticky_bans: "Mapping[str, frozenset[str]] | None" = None,
 ) -> None:
     """Drive ``state`` to a constraint fixed point, in place.
 
     Terminates in at most ``MAX_CONSTRAINT_PASSES`` passes whatever the rule set
     says. A rule set that has not settled by then is a *data* defect, so it is
     reported as a warning rather than silently accepted or endlessly retried.
+
+    ``sticky_bans`` are values a re-draw avoids on top of what the rules ban --
+    the places the scene's fixed subjects cannot stand in -- unless avoiding
+    them would leave nothing to draw.
     """
+    sticky_bans = sticky_bans or {}
     # Round XVI: the re-offer step below fills a field the main loop nulled,
     # but a freshly re-offered value can conflict with a field that settled
     # earlier in the same pass while the target was still empty -- an
@@ -1165,10 +1229,20 @@ def _apply_constraints(
                 if current is None:
                     # Filling a requirement: the field may not go unsaid again.
                     definition = dataclasses.replace(definition, omission_weight=0.0)
+                scope = _scope_for(pack, state, target)
+                sticky = sticky_bans.get(target)
+                if target == ENVIRONMENT_FIELD:
+                    # A rule re-drawing the place drew from every place: a skimmer
+                    # refused the sea and was put in open space.
+                    sticky = frozenset(sticky or ()) | _environments_ruled_out_by_state(
+                        pack, state, slots
+                    )
                 replacement = _draw(
-                    rng, pack, definition, _scope_for(pack, state, target), scene_filter,
-                    forbidden,
+                    rng, pack, definition, scope, scene_filter,
+                    forbidden | sticky if sticky else forbidden,
                 )
+                if replacement is None and sticky:
+                    replacement = _draw(rng, pack, definition, scope, scene_filter, forbidden)
                 if replacement is None and current is None:
                     # No allowed value in this scope: the requirement cannot be
                     # met, and re-drawing an empty field every pass would never
@@ -1496,11 +1570,15 @@ def generate_scene(
 
     environment_def = definitions[ENVIRONMENT_FIELD]
     environment_widget = _widget_value(environment_def, widgets)
+    # Kept for the constraint pass too: a rule that re-draws the place (a river
+    # barge does not put out into a stormy sea) drew from every place and put
+    # the barge in a blacksmith's forge (#1236).
+    subject_bans = _environments_ruled_out_by_fixed_subjects(
+        pack, definitions, widgets, promoted,
+    )
     state[ENVIRONMENT_FIELD] = _resolve_one(
         rng, pack, environment_def, environment_widget, {}, scene_filter, locked_paths,
-        banned=_environments_ruled_out_by_fixed_subjects(
-            pack, definitions, widgets, promoted,
-        ),
+        banned=subject_bans,
     )
     scene_scope: dict[str, str | None] = {ENVIRONMENT_FIELD: state[ENVIRONMENT_FIELD]}
     context_def = definitions.get(CONTEXT_FIELD)
@@ -1627,6 +1705,7 @@ def generate_scene(
     _apply_constraints(
         rng, pack, state, address_of, locked_paths,
         scene_filter, slots, warnings,
+        sticky_bans={ENVIRONMENT_FIELD: subject_bans},
     )
 
     # A wired field the user did NOT choose can be re-drawn by a rule; when the

@@ -14,7 +14,7 @@ the host's own handling, which is what every foreign entity got before.
 from __future__ import annotations
 
 import random
-from typing import Any, Mapping
+from typing import Any, Iterable, Mapping
 
 try:
     from ..data.genre import (
@@ -82,11 +82,28 @@ AFFORDANCE_EQUIVALENTS: Mapping[str, tuple[str, ...]] = {
     "deep-space": ("void", "sky"),
 }
 
+#: Place words that say what a place is *shaped* like rather than what it is
+#: like to be in. A home whose shape word the host has no word for is a shape
+#: the host cannot build: a hovercraft's hangar is a ``dock``, and read without
+#: it as a floor under a roof it put the skimmer in a horror hallway (#1318).
+#: Every other word a host lacks -- sunlight, dust, a grave -- is only dropped.
+_SHAPE_WORDS: frozenset[str] = frozenset({
+    "floor", "ground", "structure", "room", "water", "submerged", "shoreline",
+    "sky", "dock", "cloud-deck", "navigable", "open-ground",
+    "open-space", "void", "deep-space", "aloft",
+})
+
+#: Place words that cannot both hold. A sunlit colony dome was one guest rover's
+#: home, and a host with no word for sunlight still says its morgue is dark:
+#: read without the pair, the rover was parked in the morgue.
+_OPPOSITES: Mapping[str, str] = {"sunlight": "dark", "dark": "sunlight"}
+
 #: A need every place of a genre meets when the genre has no emptiness at all:
 #: horror has no word for gravity because nothing in it is ever weightless, and
 #: the unknown word failed every flying ship's strict placement.
 _UNIVERSAL_WITHOUT_EMPTINESS: frozenset[str] = frozenset({"gravity"})
 _EMPTINESS: frozenset[str] = frozenset({"open-space", "void"})
+_SPACE_WORDS: frozenset[str] = frozenset({"open-space", "void", "deep-space"})
 
 _GUEST_SLOT = 1
 
@@ -158,6 +175,19 @@ def guest_body_stances(guest: GenrePack, fields: Mapping[str, "str | None"]) -> 
     return frozenset(stances)
 
 
+def _alternatives(need: str, vocabulary: "frozenset[str]") -> "frozenset[str] | None":
+    """The host words any one of which meets ``need``; empty when every place does.
+
+    ``None`` when the host has no word for it at all.
+    """
+    if need in vocabulary:
+        return frozenset({need})
+    if need in _UNIVERSAL_WITHOUT_EMPTINESS and not vocabulary & _EMPTINESS:
+        return frozenset()
+    known = [word for word in AFFORDANCE_EQUIVALENTS.get(need, ()) if word in vocabulary]
+    return frozenset(known[:1]) if known else None
+
+
 def _needs_met(
     needs: "frozenset[str]", host: GenrePack, environment: str, *, unknown_ok: bool
 ) -> bool:
@@ -170,18 +200,48 @@ def _needs_met(
     vocabulary = _host_affordance_words(host)
     here = affordances_of(host, environment)
     for need in needs:
-        if need not in vocabulary:
-            if need in _UNIVERSAL_WITHOUT_EMPTINESS and not vocabulary & _EMPTINESS:
-                continue
-            need = next(
-                (word for word in AFFORDANCE_EQUIVALENTS.get(need, ()) if word in vocabulary), need
-            )
-        if need in vocabulary:
-            if need not in here:
+        alternatives = _alternatives(need, vocabulary)
+        if alternatives is None:
+            if not unknown_ok:
                 return False
-        elif not unknown_ok:
+        elif alternatives and not alternatives & here:
             return False
     return True
+
+
+def _home_met(
+    home: "frozenset[str]", vocabulary: "frozenset[str]", here: "frozenset[str]",
+    guest_vocabulary: "frozenset[str]", *, lenient: bool = False,
+) -> float:
+    """The share of a home's words the host place meets.
+
+    A condition word the host lacks says nothing; a shape word it lacks makes
+    the home one the host cannot build (0), unless ``lenient``. Nor may the
+    place have a shape both genres can name that the home lacks: a sewer's
+    water is no hover-car concourse's. A home in space read as a host's sky
+    asks nothing of the ground under that sky.
+    """
+    checked = []
+    said: set[str] = set()
+    for word in home:
+        alternatives = _alternatives(word, vocabulary)
+        if alternatives is None:
+            if word in _SHAPE_WORDS and not lenient:
+                return 0.0
+        elif alternatives:
+            checked.append(alternatives)
+            said |= alternatives
+    if not lenient and any(_OPPOSITES.get(word) in here for word in home):
+        return 0.0
+    overhead = bool(home & _SPACE_WORDS) and not vocabulary & _EMPTINESS
+    if not lenient and not overhead and any(
+        word in _SHAPE_WORDS and word in guest_vocabulary and word not in said
+        for word in here
+    ):
+        return 0.0
+    if not checked:
+        return 1.0
+    return sum(1 for alt in checked if alt & here) / len(checked)
 
 
 #: The stance a body is placed by, most grounded first. A body that walks is put
@@ -205,31 +265,101 @@ def _places(pack: GenrePack) -> "tuple[str, ...]":
     ))
 
 
-_HABITAT_CACHE: dict[tuple, frozenset] = {}
+_HOMES_CACHE: dict[tuple, tuple] = {}
 
 
-def habitat(guest: GenrePack, fields: Mapping[str, "str | None"]) -> "frozenset[str]":
-    """What every place the guest's own genre puts this body in has in common.
+def homes(guest: GenrePack, fields: Mapping[str, "str | None"]) -> "tuple[frozenset[str], ...]":
+    """Every distinct place shape the guest's own genre puts this body in.
 
     The guest pack's kind pools already know where its kind belongs: a space
-    station is only ever in open space, an ogre only ever breathes air. That
-    common ground is what a host place must also afford -- an ogre was
-    placed on a space-station approach lane, a station in a sea of clouds.
+    station is only ever in open space, an ogre only ever breathes air. A host
+    place must be shaped like *one* of those homes -- an ogre was placed on a
+    space-station approach lane, a station in a sea of clouds. Their common
+    ground alone was too little: a starship lands on plains and flies in space
+    and cloud, so all three shared only "vast", and it was drawn resting in a
+    dwarven great hall (#1256).
     """
     key = (guest.slug, tuple(sorted((k, v) for k, v in fields.items() if v)))
-    if key not in _HABITAT_CACHE:
+    if key not in _HOMES_CACHE:
         kind = fields.get(KIND_FIELD)
-        homes = [
+        _HOMES_CACHE[key] = tuple(dict.fromkeys(
             affordances_of(guest, place) for place in _places(guest)
             if (not kind or kind in pool_for(guest, KIND_FIELD, {ENVIRONMENT_FIELD: place}))
             and guest_fits_place(guest, guest, fields, place)
-        ]
-        _HABITAT_CACHE[key] = frozenset.intersection(*homes) if homes else frozenset()
-    return _HABITAT_CACHE[key]
+        ))
+    return _HOMES_CACHE[key]
+
+
+def habitat_score(
+    guest: GenrePack, host: GenrePack, fields: Mapping[str, "str | None"], environment: str,
+    *, lenient: bool = False,
+) -> float:
+    """How nearly a host place is shaped like the guest's best-matching home, 0 to 1."""
+    shapes = homes(guest, fields)
+    if not shapes:
+        return 1.0
+    vocabulary = _host_affordance_words(host)
+    here = affordances_of(host, environment)
+    known = _host_affordance_words(guest)
+    return max(_home_met(home, vocabulary, here, known, lenient=lenient) for home in shapes)
+
+
+def best_habitat(
+    guest: GenrePack, host: GenrePack, fields: Mapping[str, "str | None"], places: "Iterable[str]"
+) -> "set[str]":
+    """The places most like a guest home, for a guest no placement rung could hold.
+
+    A family mausoleum's homes are all walled graveyards and no place of that
+    host is one, so it was put anywhere -- a starship medical bay (#1206). An open
+    plain is nearer a graveyard than a ward is.
+    """
+    scored = {
+        place: habitat_score(guest, host, fields, place, lenient=True) for place in places
+    }
+    if not scored:
+        return set()
+    best = max(scored.values())
+    return {place for place, score in scored.items() if score == best}
+
+
+def skyborne(
+    guest: GenrePack, host: GenrePack, fields: Mapping[str, "str | None"], environment: "str | None"
+) -> bool:
+    """Whether a guest that only ever exists in space stands under this host's open sky.
+
+    A genre with no emptiness hangs a station or a world in its sky, and the
+    model draws it standing in the place unless the prose says it is overhead:
+    a space station sheared in half on a carnival midway (#1321).
+    """
+    vocabulary = _host_affordance_words(host)
+    if environment is None or vocabulary & _EMPTINESS:
+        return False
+    here = affordances_of(host, environment)
+    if "sky" not in here:
+        return False
+    shapes = homes(guest, fields)
+    if not shapes:
+        return False
+    # The homes that put it here: a listening post's cloud-city home is one the
+    # host cannot build, and counting it left the station standing in a cemetery.
+    known = _host_affordance_words(guest)
+    scores = {home: _home_met(home, vocabulary, here, known) for home in shapes}
+    if not max(scores.values()):
+        scores = {home: _home_met(home, vocabulary, here, known, lenient=True) for home in shapes}
+    best = max(scores.values())
+    return all(home & _SPACE_WORDS for home, score in scores.items() if score == best)
 
 
 def _traits_of(pack: GenrePack, name: str, value: "str | None") -> "set[str]":
     return set(pack.value_traits.get(name, {}).get(value, ())) if value else set()
+
+
+#: The fields that say what a body is, and so where it can be.
+_IDENTITY_FIELDS: frozenset[str] = frozenset({KIND_FIELD, STANCE_FIELD, "scale"})
+
+
+def _conflicting(place: "set[str]", value: "set[str]", conflicts) -> bool:
+    return any((a in place and b in value) or (b in place and a in value) for a, b in conflicts)
 
 
 def _place_refuses_body(
@@ -239,17 +369,22 @@ def _place_refuses_body(
 
     Trait words are shared vocabulary the way stances are: one genre's crawlway
     is ``cramped-room`` and another's "towering" elemental is ``large-scale``.
+    Only what the body *is* decides where it goes; a drawn condition does not:
+    a "scorched" bathyscaphe refused every sea and was put in a furnished void
+    (#1318 replay). ``mask_for_place`` drops such a value afterwards.
     """
     place = _traits_of(host, ENVIRONMENT_FIELD, environment)
     if not place:
         return False
     body: set[str] = set()
-    for name, value in fields.items():
-        body |= _traits_of(guest, name, value)
+    for name in _IDENTITY_FIELDS | {type_field(guest)}:
+        body |= _traits_of(guest, name, fields.get(name))
     # Either genre's rule counts: the host may never pair the two words itself
     # (a drowned church is ``aqueous`` in a genre with no fire creature).
     conflicts = set(host.trait_conflicts) | set(guest.trait_conflicts)
-    return any(a in place and b in body for a, b in conflicts)
+    # Either way round: a pair's order is the rule's direction inside one genre,
+    # not a statement about which side is the place (#1275).
+    return _conflicting(place, body, conflicts)
 
 
 def guest_fits_place(
@@ -284,9 +419,9 @@ def guest_fits_place(
         stances, supported_stances(host, environment), blocked_stances(host, environment)
     ):
         return False
-    if host is not guest and not by_type_only and not _needs_met(
-        habitat(guest, fields), host, environment, unknown_ok=not strict
-    ):
+    if host is not guest and not by_type_only and habitat_score(
+        guest, host, fields, environment
+    ) < 1.0:
         return False
     # Asked of the guest's own places too, so its habitat is drawn from the
     # places its own genre would really put it.
@@ -345,11 +480,15 @@ def mask_for_place(
     if environment is None:
         return
     identity = {KIND_FIELD, type_field(guest), STANCE_FIELD}
+    place = _traits_of(host, ENVIRONMENT_FIELD, environment)
+    conflicts = set(host.trait_conflicts) | set(guest.trait_conflicts)
     for name in guest.entity_fields:
         value = fields.get(name)
         if value is None or name in chosen or name in identity:
             continue
-        if _needs_met(resolved_needs(guest, name, value), host, environment, unknown_ok=False):
+        if _needs_met(
+            resolved_needs(guest, name, value), host, environment, unknown_ok=False
+        ) and not _conflicting(place, _traits_of(guest, name, value), conflicts):
             continue
         fields[name] = None
         for other, other_spec in guest.entity_fields.items():

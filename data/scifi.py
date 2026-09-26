@@ -877,7 +877,7 @@ SUBKIND_POOLS: dict[str, tuple[str, ...]] = {
     ),
     "surface vehicle": (
         "rover", "hovercraft", "crawler", "skimmer", "ground transport",
-        "walker", "submersible", "high-altitude glider", "tracked hauler",
+        "walker", "submersible", "bathyscaphe", "seabed crawler", "high-altitude glider", "tracked hauler",
         "hover bike", "landing shuttlecraft", "drop pod", "sand crawler", "ice cutter",
         "amphibious crawler", "cargo sled", "survey glider",
     ),
@@ -966,7 +966,9 @@ SUBKIND_GROUPS: dict[str, tuple[str, ...]] = {
     "hovering":       ("hovercraft", "skimmer", "hover bike", "cargo sled"),
     "flying":         ("high-altitude glider", "survey glider"),
     "lander":         ("landing shuttlecraft", "drop pod"),
-    "underwater":     ("submersible",),
+    # Round XXVI: a hover skimmer no longer goes under the sea (#1318), so the deep
+    # keeps three craft of its own.
+    "underwater":     ("submersible", "bathyscaphe", "seabed crawler"),
     "legged":         ("walker",),
 
     # spacefarer
@@ -1023,27 +1025,33 @@ FORM_POOLS: dict[str, tuple[str, ...]] = {
         "plasma-bridged double star", "broad sheet of banded rings",
         "tilted ring disc parted by a dark gap", "narrow clumped ring set",
     ),
+    # The subkind names the shape: a "torus habitat" was a cross-braced cruciform (#1253).
+    "torus habitat": ("torus", "spoke-and-hub wheel", "trussed wheel", "stacked torus spindle"),
+    "ring station": ("torus", "spoke-and-hub wheel", "trussed wheel", "stacked torus spindle"),
+    # A "power cell array" was drawn as a stone macaron (#1252): its shape says what it is.
+    "power cell array": ("rack of luminous energy cells", "stacked column of luminous energy cells"),
     "space station": (
         "torus", "spindle", "cluster of docked modules", "hollowed asteroid",
         "stacked disc tiers", "cross-braced cruciform", "geodesic sphere",
         "paired modules on a long truss boom", "radial truss framework",
         "cylinder with radiator fins", "long spindle with a domed cap",
-        "spoke-and-hub wheel", "tapered module cluster", "counter-rotating habitat cylinders",
+        "spoke-and-hub wheel", "tapered module cluster", "pair of long habitat cylinders on a central spine",
         "trussed wheel", "stacked torus spindle", "spindle with outriggers",
     ),
     "alien creature": (
         "hexapodal frame", "serpentine coil", "five-armed radial body",
-        "amorphous mass", "elongated bipedal torso", "arachnoid body",
+        "towering column of crackling plasma", "drifting veil of luminous gas",
+        "spiralling ribbon of charged vapour", "elongated bipedal torso", "arachnoid body",
         "sprawling colonial body", "quivering gel body", "low-slung quadrupedal body", "tentacled bell-body",
         "segmented worm body", "hollow-boned winged frame",
         "branching crystalline lattice", "flattened ray-body",
         "coiled spiral shell", "four-armed bilateral body", "tripodal frame",
         "stalked polyp column", "broad-backed grazer frame",
-        "counter-rotating disc body", "vertically stacked disc segments",
+        "flat frilled disc body", "vertically stacked disc segments",
         "long finned ribbon body", "inverted funnel body",
         "tessellated plate column", "nested shell cluster",
         "broad flat winged body", "vast translucent drifting membrane",
-        "crystalline spoke cluster", "wheel-shaped rolling body",
+        "crystalline spoke cluster", "curled armour-plated rolling body",
         "translucent jellyfish-like body", "long translucent streamer body",
         "plated serpent body", "feathered raptor frame", "segmented burrower body",
         "fused twin-bodied frame", "fan-gilled drifting body",
@@ -1060,7 +1068,7 @@ FORM_POOLS: dict[str, tuple[str, ...]] = {
     "alien people": (
         "tall gaunt bipedal frame", "hunched broad-shouldered frame",
         "slender long-necked frame", "stocky scaled frame",
-        "lanky frame with two pairs of arms", "heavy horned frame", "narrow crested frame",
+        "lanky four-armed frame", "heavy horned frame", "narrow crested frame",
     ),
     "robot or mech": (
         "bipedal walker chassis", "quadrupedal walker chassis",
@@ -1093,7 +1101,7 @@ FORM_POOLS: dict[str, tuple[str, ...]] = {
         "blunt re-entry capsule", "squat lander with splayed legs", "flat underslung gravlift hull",
     ),
     "wreck": (
-        "snapped hull section", "collapsed spar frame", "half-buried hull section",
+        "hull snapped in two behind its engine nacelles", "collapsed spar frame", "half-buried hull with its cockpit canopy still intact",
         "split-open pressure hull", "flattened impact hull", "exposed girder frame",
         "torn saucer section", "crumpled bow section", "sheared drive-core housing",
         "peeled-back plating shell", "stripped girder frame",
@@ -1146,18 +1154,20 @@ FORM_POOLS: dict[str, tuple[str, ...]] = {
     "quadrupedal":    ("low-slung quadrupedal body", "broad-backed grazer frame"),
     "upright hunter": ("elongated bipedal torso", "four-armed bilateral body", "tripodal frame",
                        "feathered raptor frame"),
-    "diffuse being":  ("amorphous mass",),
+    # One "amorphous mass" drew a formless blob (#1259).
+    "diffuse being":  ("towering column of crackling plasma", "drifting veil of luminous gas",
+                       "spiralling ribbon of charged vapour"),
     "void dweller":    ("vast translucent drifting membrane", "long finned ribbon body",
                         "translucent jellyfish-like body", "long translucent streamer body"),
-    "radial form":     ("counter-rotating disc body", "inverted funnel body",
-                        "wheel-shaped rolling body"),
+    "radial form":     ("flat frilled disc body", "inverted funnel body",
+                        "curled armour-plated rolling body"),
     # A rock-eater walks to its rock: a rooted column with legs lashed out (#684).
-    "stone feeder":    ("hunched boulder-backed body", "squat plated rock-grinder body"),
+    "stone feeder":    ("hunched boulder-backed body", "squat plated rock-crusher body"),
     "caste swarm":     ("vertically stacked disc segments", "broad flat winged body"),
     "mimic body":      ("broad flat winged body", "nested shell cluster"),
     "filter swarm":    ("inverted funnel body", "fan-gilled drifting body"),
     "symbiotic body":  ("crystalline spoke cluster", "fused twin-bodied frame"),
-    "brooding colony": ("nested shell cluster", "counter-rotating disc body"),
+    "brooding colony": ("nested shell cluster", "flat frilled disc body"),
 
     # robot or mech
     "humanoid unit":  ("humanoid android frame", "bipedal walker chassis",
@@ -1171,9 +1181,9 @@ FORM_POOLS: dict[str, tuple[str, ...]] = {
     "static unit":    ("boxy utility chassis", "tracked chassis", "wheeled drone body"),
 
     # wreck -- what the wreck used to be
-    "hull wreck":     ("snapped hull section", "split-open pressure hull", "flattened impact hull",
+    "hull wreck":     ("hull snapped in two behind its engine nacelles", "split-open pressure hull", "flattened impact hull",
                        "torn saucer section", "crumpled bow section",
-                       "peeled-back plating shell", "half-buried hull section"),
+                       "peeled-back plating shell", "half-buried hull with its cockpit canopy still intact"),
     "structure wreck":("collapsed spar frame", "exposed girder frame", "stripped girder frame",
                        "burst pressure sphere", "bent frame lattice", "torn truss section"),
     "fragment wreck": ("sheared drive-core housing", "scattered plate cluster"),
@@ -1194,7 +1204,8 @@ FORM_POOLS: dict[str, tuple[str, ...]] = {
                        "faceted anti-grav wedge"),
     "lander":         ("blunt re-entry capsule", "squat lander with splayed legs",
                        "bulbous pressurised cabin"),
-    "underwater":     ("cylindrical submersible hull",),
+    "underwater":     ("cylindrical submersible hull", "bulbous observation sphere under a float hull",
+                       "low six-legged seabed crawler hull"),
     "legged":         ("walker leg frame", "six-legged walker frame"),
 }
 
@@ -1267,7 +1278,7 @@ MATERIAL_POOLS: dict[str, tuple[str, ...]] = {
         "brushed alloy plate", "matte polymer shell",
         "ceramic armour plate",
         "chrome-finished casing", "carbon fibre shell", "welded scrap plate",
-        "anodised alloy panel", "rubberised sheath",
+        "anodised alloy panel", "rubber-sealed armour panel",
         "segmented alloy plating", "armoured ceramic plating", "composite armour shell",
     ),
     "alien artifact": (
@@ -1408,7 +1419,7 @@ ACCENT_COLOR_POOL: tuple[str, ...] = (
     "magenta", "deep purple", "turquoise", "carmine red", "copper", "gunmetal",
     "cream", "pale grey", "safety orange", "electric blue", "bronze",
     "verdigris green", "pink gold", "sulphur yellow", "ink blue", "oxide red",
-    "vermilion orange", "pale viridian", "royal blue", "pale vermilion", "acid yellow",
+    "vermilion orange", "pale viridian", "ultramarine blue", "pale vermilion", "acid yellow",
     "safety green", "copper pink",
 )
 
@@ -1585,7 +1596,7 @@ APPENDAGE_POOLS: dict[str, tuple[str, ...]] = {
     # through ``extras``, which has no count partner and so is always singular:
     # "a shepherd moon" reads as a moon, "six shepherd moonlets" never does.
     "solid world": (
-        "debris streamer", "tidal tail", "cryovolcanic plume", "tidal ridge",
+        "debris streamer", "thin orbiting debris ring", "cryovolcanic plume", "tidal ridge",
     ),
     "small body": (
         "dust tail", "ion tail", "debris streamer",
@@ -1595,7 +1606,7 @@ APPENDAGE_POOLS: dict[str, tuple[str, ...]] = {
         "clumped ringlet", "dust spoke",
     ),
     "celestial body": (
-        "sweeping arc", "debris streamer", "tidal tail",
+        "sweeping arc", "debris streamer", "thin orbiting debris ring",
         "ejecta ray", "dust lane", "ice plume", "rock spire",
         "cryovolcanic plume", "tidal ridge",
     ),
@@ -1689,7 +1700,7 @@ APPENDAGE_POOLS: dict[str, tuple[str, ...]] = {
     # ``appendages``, so these subkinds need their own vocabulary.
     "star body":     ("coronal streamer", "prominence loop", "flare ribbon",
                       "solar wind tail"),
-    "singularity":   ("sweeping arc", "tidal tail", "dust lane", "accretion spiral arm"),
+    "singularity":   ("sweeping arc", "thin orbiting debris ring", "dust lane", "accretion spiral arm"),
     "binary system": ("tidal stream", "accretion arc", "dust lane"),
     "diffuse cloud": ("filamentary tendril", "dust lane", "ionisation front"),
     "diffuse being": ("trailing plasma tendril", "drifting filament", "energy wisp"),
@@ -1757,7 +1768,7 @@ EMITTER_POOLS: dict[str, tuple[str, ...]] = {
         "docking beacon", "luminous window band",
         "signal mast beacon", "beacon strobe",
         "navigation light", "docking guide light", "antenna tip beacon",
-        "hangar mouth light bar", "observation deck window strip", "running light string",
+        "hangar mouth light bar", "observation deck window strip", "running light",
     ),
     "alien creature": (
         "bioluminescent organ", "vent pore", "photophore", "luminous sac",
@@ -1814,7 +1825,7 @@ EMITTER_POOLS: dict[str, tuple[str, ...]] = {
     "binary system": ("tidal stream arc", "accretion streamer", "plasma jet"),
     "diffuse cloud": ("ionisation front", "embedded star cluster",
                       "radiant gas filament"),
-    "diffuse being": ("radiant core", "pulsing energy halo", "emissive wisp"),
+    "diffuse being": ("radiant core", "crackling discharge arc", "emissive wisp"),
     "gas world":     ("storm discharge arc", "auroral band", "lightning band"),
     "disc system":   ("accretion streamer", "dust plume vent"),
 }
@@ -1868,12 +1879,12 @@ ARMAMENT_POOLS: dict[str, tuple[str, ...]] = {
     ),
     "robot or mech": (
         "shoulder cannon", "arm-mounted repeater", "missile pod",
-        "gauss rifle mount", "flame projector", "vibro-saw blade",
+        "gauss rifle mount", "flame projector", "rotary plasma repeater",
     ),
     "small drone": ("stun emitter", "micro-missile cell", "needle gun mount"),
     "humanoid unit": ("arm-mounted repeater", "shoulder cannon", "stun emitter", "wrist blade"),
     "heavy chassis": ("shoulder cannon", "missile pod", "gauss rifle mount",
-                      "flame projector", "vibro-saw blade"),
+                      "flame projector", "rotary plasma repeater"),
     "static unit": ("arm-mounted repeater", "shoulder cannon", "stun emitter",
                     "needle gun mount", "wrist blade"),
     # "particle repeater mount" names a specific real mounting hardware with no
@@ -1953,16 +1964,16 @@ SENSOR_POOLS: dict[str, tuple[str, ...]] = {
         "wrist scanner", "optical implant", "optic goggle", "shoulder optic pod",
         "targeting monocle", "cybernetic eye", "neural-link eyepiece",
         "sensor gauntlet",
-        "range-finder optic", "bioscanner cuff", "signal locator",
+        "forearm data-pad scanner", "bioscanner cuff", "signal locator",
     ),
     "robot or mech": (
         "optic dome", "optic stalk", "sensor crown", "antenna whisker",
         "thermal pickup plate", "acoustic pickup grille", "targeting monocle",
-        "scanning bar",
+        "flat scanner panel",
         "multispectral optic", "proximity sensor fin", "audio pickup horn",
     ),
     # A hand-sized drone looks through its shell, not on stalks.
-    "small drone": ("optic dome", "multispectral optic", "scanning bar"),
+    "small drone": ("optic dome", "multispectral optic", "flat scanner panel"),
     "alien artifact": (
         "recessed optic", "scanning aperture", "receiver dish",
         "antenna vane", "watching facet", "listening slot",
@@ -2036,7 +2047,7 @@ APERTURE_POOLS: dict[str, tuple[str, ...]] = {
         "iris of interlocking plates", "radial feeding rosette", "sphincter vent",
         "segmented maw", "pharyngeal slit", "gullet opening",
         "energy intake vent",
-        "mineral grinding maw",
+        "rock-crushing mineral maw",
     ),
     "spacefarer": (
         "helmet faceplate", "respirator grille", "open visor",
@@ -2103,7 +2114,7 @@ APERTURE_POOLS: dict[str, tuple[str, ...]] = {
     "void dweller": ("energy intake vent", "sphincter vent"),
     "radial form": ("radial feeding rosette", "circular toothed maw",
                     "iris of interlocking plates"),
-    "stone feeder": ("mineral grinding maw", "sieve-plated feeding slit"),
+    "stone feeder": ("rock-crushing mineral maw", "sieve-plated feeding slit"),
     "caste swarm": ("mandibled jaw", "proboscis"),
     "mimic body": ("suckered mouth", "distensible gullet"),
     "filter swarm": ("filter-frond mouth", "sieve-plated feeding slit"),
@@ -2197,7 +2208,7 @@ EXTRAS_POOLS: dict[str, tuple[str, ...]] = {
                "sample collection hatch"),
     "wreck": (
         "spilled cargo scatter", "torn bulkhead section", "half-buried engine bell",
-        "collapsed antenna mast", "salvage cutting scar",
+        "snapped antenna mast lying across the hull", "salvage cutting scar",
         "opened escape pod bay", "drifting debris cloud",
         "buckled hull plating",
         "scattered debris trail", "torn cargo bay door", "bent frame section",
@@ -2639,7 +2650,7 @@ _CARDINALITY_APPENDAGES = _cardinality(
         "ionisation front", "prehensile tongue", "regolith scraper plate",
         "rooted frond cluster", "solar wind tail", "spined tail club",
         "storm band filament", "sweeping arc", "tidal ridge", "tidal stream",
-        "tidal tail", "torn engine mount", "torn hull flap", "whip tail",
+        "thin orbiting debris ring", "torn engine mount", "torn hull flap", "whip tail",
     )),
     ("a matched pair", (
         "stern stabiliser blade", "ballast tank blister",
@@ -2697,7 +2708,7 @@ _CARDINALITY_APPENDAGES = _cardinality(
 _CARDINALITY_EMITTERS = _cardinality(
     ("a lone part", (
         "embedded star cluster", "halo band", "ionisation front", "pulsing aura",
-        "pulsing energy halo", "radiant core", "radiant core aperture",
+        "crackling discharge arc", "radiant core", "radiant core aperture",
     )),
     ("a matched pair", (
         "auroral band", "auroral curtain", "forward light strip", "lightning band",
@@ -2743,7 +2754,7 @@ _CARDINALITY_EMITTERS = _cardinality(
         "docking beacon", "heat radiator panel",
         "heat sink grille", "joint seam beacon", "joint seam strip",
         "luminous hull seam", "luminous window band", "navigation light",
-        "observation deck window strip", "running light string",
+        "observation deck window strip", "running light",
         "radiator panel", "radiator seam",
         "running beacon", "seam beacon", "seam strip",
         "status indicator band", "vent port",
@@ -2767,7 +2778,7 @@ _CARDINALITY_ARMAMENT = _cardinality(
         "missile rack", "mounted cannon", "needle gun mount", "particle beam cannon",
         "particle repeater mount", "plasma cannon", "plasma coil cannon",
         "rail-driver turret", "raking talon", "rocket rack",
-        "serrated mandible", "shoulder cannon", "stun emitter", "vibro-saw blade",
+        "serrated mandible", "shoulder cannon", "stun emitter", "rotary plasma repeater",
         "weapon pod", "whip lash tendril", "wrist blade",
     )),
     ("a small set", (
@@ -2816,7 +2827,7 @@ _CARDINALITY_SENSORS = _cardinality(
     )),
     ("a worn fitting", (
         "neural-link eyepiece",
-        "bioscanner cuff", "optic goggle", "range-finder optic",
+        "bioscanner cuff", "optic goggle", "forearm data-pad scanner",
         "sensor gauntlet", "shoulder optic pod", "signal locator", "targeting monocle",
         "wrist scanner",
     )),
@@ -2825,7 +2836,7 @@ _CARDINALITY_SENSORS = _cardinality(
         "dead sensor blister", "deep-field array", "gravimetric detector", "mast-mounted array",
         "observation blister",
         "passive sensor pod", "proximity sensor fin", "radar plate", "receiver dish",
-        "resonance detector", "scanning bar", "seismic probe plate", "sensor blister",
+        "resonance detector", "flat scanner panel", "seismic probe plate", "sensor blister",
         "signal decoder dish", "stripped antenna stub", "telescope array panel",
         "thermal pickup plate",
     )),
@@ -2922,7 +2933,7 @@ _SITUATION_DEFAULT = (
     "ducking low and backing away",
     "crossing the open ground",
     "being examined by a survey drone",
-    "standing over the wreckage of something else",
+    "standing over the smoking wreckage of a downed skiff",
     "rising from a low crouch",
     "unfolding from a resting pose",
     "leaning into the wind",
@@ -2984,11 +2995,11 @@ _SITUATION_CELESTIAL_CORE = (
     "settling into a slower spin",
     "rotating through a slow cycle",
     "tilting slowly on its axis",
-    "settling into a calm band",
+    "turning its night side toward a distant sun",
     "paling along one flank",
     "flickering across its whole disc",
     "shedding a thin veil of gas",
-    "thinning into a pale band",
+    "darkening slowly along one edge",
 )
 _SITUATION_WORLD_SHARED = (
     "eclipsing a smaller companion",
@@ -3154,7 +3165,7 @@ _CREATURE_BODILY = (
 _CREATURE_MOBILE = (
     "breaking out of a containment field with a single lunge",
     "stalking prey through the corridors",
-    "watching from inside a ceiling vent",
+    "dropping down out of an open ceiling vent",
     "striking at a fleeing shuttlecraft",
     "weaving through a stand of stalks",
     "bursting through a sealed door",
@@ -3170,6 +3181,7 @@ _CREATURE_LIMBED = (
 )
 
 _SITUATION_ROBOT_COMMON = (
+    "staggering as a plasma bolt scores its chassis",
     "extending a tool turret",
     "hoisting a beam into place",
     "welding a cracked hull plate back into place",
@@ -3183,12 +3195,12 @@ _SITUATION_ROBOT_COMMON = (
     "crouching to inspect wreckage",
     "dodging a falling slab of rock",
     "locking up mid-motion with a seized joint",
-    "going down under a mass of smaller units",
+    "going down under a swarm of small scavenger drones",
 )
 
 _SITUATION_VEHICLE_COMMON = (
     "cresting a rise in a cloud of dust",
-    "grinding up a rocky slope",
+    "clawing up a rocky slope",
     "sliding sideways on loose gravel",
     "parking beside a rock outcrop",
     "lowering a ramp onto sand",
@@ -3313,7 +3325,7 @@ _SITUATION_SPACEFARER = (
     "leading a boarding party through a cut hatch",
     "waking from cryo with frost still on the suit",
     "signalling a descending lander with a flare",
-    "kneeling to read a bootprint",
+    "kneeling to study a fresh bootprint",
     "clamping a magnetic beacon to a deck plate",
     "welding a seam with a torch",
     "planting a beacon on a ridge",
@@ -3334,7 +3346,7 @@ _SITUATION_SPACEFARER = (
     "shouldering a buckling bulkhead back into place",
     "severing a snarl of cabling",
     "carrying a child through a smoke-filled corridor",
-    "sealing a breach as the air thins",
+    "welding a torn hull seam shut in a shower of sparks",
     "running through a collapsing gantry",
     "flinching from a burst of steam from a split pipe",
     "holding an airlock door shut against boarders",
@@ -3357,7 +3369,7 @@ _SITUATION_SPACEFARER = (
     # Shared-core actions a person takes anywhere.
     "ducking low and backing away",
     "advancing across open ground",
-    "standing over the wreckage of something else",
+    "standing over the smoking wreckage of a downed skiff",
     "leaning into the wind",
 )
 
@@ -3401,7 +3413,7 @@ _SITUATION_ARTIFACT = (
     "splitting open to bathe a kneeling xenoarchaeologist in light",
     "pulsing light through its veins as a survey drone scans it",
     "being uncovered by a lone prospector brushing away the dust",
-    "spilling light from a widening crack",
+    "spilling light from a widening crack as a suited explorer recoils from it",
     "hanging above a perfectly round crater it has carved into the ground",
     "drifting through a debris field",
     "being circled by scanning drones",
@@ -3434,7 +3446,7 @@ _SITUATION_ARTIFACT = (
     "bursting in a wave of light",
     "collapsing into a singularity",
     "drawing loose debris off the deck toward itself",
-    "swallowing a survey drone whole",
+    "pulling a survey drone toward itself in a crackle of force",
     "cracking the ground beneath it",
     "pulling a descending lander out of the sky",
     # Shared-core actions an artifact takes anywhere.
@@ -3482,7 +3494,7 @@ _SITUATION_WRECK = (
     "being stripped by a swarm of salvage drones",
     "hanging at a steep angle against the stars",
     "sheltering a nest of hull-borers",
-    "grinding against the rock it landed on",
+    "scraping against the rock it landed on",
     "shedding plates into a slow debris trail",
     "being cut open by salvage drones",
     "disappearing under a creeping fungal mat",
@@ -3502,7 +3514,7 @@ _SITUATION_WRECK = (
     "giving way under a salvage drone's cutting beam",
     "sending a slide of rubble and debris down at the viewer",
     "buckling as its main girder gives way",
-    "blowing apart as its last fuel cell ruptures",
+    "splitting along its spine as a hull plate tears away",
     "tearing open along a frost-welded seam",
     "crumbling into a field of drifting debris",
     # Shared-core actions a wreck takes anywhere.
@@ -3679,12 +3691,14 @@ _CREATURE_ROOTED = (
     "reaching out a ring of tendrils",
     "snapping shut around a small struggling creature",
     "unfurling into a broad fan",
-    "wrapping its fronds tight around its own stalk",
+    "drawing its tendrils tight around itself",
     "spreading into a broad mat",
     "unfurling a snare of sticky filaments",
     "settling into a slow pulse",
 )
 _SITUATION_ROBOT_LIMBED = (
+    "shielding a crouching colonist from falling debris",
+    "hauling a jammed blast door open",
     "holding a collapsing wall up with its shoulders",
     "burying its fist in a bulkhead",
     "tearing a hatch off its hinges",
@@ -3703,12 +3717,16 @@ _SITUATION_DRONE_SKY2 = (
 )
 _SITUATION_DRONE_TRENCH2 = (
     "losing buoyancy and settling into the silt",
+    # The cargo-arm act went indoors; the trench keeps its event floor.
+    "tumbling end over end in a surge from a vent chimney",
     "drifting between vent chimneys",
     "sweeping a searchlight across the murk",
     "hovering to draw a sample with a probe",
 )
 _SITUATION_DRONE_EVENT2 = (
     "being crushed in a rockfall",
+    # A cavern keeps an event of its own now the cargo arm needs a hangar (#1183).
+    "being knocked tumbling by a falling chunk of rock",
     "digging itself out of a drift",
 )
 _SITUATION_VEHICLE_SKY2 = (
@@ -3771,7 +3789,7 @@ _SITUATION_DRONE_INDOOR2 = (
 _SITUATION_VEHICLE_FLOOR3 = (
     "slamming into a landing platform in a burst of dust",
     "folding its landing struts on contact",
-    "grinding to a halt against a bulkhead",
+    "skidding to a stop against a bulkhead",
     "tearing loose from a tie-down clamp",
 )
 
@@ -3804,7 +3822,7 @@ _MACHINE_EVENTS = (
 )
 _DRONE_ACTS = _MACHINE_EVENTS + ("turning a slow circle to map its surroundings",)
 _ROBOT_ACTS = (
-    "shouldering through a cascade of loose debris",
+    "shoving through a heap of fallen rubble",
     "turning to follow a sudden movement",
 )
 _WRECK_ACTS = (
@@ -3845,7 +3863,7 @@ _STATION_ACTS = (
     "guiding a small starship into an open docking bay",
     "spreading a swarm of repair drones across its hull",
     "spinning its habitat ring up to speed",
-    "catching a drifting cargo pod in a docking cradle",
+    "trailing a long plume of escaping air from a ruptured module",
 )
 _STARSHIP_ACTS = (
     "towing a disabled shuttlecraft in a tractor beam",
@@ -3955,7 +3973,7 @@ SITUATION_TIERS: dict[str, str] = {
     'ducking low and backing away': 'event',
     'crossing the open ground': 'activity',
     'being examined by a survey drone': 'idle',
-    'standing over the wreckage of something else': 'event',
+    "standing over the smoking wreckage of a downed skiff": 'event',
     'rising from a low crouch': 'activity',
     'unfolding from a resting pose': 'activity',
     'leaning into the wind': 'idle',
@@ -4115,7 +4133,7 @@ SITUATION_TIERS: dict[str, str] = {
     'shaking off a cloud of stinging motes': 'event',
     "feeding on a wreck's power core": 'activity',
     'stalking prey through the corridors': 'event',
-    'watching from inside a ceiling vent': 'event',
+    "dropping down out of an open ceiling vent": 'event',
     'brooding over a clutch of luminous cysts': 'activity',
     'grazing on radiant foliage': 'activity',
     'guarding a nest': 'activity',
@@ -4152,7 +4170,7 @@ SITUATION_TIERS: dict[str, str] = {
     'leading a boarding party through a cut hatch': 'event',
     'waking from cryo with frost still on the suit': 'event',
     'signalling a descending lander with a flare': 'activity',
-    'kneeling to read a bootprint': 'activity',
+    "kneeling to study a fresh bootprint": 'activity',
     'clamping a magnetic beacon to a deck plate': 'activity',
     'welding a seam with a torch': 'activity',
     'planting a beacon on a ridge': 'activity',
@@ -4173,7 +4191,7 @@ SITUATION_TIERS: dict[str, str] = {
     'shouldering a buckling bulkhead back into place': 'event',
     'severing a snarl of cabling': 'event',
     'carrying a child through a smoke-filled corridor': 'event',
-    'sealing a breach as the air thins': 'event',
+    "welding a torn hull seam shut in a shower of sparks": 'event',
     'running through a collapsing gantry': 'event',
     'flinching from a burst of steam from a split pipe': 'event',
     'holding an airlock door shut against boarders': 'event',
@@ -4192,7 +4210,7 @@ SITUATION_TIERS: dict[str, str] = {
     'crouching to inspect wreckage': 'activity',
     'dodging a falling slab of rock': 'event',
     'locking up mid-motion with a seized joint': 'event',
-    'going down under a mass of smaller units': 'event',
+    "going down under a swarm of small scavenger drones": 'event',
     'welding a seam along a hull plate': 'activity',
     'striding through waist-deep drifts': 'activity',
     'levelling its shoulder cannon': 'event',
@@ -4219,7 +4237,7 @@ SITUATION_TIERS: dict[str, str] = {
     'splitting open to bathe a kneeling xenoarchaeologist in light': 'event',
     'pulsing light through its veins as a survey drone scans it': 'activity',
     'being uncovered by a lone prospector brushing away the dust': 'idle',
-    'spilling light from a widening crack': 'event',
+    "spilling light from a widening crack as a suited explorer recoils from it": 'event',
     'hanging above a perfectly round crater it has carved into the ground': 'activity',
     'being circled by scanning drones': 'idle',
     'throwing arcs of lightning at an approaching survey rover': 'event',
@@ -4250,11 +4268,11 @@ SITUATION_TIERS: dict[str, str] = {
     'bursting in a wave of light': 'event',
     'collapsing into a singularity': 'event',
     'drawing loose debris off the deck toward itself': 'event',
-    'swallowing a survey drone whole': 'event',
+    "pulling a survey drone toward itself in a crackle of force": 'event',
     'cracking the ground beneath it': 'event',
     'pulling a descending lander out of the sky': 'event',
     'cresting a rise in a cloud of dust': 'activity',
-    'grinding up a rocky slope': 'activity',
+    "clawing up a rocky slope": 'activity',
     'sliding sideways on loose gravel': 'activity',
     'parking beside a rock outcrop': 'idle',
     'lowering a ramp onto sand': 'activity',
@@ -4306,7 +4324,7 @@ SITUATION_TIERS: dict[str, str] = {
     'settling deeper into the sand': 'activity',
     'breaking up as it falls': 'event',
     'sheltering a nest of hull-borers': 'activity',
-    'grinding against the rock it landed on': 'activity',
+    "scraping against the rock it landed on": 'activity',
     'being cut open by salvage drones': 'event',
     'disappearing under a creeping fungal mat': 'idle',
     'being surveyed by a drifting inspection drone': 'idle',
@@ -4325,7 +4343,7 @@ SITUATION_TIERS: dict[str, str] = {
     "giving way under a salvage drone's cutting beam": "event",
     'sending a slide of rubble and debris down at the viewer': 'event',
     "buckling as its main girder gives way": "event",
-    "blowing apart as its last fuel cell ruptures": "event",
+    "splitting along its spine as a hull plate tears away": "event",
     "tearing open along a frost-welded seam": "event",
     "crumbling into a field of drifting debris": "event",
 }
@@ -4919,7 +4937,7 @@ PLACE_AFFORDANCES: dict[str, frozenset[str]] = {
 #: Anything to stand on, fly in or sink through has gravity; open space does not.
 _GRAVITY_SOURCES = frozenset({"ground", "floor", "sky", "shoreline", "submerged"})
 #: A bare face or an open garment can meet this place; a render claim, not chemistry.
-_AIR_EXCLUDED = frozenset({"open-space", "submerged"})
+_AIR_EXCLUDED = frozenset({"open-space", "submerged", "vacuum"})
 #: ``aloft``: no surface under the camera -- open space, or above the cloud tops.
 #: What a fleet manoeuvre needs; a planetary surface affords ``sky`` but is not aloft.
 #: Open water at a shore or all around: what a body that only swims needs, since
@@ -4968,7 +4986,7 @@ _SURFACE_BOUND: tuple[str, ...] = (
     "grazing on radiant foliage",
     # wreck
     "settling deeper into the sand",
-    "grinding against the rock it landed on",
+    "scraping against the rock it landed on",
     "disappearing under a creeping fungal mat",
     # alien artifact
     "sinking into the dust it rests on",
@@ -5018,7 +5036,7 @@ _INDOOR_BOUND: tuple[str, ...] = (
     "hauling a stretcher through a smoking corridor",
     "taking cover behind a buckled bulkhead",
     "stalking prey through the corridors",
-    "watching from inside a ceiling vent",
+    "dropping down out of an open ceiling vent",
     "sweeping a corridor with its optics",
     "spinning a resin nest between girders",
     "clearing debris from a blocked hatch",
@@ -5073,6 +5091,8 @@ VALUE_NEEDS: dict[str, dict[str, frozenset[str]]] = {
     # surroundings.
     "subkind": {
         "submersible": frozenset({"submerged"}),
+        "bathyscaphe": frozenset({"submerged"}),
+        "seabed crawler": frozenset({"submerged"}),
         "sunken submersible": frozenset({"submerged"}),
         "aquatic swimmer": frozenset({"submerged"}),
         "high-altitude glider": frozenset({"sky"}),
@@ -5182,7 +5202,7 @@ VALUE_NEEDS["form"] = {
 #: so the value card lives beside the lint that found it.
 VALUE_NEEDS["situation"].update({
     "settling onto the water on its belly": frozenset({"shoreline"}),
-    "kneeling to read a bootprint": frozenset({"floor"}),
+    "kneeling to study a fresh bootprint": frozenset({"floor"}),
     "crouching behind a cargo pod": frozenset({"floor", "structure"}),
     "cutting through a jammed airlock with a torch": frozenset({"structure"}),
     "shouldering a buckling bulkhead back into place": frozenset({"structure"}),
@@ -5471,9 +5491,9 @@ VALUE_NEEDS["situation"].update({
     "following a set of wheel ruts": frozenset({"ground"}),  # flying,hovering,legged,surface vehicle,underwater,wheeled/tracked
     "giving way under a salvage drone's cutting beam": frozenset({}),  # wreck
     "snuffing out the work lights set up around it one by one": frozenset({"floor"}),  # alien artifact
-    "going down under a mass of smaller units": frozenset({}),  # robot or mech,small drone
+    "going down under a swarm of small scavenger drones": frozenset({}),  # robot or mech,small drone
     "locking up mid-motion with a seized joint": frozenset({}),  # robot or mech,small drone
-    "grinding up a rocky slope": frozenset({"ground"}),  # flying,hovering,legged,surface vehicle,underwater,wheeled/tracked
+    "clawing up a rocky slope": frozenset({"ground"}),  # flying,hovering,legged,surface vehicle,underwater,wheeled/tracked
     "hanging motionless in the open": frozenset({}),  # _default
     "hanging above a perfectly round crater it has carved into the ground": frozenset({"ground"}),  # alien artifact
     "feeding on a torn carcass": frozenset({}),  # alien creature
@@ -5553,7 +5573,7 @@ VALUE_NEEDS["situation"].update({
     "scanning a doorway": frozenset({"structure"}),  # robot or mech,small drone
     "scanning a wall with a handheld": frozenset({"structure"}),  # spacefarer
     "scraping along a canyon wall": frozenset({"ground"}),  # starship
-    "sealing a breach as the air thins": frozenset({"floor"}),  # spacefarer
+    "welding a torn hull seam shut in a shower of sparks": frozenset({"floor"}),  # spacefarer
     "sealing a cracked visor with tape": frozenset({"floor"}),  # spacefarer
     "clamping its jaws shut with a crack": frozenset({"gravity"}),  # alien creature,diffuse being
     "severing a snarl of cabling": frozenset({"floor", "structure"}),  # spacefarer
@@ -5562,7 +5582,7 @@ VALUE_NEEDS["situation"].update({
     "shattering into a spray of fragments": frozenset({}),  # _default
     "shearing a tread on a jagged edge": frozenset({}),  # flying,hovering,legged,surface vehicle,underwater,wheeled/tracked
     "shearing in half along its central truss": frozenset({}),  # space station
-    "blowing apart as its last fuel cell ruptures": frozenset({}),  # wreck
+    "splitting along its spine as a hull plate tears away": frozenset({}),  # wreck
     "shedding a crust of dust as it moves": frozenset({}),  # alien artifact
     "shedding flakes of light over a kneeling explorer": frozenset({}),  # alien artifact
     "shedding spores in a slow cloud": frozenset({}),  # alien creature,diffuse being
@@ -5576,7 +5596,7 @@ VALUE_NEEDS["situation"].update({
     "spilling a wave of debris across the ground": frozenset({"ground"}),  # wreck
     "venting a glittering spray of ice crystals from a ruptured hull": frozenset({}),  # space station
     "spilling its contents across the ground": frozenset({"ground"}),  # wreck
-    "spilling light from a widening crack": frozenset({}),  # alien artifact
+    "spilling light from a widening crack as a suited explorer recoils from it": frozenset({}),  # alien artifact
     "spinning out at full throttle": frozenset({"vast"}),  # flying,hovering,legged,surface vehicle,underwater,wheeled/tracked
     "spinning out with a thruster stuck open": frozenset({}),  # courier,starship
     "spinning up a cloud of fragments": frozenset({}),  # alien artifact
@@ -5590,12 +5610,12 @@ VALUE_NEEDS["situation"].update({
     "crossing cracked ground": frozenset({"ground"}),  # robot or mech
     "standing amid a circle of stones": frozenset({}),  # alien artifact
     "standing guard over a column of civilian starships": frozenset({}),  # starship
-    "standing over the wreckage of something else": frozenset({"floor"}),  # _default
+    "standing over the smoking wreckage of a downed skiff": frozenset({"floor"}),  # _default
     "steadying a swaying ladder": frozenset({"structure"}),  # spacefarer
     "steadying a load with an outrigger": frozenset({}),  # robot or mech,small drone
     "strapping into a seat": frozenset({"structure"}),  # spacefarer
     "lunging with its jaws flung wide": frozenset({}),  # alien creature
-    "swallowing a survey drone whole": frozenset({}),  # alien artifact
+    "pulling a survey drone toward itself in a crackle of force": frozenset({}),  # alien artifact
     "swarming across a hull in a moving carpet": frozenset({}),  # alien creature
     "sweeping a searchlight across a hull": frozenset({}),  # courier,starship
     "swinging a beacon through the dark": frozenset({}),  # space station
@@ -5657,7 +5677,7 @@ AFFORDANCE_ALLOWLIST: frozenset[str] = frozenset({
     # The subject's own fittings, not the place's: a station's docking cradle, a
     # vehicle's own hull breach or lift panel, an artifact's own lattice panel,
     # a drone towing a pod through open space.
-    "catching a drifting cargo pod in a docking cradle",
+    "trailing a long plume of escaping air from a ruptured module",
     "unfolding into a ring of thin crystal petals",
     "trailing a stream of bubbles from a breach",
     "losing a lift-pod panel in a violent gust",
@@ -5757,8 +5777,8 @@ _STANCE_STATIC = frozenset({"rests"})
 _RING_FORMS: frozenset[str] = frozenset({
     "torus-braced hull", "disc-and-boom hull", "torus", "stacked disc tiers",
     "spoke-and-hub wheel", "trussed wheel", "smooth torus", "hollow open hoop",
-    "counter-rotating disc body", "vertically stacked disc segments",
-    "counter-rotating habitat cylinders", "disc of dust and rock", "banded disc",
+    "flat frilled disc body", "vertically stacked disc segments",
+    "pair of long habitat cylinders on a central spine", "disc of dust and rock", "banded disc",
     "stacked disc column", "floating circle of shards",
     "looped torque ring",
 })
@@ -5803,6 +5823,8 @@ _VEHICLE_FORM_STANCES: dict[str, frozenset[str]] = {
     "faceted anti-grav wedge": _STANCE_WING,
     "bulbous pressurised cabin": _STANCE_WING,
     "cylindrical submersible hull": _STANCE_SWIM,
+    "bulbous observation sphere under a float hull": _STANCE_SWIM,
+    "low six-legged seabed crawler hull": frozenset({"walks", "rests"}),
     "blunt re-entry capsule": _STANCE_WING,
     "squat lander with splayed legs": _STANCE_WING,
     "flat underslung gravlift hull": _STANCE_WING,
@@ -5843,9 +5865,10 @@ def _form_stances() -> dict[str, frozenset[str]]:
     ):
         for value in FORM_POOLS[group]:
             stances.setdefault(value, _STANCE_ORBIT)
-    stances["wheel-shaped rolling body"] = _STANCE_WHEEL
+    stances["curled armour-plated rolling body"] = _STANCE_WHEEL
     #: An energy being drifts in vacuum and hangs in the air of a hangar.
-    stances["amorphous mass"] = frozenset({"floats", "hovers"})
+    for _diffuse in FORM_POOLS["diffuse being"]:
+        stances[_diffuse] = frozenset({"floats", "hovers"})
     stances["quivering gel body"] = _STANCE_WALK
     stances["sprawling colonial body"] = _STANCE_WALK
     #: A bell-bodied swimmer needs water, not vacuum.
@@ -5853,7 +5876,7 @@ def _form_stances() -> dict[str, frozenset[str]]:
     stances["inverted funnel body"] = _STANCE_HOVER
     stances["fan-gilled drifting body"] = frozenset({"swims", "hovers"})
     #: A disc-bodied colony rests on what it grew on; only a void dweller drifts.
-    stances["counter-rotating disc body"] = _STANCE_HOVER
+    stances["flat frilled disc body"] = _STANCE_HOVER
     stances["vertically stacked disc segments"] = _STANCE_HOVER
     stances["branching crystalline lattice"] = _STANCE_STATIC
     stances["tessellated plate column"] = _STANCE_STATIC
@@ -6095,7 +6118,7 @@ VALUE_TRAITS: dict[str, dict[str, tuple[str, ...]]] = {
             "shuttering its docks against an incoming barrage",
             "firing point-defence into a swarm",
             "stalking prey through the corridors",
-            "watching from inside a ceiling vent",
+            "dropping down out of an open ceiling vent",
             "striking at a fleeing shuttlecraft",
             "dragging a kill toward its burrow",
             "coiling its body into a tight spiral",
@@ -6112,7 +6135,7 @@ VALUE_TRAITS: dict[str, dict[str, tuple[str, ...]]] = {
             "charging across open ground with its ramp raised",
             "advancing across open ground",
             "ducking low and backing away",
-            "standing over the wreckage of something else",
+            "standing over the smoking wreckage of a downed skiff",
         )),
         ("labour-act", (
             "lifting a cargo container overhead",
@@ -6228,7 +6251,8 @@ VALUE_TRAITS["subkind"].update({
 })
 # D13: a civilian machine carries no weapon and a civilian crew no heavy one.
 for _value in (
-    "rover", "hovercraft", "crawler", "skimmer", "submersible", "high-altitude glider",
+    "rover", "hovercraft", "crawler", "skimmer", "submersible", "bathyscaphe", "seabed crawler",
+    "high-altitude glider",
     "tracked hauler", "landing shuttlecraft", "drop pod", "sand crawler", "ice cutter",
     "amphibious crawler", "cargo sled", "survey glider", "survey drone", "courier drone",
     "welding drone",
@@ -6744,7 +6768,7 @@ _SITUATION_CONFLICT = (
     "venting a glittering spray of ice crystals from a ruptured hull",
     # creature or being
     "stalking prey through the corridors",
-    "watching from inside a ceiling vent",
+    "dropping down out of an open ceiling vent",
     "striking at a fleeing shuttlecraft",
     "dragging a kill toward its burrow",
     "coiling its body into a tight spiral",
@@ -6764,7 +6788,7 @@ _SITUATION_CONFLICT = (
     "holding an airlock door shut against boarders",
     "severing a snarl of cabling",
     "carrying a child through a smoke-filled corridor",
-    "sealing a breach as the air thins",
+    "welding a torn hull seam shut in a shower of sparks",
     "running through a collapsing gantry",
     "flinching from a burst of steam from a split pipe",
     "cutting through a jammed airlock with a torch",
@@ -6776,7 +6800,7 @@ _SITUATION_CONFLICT = (
     "pulling a damaged unit to cover",
     "trading shots across an open bay",
     "hunting through the rubble for movement",
-    "going down under a mass of smaller units",
+    "going down under a swarm of small scavenger drones",
     "tearing a hatch off its hinges",
     "falling from a gantry",
     "holding a collapsing wall up with its shoulders",
@@ -6789,7 +6813,7 @@ _SITUATION_CONFLICT = (
     "bursting in a wave of light",
     "collapsing into a singularity",
     "drawing loose debris off the deck toward itself",
-    "swallowing a survey drone whole",
+    "pulling a survey drone toward itself in a crackle of force",
     "cracking the ground beneath it",
     "pulling a descending lander out of the sky",
     # vehicle
@@ -6812,7 +6836,7 @@ _SITUATION_CONFLICT = (
     # _default
     "advancing across open ground",
     "ducking low and backing away",
-    "standing over the wreckage of something else",
+    "standing over the smoking wreckage of a downed skiff",
     "breaking apart in a spreading cloud of debris",
     "shattering into a spray of fragments",
     "fleeing in a hard turn",
@@ -6825,7 +6849,7 @@ _SITUATION_CONFLICT = _SITUATION_CONFLICT + (
     "lashing out with stinging fronds",
     "curling its fronds inward around its prey",
     "snapping shut around a small struggling creature",
-    "wrapping its fronds tight around its own stalk",
+    "drawing its tendrils tight around itself",
     "unfurling a snare of sticky filaments",
 )
 
@@ -6865,7 +6889,7 @@ SITUATION_TIERS.update({
     "reaching out a ring of tendrils": "activity",
     "snapping shut around a small struggling creature": "event",
     "unfurling into a broad fan": "activity",
-    "wrapping its fronds tight around its own stalk": "event",
+    "drawing its tendrils tight around itself": "event",
     "spreading into a broad mat": "activity",
     "unfurling a snare of sticky filaments": "event",
     "settling into a slow pulse": "idle",
@@ -6903,7 +6927,7 @@ VALUE_NEEDS["situation"].update({
     "reaching out a ring of tendrils": frozenset(),
     "snapping shut around a small struggling creature": frozenset(),
     "unfurling into a broad fan": frozenset(),
-    "wrapping its fronds tight around its own stalk": frozenset(),
+    "drawing its tendrils tight around itself": frozenset(),
     "spreading into a broad mat": frozenset(),
     "unfurling a snare of sticky filaments": frozenset(),
     "settling into a slow pulse": frozenset(),
@@ -6912,11 +6936,11 @@ VALUE_NEEDS["situation"].update({
     "settling into a slower spin": frozenset(),
     "rotating through a slow cycle": frozenset(),
     "tilting slowly on its axis": frozenset(),
-    "settling into a calm band": frozenset(),
+    "turning its night side toward a distant sun": frozenset(),
     "paling along one flank": frozenset(),
     "flickering across its whole disc": frozenset(),
     "shedding a thin veil of gas": frozenset(),
-    "thinning into a pale band": frozenset(),
+    "darkening slowly along one edge": frozenset(),
     "swallowing a nearby star in a single gulp": frozenset(),
     "rippling in slow waves across its bands": frozenset(),
     "collapsing into a dense knot of newborn stars": frozenset(),
@@ -6927,11 +6951,11 @@ SITUATION_TIERS.update({
     "settling into a slower spin": "activity",
     "rotating through a slow cycle": "activity",
     "tilting slowly on its axis": "activity",
-    "settling into a calm band": "activity",
+    "turning its night side toward a distant sun": "activity",
     "paling along one flank": "activity",
     "flickering across its whole disc": "activity",
     "shedding a thin veil of gas": "activity",
-    "thinning into a pale band": "activity",
+    "darkening slowly along one edge": "activity",
     "swallowing a nearby star in a single gulp": "event",
     "rippling in slow waves across its bands": "event",
     "collapsing into a dense knot of newborn stars": "event",
@@ -7655,6 +7679,8 @@ _SPOKEN_SUBKIND: dict[str, str] = {
     "ground transport": "armoured ground transport",
     "walker": "legged walker vehicle",
     "submersible": "deep-water submersible",
+    "bathyscaphe": "deep-sea bathyscaphe",
+    "seabed crawler": "legged seabed crawler",
     "high-altitude glider": "high-altitude gravlift flyer",
     "tracked hauler": "tracked cargo hauler",
     "landing shuttlecraft": "landing shuttlecraft",
@@ -7878,7 +7904,7 @@ FOREIGN_NOUN_ALLOWLIST: frozenset[str] = frozenset({
     "jet knotting",
     "tentacled bell-body",
     "inverted funnel body",
-    "wheel-shaped rolling body",
+    "curled armour-plated rolling body",
     "spoke-and-hub wheel",
     "six-wheeled rover chassis",
     "plated bone",
@@ -8401,7 +8427,7 @@ SITUATION_TIERS.update({
     "being crushed by a closing hatch": "event",
     "being knocked from its cradle by a swinging cargo arm": "event",
     "folding its landing struts on contact": "event",
-    "grinding to a halt against a bulkhead": "event",
+    "skidding to a stop against a bulkhead": "event",
     "slamming into a landing platform in a burst of dust": "event",
     "tearing loose from a tie-down clamp": "event",
 })
@@ -8409,7 +8435,7 @@ TAGS[SITUATION_FIELD].update({
     "being crushed by a closing hatch": "conflict_only",
     "being knocked from its cradle by a swinging cargo arm": "conflict_only",
     "folding its landing struts on contact": "conflict_only",
-    "grinding to a halt against a bulkhead": "conflict_only",
+    "skidding to a stop against a bulkhead": "conflict_only",
     "slamming into a landing platform in a burst of dust": "conflict_only",
     "tearing loose from a tie-down clamp": "conflict_only",
 })
@@ -8417,7 +8443,7 @@ VALUE_NEEDS["situation"].update({
     "being crushed by a closing hatch": frozenset({"structure"}),
     "being knocked from its cradle by a swinging cargo arm": frozenset({"floor"}),
     "folding its landing struts on contact": frozenset({"floor"}),
-    "grinding to a halt against a bulkhead": frozenset({"structure"}),
+    "skidding to a stop against a bulkhead": frozenset({"structure"}),
     "slamming into a landing platform in a burst of dust": frozenset({"floor"}),
     "tearing loose from a tie-down clamp": frozenset({"floor"}),
 })
@@ -8745,7 +8771,7 @@ VALUE_STANCES["form"].update({
 _ROUND_XIV_SITUATIONS = (
     _MACHINE_EVENTS + _DIFFUSE_ACTS + (
         "turning a slow circle to map its surroundings",
-        "shouldering through a cascade of loose debris",
+        "shoving through a heap of fallen rubble",
         "turning to follow a sudden movement",
         "snapping every frond open at once",
     )
@@ -8767,7 +8793,7 @@ SITUATION_TIERS.update({
     "guiding a small starship into an open docking bay": "activity",
     "spreading a swarm of repair drones across its hull": "event",
     "spinning its habitat ring up to speed": "event",
-    "catching a drifting cargo pod in a docking cradle": "event",
+    "trailing a long plume of escaping air from a ruptured module": "event",
     "towing a disabled shuttlecraft in a tractor beam": "event",
     "recovering a probe into a side bay": "activity",
     "passing close along a derelict's flank": "activity",
@@ -8796,7 +8822,7 @@ SITUATION_TIERS.update({
     "slipping through a closing gap at full speed": "event",
     "recoiling from a sudden burst of light": "event",
     "turning a slow circle to map its surroundings": "activity",
-    "shouldering through a cascade of loose debris": "event",
+    "shoving through a heap of fallen rubble": "event",
     "turning to follow a sudden movement": "activity",
     "rolling slowly to show a torn-open flank": "activity",
     "turning slowly inside a halo of its own debris": "idle",
@@ -8884,7 +8910,7 @@ DORMANT_ACTS: frozenset[str] = frozenset({
     "coming apart in slow pieces as it falls",
     "being stripped by a swarm of salvage drones",
     "hanging at a steep angle against the stars", "sheltering a nest of hull-borers",
-    "grinding against the rock it landed on", "shedding plates into a slow debris trail",
+    "scraping against the rock it landed on", "shedding plates into a slow debris trail",
     "being cut open by salvage drones", "disappearing under a creeping fungal mat",
     "being surveyed by a drifting inspection drone", "leaking a slick across the water",
     "collapsing under its own weight", "spilling its contents across the ground",
@@ -8895,7 +8921,7 @@ DORMANT_ACTS: frozenset[str] = frozenset({
     "tearing open along a rusted seam", "pinning a salvage drone beneath a buckled plate",
     "giving way under a salvage drone's cutting beam",
     "sending a slide of rubble and debris down at the viewer", "buckling as its main girder gives way",
-    "blowing apart as its last fuel cell ruptures", "tearing open along a frost-welded seam",
+    "splitting along its spine as a hull plate tears away", "tearing open along a frost-welded seam",
     "crumbling into a field of drifting debris", "coming apart along one long seam",
     "shattering into a spray of fragments", "being examined by a survey drone",
     "breaking up as it falls through the cloud tops",
@@ -9179,7 +9205,7 @@ _add_needs(SITUATION_FIELD, {
     "seeping through a bulkhead in slow tendrils": frozenset({"structure"}),
     # A second body in the frame needs somewhere a bare face can be, or a hull.
     "nosing through a cloud of stirred-up silt": frozenset({"submerged"}),
-    "sealing a breach as the air thins": frozenset({"structure"}),
+    "welding a torn hull seam shut in a shower of sparks": frozenset({"structure"}),
     "dragging a survivor into the dark": frozenset({"floor", "air"}),
     # A slab of rock falls where there is rock above: not in a station corridor.
     "dodging a falling slab of rock": frozenset({"ground"}),
@@ -9395,7 +9421,7 @@ _SPOKEN_ENVIRONMENT.update({
 })
 VALUE_STANCES["form"].update({
     "hunched boulder-backed body": _STANCE_WALK,
-    "squat plated rock-grinder body": _STANCE_WALK,
+    "squat plated rock-crusher body": _STANCE_WALK,
 })
 _add_needs(SITUATION_FIELD, {
     # #694 a drone "pinned beneath a buckled plate" in open space stood on top.
@@ -9450,7 +9476,7 @@ _add_traits(SITUATION_FIELD, {v: ("destruction-act",) for v in (
 )})
 # #663 a plated serpent in a gelatinous membrane.
 _add_traits("form", {v: ("armoured-body",) for v in (
-    "plated serpent body", "squat plated rock-grinder body", "hunched boulder-backed body",
+    "plated serpent body", "squat plated rock-crusher body", "hunched boulder-backed body",
 )})
 # #668 "scorch-marked chest plates" burned as flames at the bottom of the sea.
 _add_traits("markings", {
@@ -9565,7 +9591,7 @@ VALUE_STANCES[SITUATION_FIELD].update({
     "banking low over a ridge line": frozenset({"flies", "hovers"}),
     # #875 a gravlift flyer "rocking over a boulder": these acts touch the ground.
     "rocking over a boulder": frozenset({"rolls", "walks"}),
-    "grinding up a rocky slope": frozenset({"rolls", "walks"}),
+    "clawing up a rocky slope": frozenset({"rolls", "walks"}),
     "cresting a rise in a cloud of dust": frozenset({"rolls", "walks"}),
 })
 # #869 a grove of tube-flora in an airless asteroid pit.
@@ -9600,6 +9626,93 @@ _TRAIT_REASONS.update({
     "tracked-drive|wheeled-drive": "a tracked hauler runs on tracks, not wheels",
     "world-scale-subject|small-body": "a small world is drawn as a boulder on the ground",
 })
+
+# ---------------------------------------------------------------------------
+# Round XXVI -- the 925 morning batch
+# ---------------------------------------------------------------------------
+
+# #1181 a quartermaster with a bare face in an asteroid pit: an asteroid has no air.
+PLACE_AFFORDANCES["asteroid mining pit"] = PLACE_AFFORDANCES["asteroid mining pit"] - {"air"} | {"vacuum"}
+# #1178 a sessile brooder on a heap of sand on a starship deck: it grows where it grew.
+_add_needs("subkind", {"sessile brooder": frozenset({"ground"})})
+# #1183 a cargo arm swinging in a natural geode cavern; #1190 a tie-down clamp at
+# the bottom of an open trench.
+_add_needs(SITUATION_FIELD, {
+    "being knocked from its cradle by a swinging cargo arm": frozenset({"structure"}),
+    "tearing loose from a tie-down clamp": frozenset({"structure"}),
+    # #1189 a methane channel across a dry dust plain was drawn as blood.
+    "fording a shallow methane channel": frozenset({"shoreline"}),
+    "dropping down out of an open ceiling vent": frozenset({"structure"}),
+})
+# #1190 a "dust-caked" hull at the bottom of an ocean trench; #1192 ice crazing
+# (drawn as icicles) on a sun-bleached salt flat.
+_add_needs("material", {"dust-caked composite": frozenset({"air", "dust"})})
+_add_needs("surface_detail", {"ice fracture crazing": frozenset({"cold"})})
+_add_needs(SITUATION_FIELD, {"tumbling end over end in a surge from a vent chimney": frozenset({"submerged"})})
+# #1173 a terraforming station out in an interstellar dust lane, far from any world.
+_add_needs("subkind", {"terraforming tower": frozenset({"near-world"})})
+# #1252 the power cell's own shapes hold themselves up like any artifact.
+for _cell_form in FORM_POOLS["power cell array"]:
+    VALUE_STANCES["form"][_cell_form] = _STANCE_ARTIFACT
+# #1176 a "small" vast membrane, a small sprawling colony: a form that says it is big wins.
+_add_traits("form", {
+    v: ("big-form",) for pool in FORM_POOLS.values() for v in pool
+    if any(w in v.split() for w in ("vast", "towering", "sprawling", "massive", "colossal", "huge"))
+})
+# #1177 a creature with an eye-spot that glows and a pair of eyes besides.
+_add_traits("emitters", {v: ("eye-light",) for pool in EMITTER_POOLS.values() for v in pool if "eye" in v})
+_add_traits("sensors", {v: ("eye-part",) for pool in SENSOR_POOLS.values() for v in pool if " eye" in f" {v}"})
+TRAIT_CONFLICTS = TRAIT_CONFLICTS + (
+    ("big-form", "small-body"),
+    ("eye-light", "eye-part"),
+    ("aqueous", "dry-craft"),
+)
+_TRAIT_REASONS.update({
+    "big-form|small-body": "a body that is vast is never small",
+    "eye-light|eye-part": "a glowing eye is the eye; a second pair was drawn",
+    "aqueous|dry-craft": "only a submersible goes under the water",
+})
+# #1316 a "half-buried" hull hung in the sky: it is buried in something.
+_add_needs("form", {"half-buried hull with its cockpit canopy still intact": frozenset({"ground"})})
+# #1318 a hover skimmer at the bottom of a sunken hold: only a submersible, a
+# bathyscaphe or a seabed crawler goes under the water. A trait, not an air need:
+# a rover on an airless asteroid is still a rover.
+_add_traits("subkind", {
+    v: ("dry-craft",) for v in SUBKIND_POOLS["surface vehicle"]
+    if v not in ("submersible", "bathyscaphe", "seabed crawler", "amphibious crawler")
+})
+# #1177 a broad-backed grazer, then a large hexapod, dropping out of a ceiling vent.
+CONSTRAINTS = CONSTRAINTS + (
+    ConstraintRule(
+        type=RULE_EXCLUDE, field="entity*.scale", values=("large", "massive", "colossal", "planetary"),
+        excludes_field=f"entity*.{SITUATION_FIELD}",
+        excludes_values=("dropping down out of an open ceiling vent",),
+        reason="only a small body fits through a ceiling vent",
+    ),
+)
+# #1185 #1191 the gas-vent plain was drawn as an aquarium and as shrubs under green snow.
+_SPOKEN_ENVIRONMENT["plain of luminous gas-vent flora"] = "open plain of luminous alien plants around steaming gas vents"
+SITUATION_TIERS["tumbling end over end in a surge from a vent chimney"] = "event"
+_add_needs(SITUATION_FIELD, {"being knocked tumbling by a falling chunk of rock": frozenset({"ground", "gravity"})})
+_add_needs(SITUATION_FIELD, {
+    "shielding a crouching colonist from falling debris": frozenset({"floor", "gravity"}),
+    "hauling a jammed blast door open": frozenset({"structure"}),
+})
+# A robot can be shot anywhere it stands or drifts.
+VALUE_NEEDS[SITUATION_FIELD]["staggering as a plasma bolt scores its chassis"] = frozenset()
+SITUATION_TIERS.update({
+    "shielding a crouching colonist from falling debris": "event",
+    "hauling a jammed blast door open": "event",
+    "staggering as a plasma bolt scores its chassis": "event",
+})
+TAGS[SITUATION_FIELD].update({
+    "shielding a crouching colonist from falling debris": "neutral",
+    "hauling a jammed blast door open": "neutral",
+    "staggering as a plasma bolt scores its chassis": "conflict_only",
+})
+SITUATION_TIERS["being knocked tumbling by a falling chunk of rock"] = "event"
+TAGS[SITUATION_FIELD]["being knocked tumbling by a falling chunk of rock"] = "neutral"
+TAGS[SITUATION_FIELD]["tumbling end over end in a surge from a vent chimney"] = "neutral"
 
 SCIFI_PACK = GenrePack(
     slug="scifi",

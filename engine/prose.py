@@ -71,7 +71,7 @@ except ImportError:  # pragma: no cover -- standalone/test context
         spoken_value,
     )
 
-from .foreign import voice_of
+from .foreign import guest_pack, skyborne, voice_of
 from .grammar import article_for, count_phrase, head_is_plural, with_article_if_singular
 from .resolution import ResolvedEntity, ResolvedRelation, ResolvedScene
 
@@ -517,6 +517,21 @@ def _entity_parts(
     return head_text, clauses, situation
 
 
+#: Said before a guest that only exists in space, under a host sky: the model
+#: otherwise stands it on the ground of the place.
+SKYBORNE_LEAD = "High in the sky above, "
+
+
+def _staged(entity: ResolvedEntity, host: GenrePack, environment: "str | None",
+            sentences: "list[str]") -> "list[str]":
+    """Lead a skyborne guest's first sentence with where it hangs."""
+    guest = guest_pack(host, {"genre": entity.genre})
+    if not sentences or guest is None or not skyborne(guest, host, entity.fields, environment):
+        return sentences
+    first = sentences[0]
+    return [SKYBORNE_LEAD + first[:1].lower() + first[1:], *sentences[1:]]
+
+
 def _render_entity_sentences(entity: ResolvedEntity, pack: GenrePack) -> "list[str]":
     """Every sentence one entity contributes, capitalized and closed.
 
@@ -686,7 +701,9 @@ def compose_scene(
     """
     sentences: list[str] = []
     for entity in scene.entities:
-        sentences.extend(_render_entity_sentences(entity, pack))
+        sentences.extend(_staged(
+            entity, pack, scene.environment, _render_entity_sentences(entity, pack)
+        ))
     context = _context_sentence(scene, pack)
     if context:
         sentences.append(context)
@@ -734,7 +751,9 @@ def render_prose(scene: ResolvedScene, pack: GenrePack) -> str:
                 sections.append(_environment_sentence(pack, scene.environment))
         elif section == _ENTITIES_SECTION:
             for entity in scene.entities:
-                sections.extend(_render_entity_sentences(entity, pack))
+                sections.extend(_staged(
+                    entity, pack, scene.environment, _render_entity_sentences(entity, pack)
+                ))
             context = _context_sentence(scene, pack)
             if context:
                 sections.append(context)

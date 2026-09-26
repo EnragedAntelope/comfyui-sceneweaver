@@ -31,13 +31,17 @@ class Concern:
     wired_kind: "str | None" = None
     #: The genre the row was reported against.
     pack: GenrePack = SCIFI_PACK
+    #: The genre the wired entity comes from, when it is not ``pack``.
+    guest: "GenrePack | None" = None
 
 
 def scenes(concern: Concern):
     for seed in range(SEEDS):
         wired = {}
         if concern.wired_kind is not None:
-            _text, payload = generate_entity(seed, concern.pack, widgets={"kind": concern.wired_kind})
+            _text, payload = generate_entity(
+                seed, concern.guest or concern.pack, widgets={"kind": concern.wired_kind}
+            )
             wired = {1: dict(payload, locked=[])}
         text, document = generate_scene(
             seed + 50_000, concern.pack, widgets=dict(concern.widgets),
@@ -1056,10 +1060,220 @@ CONCERNS: tuple[Concern, ...] = (
     Concern(
         "a gravlift flyer rocks over a boulder",
         lambda r, d, t: said(r, "situation") in (
-            "rocking over a boulder", "grinding up a rocky slope", "cresting a rise in a cloud of dust"),
+            "rocking over a boulder", "clawing up a rocky slope", "cresting a rise in a cloud of dust"),
         widgets={"entity1_kind": "surface vehicle", "entity1_form": "blunt gravlift wedge"},
     ),
+    # --- Round XXVI: the 925 morning batch ---
+    Concern(
+        "a sci-fi starship rests in a dwarven great hall",
+        lambda r, d, t: not affordances_of(FANTASY_PACK, d["environment"]) & {"sky", "void"},
+        wired_kind="starship", guest=SCIFI_PACK, pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a space station stands on a carnival midway",
+        lambda r, d, t: "High in the sky above" not in t,
+        wired_kind="space station", guest=SCIFI_PACK, pack=HORROR_PACK,
+    ),
+    Concern(
+        "a hover skimmer drives down a hotel hallway or the bottom of a sunken hold",
+        lambda r, d, t: "room" in affordances_of(HORROR_PACK, d["environment"])
+        or ("submerged" in affordances_of(HORROR_PACK, d["environment"])
+            and _has_trait(SCIFI_PACK, "subkind", r.get("subkind"), "dry-craft")),
+        wired_kind="surface vehicle", guest=SCIFI_PACK, pack=HORROR_PACK,
+    ),
+    Concern(
+        "a horror mausoleum stands in a starship medical bay",
+        lambda r, d, t: "ground" not in affordances_of(SCIFI_PACK, d["environment"]),
+        wired_kind="haunted place", guest=HORROR_PACK, pack=SCIFI_PACK,
+    ),
+    Concern(
+        "a wired river barge is moved into a blacksmith's forge",
+        lambda r, d, t: said(r, "kind") == "vessel"
+        and "vessel" not in pool_for(FANTASY_PACK, "kind", {"environment": d["environment"]}),
+        wired_kind="vessel", pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a lighthouse stands on a flooded suburban street",
+        lambda r, d, t: said(r, "subkind") == "lonely lighthouse",
+        widgets={"environment": "flooded suburban street", "entity1_kind": "haunted place"},
+        pack=HORROR_PACK,
+    ),
+    Concern(
+        "a ghost screams through a stitched-shut mouth",
+        lambda r, d, t: said(r, "aperture") == "stitched-shut mouth",
+        widgets={"entity1_kind": "spirit",
+                 "entity1_situation": "screaming with its mouth stretched impossibly wide"},
+        pack=HORROR_PACK,
+    ),
+    Concern(
+        "a small hellhound has a huge body",
+        lambda r, d, t: said(r, "scale") == "small",
+        widgets={"entity1_kind": "cryptid", "entity1_subkind": "hellish black hound",
+                 "entity1_form": "huge gaunt hound body with its ribs showing"},
+        pack=HORROR_PACK,
+    ),
+    Concern(
+        "a grandfather clock is small",
+        lambda r, d, t: said(r, "scale") == "small",
+        widgets={"entity1_kind": "cursed object", "entity1_subkind": "grandfather clock"},
+        pack=HORROR_PACK,
+    ),
+    Concern(
+        "a doll held by a priest also rests on its shelf",
+        lambda r, d, t: _has_trait(HORROR_PACK, "extras", r.get("extras"), "resting-surface"),
+        widgets={"entity1_kind": "cursed object", "entity1_subkind": "porcelain doll",
+                 "entity1_situation": "held at arm's length by a trembling priest"},
+        pack=HORROR_PACK,
+    ),
+    Concern(
+        "a mirror rising into the air is set against a wall",
+        lambda r, d, t: _has_trait(HORROR_PACK, "extras", r.get("extras"), "wall-backdrop"),
+        widgets={"entity1_kind": "cursed object", "entity1_subkind": "cracked mirror",
+                 "entity1_situation": "rising slowly into the air"},
+        pack=HORROR_PACK,
+    ),
+    Concern(
+        "vermin sit in a crate, a sack or a heap with nobody to threaten",
+        lambda r, d, t: said(r, "situation") in (
+            "boiling up out of an overturned crate", "spilling out of a torn sack in a writhing flood",
+            "pouring out from under a heap of rags", "lying in a quivering heap",
+            "writhing in a seething heap", "gathering in a restless rustling mass",
+            "piling over one another in a heaving mound", "swarming over a half-eaten meal"),
+        widgets={"entity1_kind": "swarm"}, pack=HORROR_PACK,
+    ),
+    Concern(
+        "a grandfather clock does nothing a horror scene would show",
+        lambda r, d, t: said(r, "situation") in (
+            "swinging its pendulum faster and faster", "cracking straight down the middle",
+            "sitting inside a circle of salt and burned-out candles", "shuddering violently",
+            "ticking wildly backward as its pendulum races", "chiming as its case splits open",
+            "leaking a thin trickle of black fluid"),
+        widgets={"entity1_kind": "cursed object", "entity1_subkind": "grandfather clock"},
+        pack=HORROR_PACK,
+    ),
+    Concern(
+        "a skeleton has two pairs of eyes",
+        lambda r, d, t: " eye" in f" {said(r, 'sensors')}",
+        widgets={"entity1_kind": "undead", "entity1_subkind": "skeleton warrior",
+                 "entity1_emitters": "ember eye socket"},
+        pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a sea serpent rakes with claws",
+        lambda r, d, t: said(r, "armament") == "raking claw",
+        widgets={"entity1_kind": "dragon", "entity1_subkind": "sea serpent"}, pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a necromancer carries a bard's lute and daggers and rolls like a rogue",
+        lambda r, d, t: said(r, "extras") == "lute" or said(r, "armament") == "dagger"
+        or _has_trait(FANTASY_PACK, "situation", r.get("situation"), "acrobatic-act"),
+        widgets={"entity1_kind": "folk", "entity1_subkind": "necromancer"}, pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a sinking reliquary rests on a stone plinth",
+        lambda r, d, t: _has_trait(FANTASY_PACK, "extras", r.get("extras"), "resting-surface"),
+        widgets={"environment": "rolling highland hills", "entity1_kind": "artifact",
+                 "entity1_situation": "half-sunk into the ground and still sinking"},
+        pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a pixie has no height and is drawn the size of a man",
+        lambda r, d, t: not r.get("scale"),
+        widgets={"entity1_kind": "small folk", "entity1_subkind": "pixie"}, pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a living ettin is moss-covered",
+        lambda r, d, t: said(r, "condition") != "petrified" and bool(re.search(
+            r"\b(moss|lichen)", " ".join(str(r.get(k) or "") for k in (
+                "condition", "material", "surface_detail", "markings", "extras")).lower())),
+        widgets={"entity1_kind": "giant-kin", "entity1_subkind": "ettin"}, pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a newly forged golem is made of cracked clay",
+        lambda r, d, t: _has_trait(FANTASY_PACK, "material", r.get("material"), "worn-material"),
+        widgets={"entity1_kind": "construct", "entity1_condition": "newly forged"}, pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a relic is dust-covered at the bottom of the sea",
+        lambda r, d, t: said(r, "condition") == "dust-covered",
+        widgets={"environment": "sunken temple ruins", "entity1_kind": "artifact"}, pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a staff of power is tiny",
+        lambda r, d, t: said(r, "scale") == "tiny",
+        widgets={"entity1_kind": "artifact", "entity1_form": "long rod crowned with a claw"},
+        pack=FANTASY_PACK,
+    ),
+    Concern(
+        "a spacefarer shows a bare face in an airless asteroid pit",
+        lambda r, d, t: "air" in resolved_needs(SCIFI_PACK, "material", r.get("material") or ""),
+        widgets={"environment": "asteroid mining pit", "entity1_kind": "spacefarer"},
+    ),
+    Concern(
+        "a torus habitat is a cruciform",
+        lambda r, d, t: said(r, "form") not in (
+            "torus", "spoke-and-hub wheel", "trussed wheel", "stacked torus spindle"),
+        widgets={"entity1_kind": "space station", "entity1_subkind": "torus habitat"},
+    ),
+    Concern(
+        "a sessile brooder sits on a heap of sand on a starship deck",
+        lambda r, d, t: "ground" not in affordances_of(SCIFI_PACK, d["environment"]),
+        widgets={"entity1_kind": "alien creature", "entity1_subkind": "sessile brooder"},
+    ),
+    Concern(
+        "a hover skimmer at the bottom of an ocean trench",
+        lambda r, d, t: _has_trait(SCIFI_PACK, "subkind", r.get("subkind"), "dry-craft"),
+        widgets={"environment": "deep ocean trench of a water world", "entity1_kind": "surface vehicle"},
+    ),
+    Concern(
+        "a cargo arm swings in a natural geode cavern",
+        lambda r, d, t: said(r, "situation") == "being knocked from its cradle by a swinging cargo arm",
+        widgets={"environment": "hollowed geode cavern", "entity1_kind": "robot or mech"},
+    ),
+    Concern(
+        "a methane channel crosses a dry dust plain",
+        lambda r, d, t: said(r, "situation") == "fording a shallow methane channel",
+        widgets={"environment": "red dust plain of a dead world", "entity1_kind": "surface vehicle"},
+    ),
+    Concern(
+        "a hull is dust-caked at the bottom of the sea",
+        lambda r, d, t: said(r, "material") == "dust-caked composite",
+        widgets={"environment": "deep ocean trench of a water world", "entity1_kind": "surface vehicle"},
+    ),
+    Concern(
+        "a terraforming station is far from any world",
+        lambda r, d, t: "near-world" not in affordances_of(SCIFI_PACK, d["environment"]),
+        widgets={"entity1_kind": "space station", "entity1_subkind": "terraforming tower"},
+    ),
+    Concern(
+        "a half-buried hull hangs in open space",
+        lambda r, d, t: "ground" not in affordances_of(SCIFI_PACK, d["environment"]),
+        widgets={"entity1_kind": "wreck", "entity1_form": "half-buried hull with its cockpit canopy still intact"},
+    ),
+    *(
+        Concern(
+            f"a {pack.slug} render trap from the 925 batch comes back",
+            lambda r, d, t: bool(_TRAPS_925.search(t.lower())),
+            pack=pack,
+        )
+        for pack in (SCIFI_PACK, FANTASY_PACK, HORROR_PACK)
+    ),
+
 )
+
+#: Values the 925 batch drew as something else: a burning axe, bones, roses, a crown,
+#: leaves, a sword-axe, a gear halo, wheels, a second ghost, a blob, beams, cannons.
+_TRAPS_925 = re.compile(
+    r"\b(fire axe|bone-white|faded-rose|rose-thorn|fey-green|royal-blue|wisp-blue|halberd|"
+    r"crest of spinning|energy halo|wheel-shaped|luminous shimmer|amorphous mass|"
+    r"running light string|scanning bar|rubberised sheath|vibro-saw|range-finder optic|"
+    r"hung with rotting bunting|swallowing a survey drone|grinding|tidal tail|"
+    r"still-twitching torso|mossy island|counter-rotating|halberd)"
+)
+
+
+def _has_trait(pack: GenrePack, name: str, value: "str | None", trait: str) -> bool:
+    return bool(value) and trait in pack.value_traits.get(name, {}).get(value, ())
 
 
 class ConcernRegressionTests(unittest.TestCase):
