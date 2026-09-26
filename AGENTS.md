@@ -8,15 +8,17 @@ genre is a data module and two registration lines.
 
 ## Current state
 
-_Last verified: 2026-09-24_
+_Last verified: 2026-09-26_
 
-- **Status:** **live at v0.5.0.** `main` carries the fantasy pack
+- **Status:** **live at v0.5.1.** `main` carries the fantasy pack
   (`data/fantasy.py`) and the horror pack (`data/horror.py`), both on the same
   genre contract sci-fi proved, plus ten rounds (XV-XXIV) of maintainer
-  ComfyUI render tests against all three packs. The repo is public at
+  ComfyUI render tests against all three packs. Rounds XXV (the first
+  batch tested from `main`) and XXVI shipped as v0.5.1; round XXVI still awaits
+  the maintainer's render test. The repo is public at
   `EnragedAntelope/comfyui-sceneweaver`, published to the ComfyUI Registry; the
-  full pre-release history stays local only, in the `coherence-round-*` and
-  `tmp/*` branches. Round XV added contract pieces, each genre-agnostic:
+  full pre-release history stays local only: a git bundle of every branch,
+  kept outside the repo, and the `coherence-round-*` branches. Round XV added contract pieces, each genre-agnostic:
   validator checks 32 (`FALLTHROUGH`) and 33 (`CARRYPART`), `place_stance_blocks`,
   a `require` rule that fills an empty target, genre filter labels
   (`scene_filter_labels`), the scene filter reaching a wired entity's drawn
@@ -384,6 +386,25 @@ _Last verified: 2026-09-24_
     boils and lesions as gore); objects, places and relics in every pack
     gained dramatic acts; `mask_for_place` now fails a guest need the host has
     no word for. Detail: `docs/architecture.md` ("Round XXIV").
+  - **Round XXV** (2026-09-24) answers
+    the 924 noon batch. An object's act shows a cause (a witness it acts on,
+    what it does to the place, how it is held); cross-genre placement reads
+    `open-space` as `sky` in a genre with neither it nor `void`, treats an
+    unknown `gravity` as met there, and keeps a guest's needs when no host
+    place fits its stances; head detection ends at a past participle before a
+    preposition and at `above`/`below`/`among`. Detail: `docs/architecture.md`
+    ("Round XXV").
+  - **Round XXVI** (2026-09-26) answers
+    the 925 morning batch (73 images, every pack wired into every weaver). A
+    rule that re-draws the place keeps the scene's subjects; a cross-genre
+    guest is placed in a host place shaped like one of its own homes (not their
+    common ground), by what it is rather than a drawn condition, falls back to
+    the nearest home, and a space-only guest in a genre with no space hangs in
+    the sky ("High in the sky above, ..."); the place check reads a form's needs
+    and trait conflicts. Every horror act shows a victim or a menace; recurring
+    render traps (faded rose, a cog crest, a luminous shimmer, "grinding") were
+    renamed and a per-pack trap-word regression row guards them. Detail:
+    `docs/architecture.md` ("Round XXVI").
   - The substance-adjective render-trap class (item 3 above) is checked only
     for colours (`COLOURWORD`); in other fields an author still catches it by
     eye.
@@ -442,6 +463,7 @@ python scripts/reach_audit.py --pack fantasy --gate --seeds 30000
 python scripts/reach_audit.py --pack horror --gate --seeds 30000
 python scripts/sample_distribution.py --seeds 1000
 python scripts/coherence_audit.py --seeds 2000
+python scripts/concern_audit.py --seeds 600 --gate
 python scripts/coherence_sweep.py --gate
 python scripts/coherence_sweep.py --gate --path unwired
 npm ci && npm run test:frontend
@@ -565,6 +587,10 @@ that reads a gitignored file passes locally and fails on a clean checkout.
 - **A situation must be legible in one still frame**, from outside the subject
   and without an actor the scene has not described; see the three tests in
   `docs/architecture.md`.
+- **An object acts on something.** A cursed object, relic or artifact shows a
+  witness it acts on, what it does to the place, or how it is held; an effect
+  with no cause in the frame reads as noise, and "someone" draws a
+  disembodied hand. Name the witness. `docs/architecture.md` ("Round XXV").
 - **A situation must be the most interesting thing in the frame.** If someone
   standing there would not look up, it is `idle`. The four tests (camera, actor,
   frame, mechanism) say whether a situation can be *drawn*; `value_tiers` says
@@ -680,5 +706,16 @@ that reads a gitignored file passes locally and fails on a clean checkout.
 - **Traits are added, never merged in a dict literal.** A later `**{...}` for the
   same key replaces the earlier entry; three sea monsters lost `inherently-vast`
   that way. Use the pack's `_add_traits`.
+- **A re-drawn place keeps the scene's subjects.** A rule that re-draws the
+  environment avoids the places the scene's subjects cannot stand in; a river
+  barge refusing a stormy sea was put in a forge. Any new re-draw of a
+  scene-level control must respect the slots it scopes.
+- **A guest is placed by what it is, in one of its homes.** Kind, type, form
+  and scale choose the host place, matched against one home of the guest's own
+  genre; the place then masks drawn values that conflict with it. Probe the
+  per-kind placement table across all six genre pairs after touching
+  `engine/foreign.py`.
+- **A horror act shows who it threatens.** Vermin in a crate or a clock
+  cracking on its own "isn't horror"; name the victim or the menace.
 - **A drawn wired value obeys the scene filter.** The Entity node has no filter; a
   scene that promises "No gore" must mask what the wire drew.

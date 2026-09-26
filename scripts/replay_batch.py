@@ -55,37 +55,50 @@ def _widgets(inputs: dict) -> dict:
     }
 
 
-def replay(path: Path) -> "tuple[str, dict] | None":
-    """``(prompt_text, prompt_json)`` for one image, or ``None`` without a Scene Weaver."""
+def replay(path: Path) -> "list[tuple[str, dict]]":
+    """``(prompt_text, prompt_json)`` for every Scene Weaver in one image's graph.
+
+    A graph may hold one weaver per genre; the caller picks the one whose prompt was
+    recorded for the image.
+    """
     graph = json.loads(png_text_chunks(path).get("prompt", "{}"))
-    weaver = next(
-        (node for node in graph.values()
-         if str(node.get("class_type", "")).startswith("SceneWeaver")),
-        None,
-    )
-    if weaver is None:
-        return None
-    inputs = weaver["inputs"]
-    wired = {}
-    for slot in range(1, 5):
-        link = inputs.get(f"entity_{slot}_in")
-        if not isinstance(link, list):
+    results = []
+    for weaver in graph.values():
+        if not str(weaver.get("class_type", "")).startswith("SceneWeaver"):
             continue
-        entity_node = graph[str(link[0])]
-        entity_inputs = entity_node["inputs"]
-        _text, payload = generate_entity(
-            int(entity_inputs["seed"]), _pack(entity_node["class_type"]),
-            widgets=_widgets(entity_inputs),
-        )
-        wired[slot] = payload
-    return generate_scene(
-        int(inputs["seed"]), _pack(weaver["class_type"]),
-        widgets=_widgets(inputs),
-        wired_entities=wired,
-        scene_filter=inputs.get("scene_filter", "Any"),
-        set_all_fields=inputs.get("set_all_fields", "Off"),
-        entity_count=int(inputs.get("entity_count", 1)),
-    )
+        inputs = weaver["inputs"]
+        wired = {}
+        for slot in range(1, 5):
+            link = inputs.get(f"entity_{slot}_in")
+            if not isinstance(link, list):
+                continue
+            entity_node = graph[str(link[0])]
+            entity_inputs = entity_node["inputs"]
+            _text, payload = generate_entity(
+                int(entity_inputs["seed"]), _pack(entity_node["class_type"]),
+                widgets=_widgets(entity_inputs),
+            )
+            wired[slot] = payload
+        results.append(generate_scene(
+            int(inputs["seed"]), _pack(weaver["class_type"]),
+            widgets=_widgets(inputs),
+            wired_entities=wired,
+            scene_filter=inputs.get("scene_filter", "Any"),
+            set_all_fields=inputs.get("set_all_fields", "Off"),
+            entity_count=int(inputs.get("entity_count", 1)),
+        ))
+    return results
+
+
+def _matches(recorded: str, text: str, document: dict) -> bool:
+    """The recorded prompt ends with either the prose or, when a JSON output was saved, the JSON."""
+    if recorded.rstrip().endswith("}") and "{" in recorded:
+        try:
+            saved = json.loads(recorded[recorded.index("{"):])
+            return saved["_meta"]["seed"] == document["_meta"]["seed"]
+        except (ValueError, KeyError):
+            return False
+    return recorded.endswith(text)
 
 
 def _recorded_prompts(folder: Path) -> dict[str, str]:
@@ -116,10 +129,14 @@ def main(argv: "list[str] | None" = None) -> int:
         recorded = _recorded_prompts(folder)
         tally = summary.setdefault(label, Counter())
         for path in sorted(folder.glob(args.glob)):
-            result = replay(path)
-            if result is None:
+            results = replay(path)
+            if not results:
                 continue
-            text, document = result
+            text, document = next(
+                (result for result in results
+                 if path.name in recorded and _matches(recorded[path.name], *result)),
+                results[0],
+            )
             # The frozen flag lists are sci-fi vocabulary; another genre is replayed unflagged.
             found = [] if document.get("genre", "scifi") != "scifi" else [
                 n for n in (*flags(SCIFI_PACK, document, text),
@@ -133,7 +150,7 @@ def main(argv: "list[str] | None" = None) -> int:
             tally.update(set(found))
             status = ""
             if path.name in recorded:
-                matched = recorded[path.name].endswith(text)
+                matched = _matches(recorded[path.name], text, document)
                 mismatches += not matched
                 status = "match" if matched else "MISMATCH"
             record = document["entities"][0] if document["entities"] else {}

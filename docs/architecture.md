@@ -2481,3 +2481,201 @@ A sea of clouds has no rock to bank around; a vampire is never placed
 underwater (its velvet drew dry); a generation ship stays in open space; a
 sampled audit of all three packs found no body placed where it cannot
 stand, so round XIX's walk-only note is retired.
+
+## Round XXV: the 924 noon batch
+
+The maintainer's render test of v0.5.0 from `main`, single entities first and a
+few three-genre scenes. The clearest message was about objects: cursed
+objects, relics and alien artifacts were "just there", or flared, sparked and
+swirled "for no apparent reason".
+
+### An object's act shows a cause
+
+An object cannot act the way a creature does, and an effect with no cause in
+the frame reads as noise. Its acts now show one of three things:
+
+- **a witness it acts on** -- a woman recoiling, a priest holding it at arm's
+  length, a kneeling explorer bathed in its light, a knight reaching for it;
+- **what it does to the place** -- a room torn apart around it, the grass
+  withering in a circle, a crater carved beneath it, work lights snuffed out;
+- **how it is held** -- chains hung with warding charms, a circle of salt, a
+  quarantine cordon, a rune-etched cage.
+
+The witness is a named person in the act, never "someone": "flaring as someone
+reaches for it" drew a disembodied hand. Quiet acts that only trembled, dripped
+or rattled were retired; each object kept a few eerie ones of its own (a doll
+turning its head, a clock racing backwards), and every retired act was replaced.
+
+### Placement across genres
+
+- An **equivalent** is now a fallback chain: `open-space`, `aloft` and
+  `deep-space` read as `void` in fantasy and as `sky` in horror, which has
+  neither. A rogue planet was put in a manor ballroom because no horror word
+  matched and the relaxed rung let it go anywhere.
+- A genre with no emptiness at all has no word for `gravity` either, and every
+  flying ship failed its strict placement in horror; gravity is met everywhere
+  in such a genre.
+- Two last-resort rungs keep a guest's needs when no host place supports its
+  stances: first its habitat, then its type's own needs. A war galley went
+  into a cloud deck and a sunken submersible into an apothecary's workshop.
+- An open landscape (vast ground, no structure) refuses a hand-sized horror
+  keepsake: a cursed box in a dune sea was drawn the size of a house.
+
+### Coherence gates
+
+- Horror: a swarm names its tiny creatures and takes no scale ("countless
+  bodies" drew a pile of corpses; "large" drew large roaches); rats shed no
+  husks; each cursed object has its own materials (a brass rocking chair, a
+  brass doll) and openings (a mirror with a glass door); a priest and a cult
+  high priest carry candles and lanterns, not a survivor's headlamp, and the
+  high priest wears vestments; a flashlight is not raised under a lit headlamp;
+  a door-slamming act needs a room; one clown face per funhouse front; slime
+  needs air; a brick hall is built of brick; a keepsake's own acts (held,
+  dropped, nailed into a crate) never reach a grandfather clock.
+- Fantasy: a flying ship needs sky and speaks only airborne acts (a treetop
+  pass needs trees); a banshee
+  stays out of water; a kit with no blade takes no blade act, and a blade act
+  fills an empty armament; a lich carries a staff and wears robes; a tree
+  palace and a dwarven gate have their own materials and features; embers
+  belong to the firebird; a hellhound has a collar, not a bridle; claws and
+  fangs come in pairs; an armful of logs leaves no hand for a weapon; a metal
+  accent is a fitting on gear, not a patch of hide; a solid elemental does not
+  seep; an indoor surface needs a room (fantasy's interior places now afford
+  one); a giant is measured far more often; a tree palace or a mountain gate
+  has no cottage chimney or washing line; a fortified bridge crosses water.
+- Sci-fi: an alien artifact is never adrift in a cloud deck; a planet is never
+  "small"; a wreck is never field-repaired; a tracked hauler runs on tracks; a
+  ring, a torus and a drydock turn in space; a spin-out happens in space, and
+  the surface has an airborne twin; ground-contact acts are not a flyer's;
+  sand scours only in air, frost needs cold, tube-flora needs life; a
+  "derelict" in the background is a wrecked starship by name (a vault's
+  derelict was drawn as a second vault).
+- Grammar: a past participle before a preposition ends a head ("coins wedged
+  between its scales" had taken "a"), and `above`, `below`, `among`, `amid` and
+  `atop` end one too ("a twin gasbags above a long hull").
+
+### Render traps renamed
+
+Feathered feelers (bird feathers), a missile tube (a missile), a wrist-mounted
+arc emitter (a handgun), a woven carbon weave (wicker), a periscope tube (a
+cannon), "grinding to a halt" (an angle grinder), a sensor beam (a water jet),
+"hosing dust" (a hose on a panel), "cryogenic" (a snowstorm indoors), a
+"puzzle" box (a jigsaw), "bronze ballista" (brass spheres), "iron arm band" (a
+mechanical bracer), a "luminous core" (a loose floating orb), a moss-covered
+statue (moss on the giant), a "long banner" (garbled text), abstract alien
+body plans (an incoherent glob), a moon-sized impactor (a moon hanging over a
+crater), a volley of arrows (arrows from every direction), mooring booms (legs
+planted on the planet below).
+
+### Tooling
+
+`scripts/replay_batch.py` replays every Scene Weaver in a graph and picks the
+one whose prompt was recorded (a graph may hold one per genre), and matches a
+recorded JSON output by its seed.
+
+## Round XXVI: the 925 morning batch
+
+The maintainer's render test of round XXV: single entities in all three packs,
+each wired into all three weavers. 73 images were pulled; every one replayed
+byte-for-byte. The maintainer answered the images the prompt alone could not
+explain. The loudest message was about horror: vermin in a crate or a sack, a
+clock cracking or a pendulum racing "isn't horror at all -- who cares?".
+
+### Placement
+
+- **A rule that re-draws the place keeps the scene's subjects.** A wired river
+  barge was given a stormy coast, the barge rule re-drew the place from every
+  place, and the barge was put in a blacksmith's forge (#1236); a skimmer that
+  refused the sea was put in open space. A re-draw now avoids the places the
+  fixed subjects ruled out and the places that cannot hold any subject the
+  scene already has (`_environments_ruled_out_by_state`), unless that leaves
+  nothing.
+- **A guest matches one of its homes, not their common ground**
+  (`engine/foreign.py::homes`). A starship lands on plains and flies in space
+  and cloud, so its homes shared only `vast`, and it was drawn resting in a
+  dwarven great hall (#1256). A host place must now be shaped like one home:
+  every home word the host can say is there, and no shape both genres can say
+  is there that the home lacks (a sewer's water is not a colony dome's). A
+  home word the host has no word for drops out if it describes a condition
+  (sunlight, dust) and rules the home out if it describes a shape (`dock`,
+  `cloud-deck`). `sunlight` and `dark` cannot both hold: a rover's sunlit dome
+  was read as a morgue.
+- **No rung holds: the nearest home.** A family mausoleum's homes are walled
+  graveyards and no sci-fi place is one, so it went anywhere -- a medical bay
+  (#1206). Past the last rung the guest takes the places most like a home among
+  those its type's own needs allow (`best_habitat`); the type-needs-only rung is
+  folded into it.
+- **A guest that only exists in space hangs in the host's sky.** Horror has no
+  emptiness, so a station or a world goes under its open sky, and the prose
+  says so: "High in the sky above, a terraforming space station is shearing in
+  half" (`engine/prose.py::_staged`). It was drawn on the carnival's midway
+  (#1321).
+- **The place check reads the whole subject.** `_place_holds` (which narrows
+  the first draw of the place for a locked or wired subject) now also checks
+  the form's own needs and the pack's trait conflicts between place and
+  subject, so a locked "half-buried" hull is not given a deep-sea vent and a
+  lighthouse not a flooded street, where a rule could only warn.
+- **Only what a guest is decides where it goes.** A drawn "scorched" condition
+  refused every sea for a bathyscaphe, which then had no home and went
+  anywhere; kind, type, form and scale decide the place, and `mask_for_place`
+  drops a drawn value that conflicts with it. A cross-genre place refuses a
+  body under either order of a trait pair.
+- Native: a lighthouse needs a coast, not a flooded street (#1275); a hover
+  skimmer stays out of the water -- only a submersible, a bathyscaphe or a
+  seabed crawler goes under it (#1318); a sessile brooder grows on ground
+  (#1178); a terraforming station orbits a world (#1173); an asteroid pit has
+  no air, so a spacefarer there is sealed (#1181); a cargo arm and a tie-down
+  clamp are in a hangar (#1183, #1190); a methane channel is at a shore
+  (#1189).
+
+### Horror shows the horror
+
+Every swarm act names who it is coming for (a sleeping man, a woman backing
+away, a man frozen in place); every cursed-object act has a victim or a menace
+(a clock aging the man before it, a case swinging open on a folded figure, oil
+creeping toward a sleeper); weak place acts were replaced (crude stick effigies
+for bunting, a pale figure at the threshold for overgrowth). A clock is never
+small, a cracked thing is not also "cracking", and a held or floating object
+does not also rest on its shelf or stand against its wall.
+
+### Coherence gates
+
+- One glowing eye is the eye: an eye emitter drops the eye sensors (a skeleton
+  had two pairs, #1219; sci-fi too).
+- A form that says it is huge is never small (#1281), a long staff is never
+  tiny (#1311).
+- A stitched-shut mouth does not scream (#1270); a bare skull is not
+  gore-clotted (#1261).
+- A spellcaster does not roll like a rogue, string a longbow or carry a lute,
+  and only a caster casts (#1217); a limbless serpent has no claws (#1211).
+- An object held, lifted, sinking or embedded does not rest on a plinth
+  (#1239, #1251).
+- A giant, a troll, a goblin or a fey always says its height: a pixie with no
+  height was drawn the size of a man (#1195).
+- A new golem is not made of cracked clay (#1308); dust settles only in air
+  (#1190, #1202); ice crazing needs cold (#1192); a half-buried hull is buried
+  in ground (#1316).
+
+### Render traps renamed
+
+A fire axe (burning), bone-white (bones), faded rose (roses, the dusty-rose trap
+again), a rose-thorn dagger (a rose), fey green (leaves), royal blue (a crown and
+lettering), wisp blue (floating wisps), a halberd (a sword-axe), a crest of
+spinning cogs (a gear halo, the gear-crest trap again), a luminous shimmer (a
+second ghost, the luminous-outline trap again), an energy halo (a half-loop
+head), a wheel-shaped body (wheels), an amorphous mass (a blob), running light
+strings (beams), scanning bars (cannons), a rubberised sheath (flesh), a
+range-finder optic (a huge monocle), a vibro-saw on a scout walker, a tidal tail
+(a rock horn), a mossy island (moss), "grinding" (an angle grinder, three more
+survived round XXV), "glimmer with a headlamp" (a lamp on a stake), a spectral
+chain (hanging chains), a slingshot (a crossbow). Acts that drew clones or
+nothing were reworded ("going down under a mass of smaller units", "swallowing
+a survey drone whole", "leaping onto an abandoned pack", "tearing a sapling
+out by the roots", "sealing a breach as the air thins").
+
+### Variety
+
+Added: a beetle swarm, a dressmaker's mannequin, a condemned hospital and a
+shuttered sanatorium (horror); a bathyscaphe and a seabed crawler (sci-fi);
+three diffuse-being shapes for the one amorphous mass; three spears for the
+halberd; a power cell array's own shapes.

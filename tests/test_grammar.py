@@ -122,6 +122,20 @@ class HeadNounTests(unittest.TestCase):
         self.assertEqual(head_noun("tilted ring disc parted by a dark gap"), "disc")
         self.assertEqual(head_noun("a hull section split by a seam"), "section")
 
+    def test_a_past_participle_before_a_preposition_ends_the_head(self) -> None:
+        """"a coins wedged between its scales" read *wedged* as the head (#893)."""
+        self.assertEqual(head_noun("coins wedged between its scales"), "coins")
+        self.assertEqual(head_noun("halls woven into a giant tree"), "halls")
+        self.assertEqual(with_article_if_singular("cracks sealed with gold"), "cracks sealed with gold")
+        self.assertEqual(head_noun("lake bed with reeds"), "bed")
+
+    def test_a_locative_preposition_ends_the_head(self) -> None:
+        """"a twin gasbags above a long hull" and "human torso above goat legs"."""
+        self.assertEqual(with_article_if_singular("twin gasbags above a long hull"),
+                         "twin gasbags above a long hull")
+        self.assertEqual(with_article_if_singular("human torso above goat legs"),
+                         "a human torso above goat legs")
+
     def test_a_directional_preposition_ends_the_head(self) -> None:
         self.assertEqual(head_noun("path toward the ridge"), "path")
         self.assertEqual(head_noun("passage into darkness"), "passage")
