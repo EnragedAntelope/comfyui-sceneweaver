@@ -233,8 +233,8 @@ Two working graphs ship in [`example_workflows/`](https://github.com/EnragedAnte
 
 | Workflow | What it shows |
 |---|---|
-| [`sceneweaver-krea2.json`](https://github.com/EnragedAntelope/comfyui-sceneweaver/blob/main/example_workflows/sceneweaver-krea2.json) | The basic pattern: Scene Weaver + a Scene Entity, a style prefix joined on with `StringConcatenate`, straight into the encoder. |
-| [`sceneweaver-krea2-stylebook.json`](https://github.com/EnragedAntelope/comfyui-sceneweaver/blob/main/example_workflows/sceneweaver-krea2-stylebook.json) | The same graph with **Stylebook** supplying the style instead of a hard-coded prefix. |
+| [`sceneweaver-krea2_example.json`](https://github.com/EnragedAntelope/comfyui-sceneweaver/blob/main/example_workflows/sceneweaver-krea2_example.json) | The basic pattern: Scene Weaver + a Scene Entity, a style prefix joined on with `StringConcatenate`, straight into the encoder. |
+| [`sceneweaver-krea2-stylebook_example.json`](https://github.com/EnragedAntelope/comfyui-sceneweaver/blob/main/example_workflows/sceneweaver-krea2-stylebook_example.json) | The same graph with **Stylebook** supplying the style instead of a hard-coded prefix. |
 
 Both are the maintainer's real Krea2 graphs, so they carry a specific
 checkpoint, VAE and CLIP plus two third-party packs
