@@ -25,7 +25,21 @@
     "folk, spirit or elemental, undead, construct, structure, vessel, artifact.",
     "",
     "Horror values go in a 'horror' section. Horror kind names: undead, spirit,",
-    "cryptid, eldritch horror, mortal, cursed object, haunted place.",
+    "cryptid, eldritch horror, mortal, cursed object, haunted place, swarm.",
+    "",
+    "The key under a field is where the value is added. It may be a kind (the",
+    "value is added to the pool each of that kind's subkinds really reads, so it",
+    "works even where every subkind has a pool of its own), '_default', or a key",
+    "the pool already has. Two fields take a group instead:",
+    "  - environment: key it by its BAND (sci-fi: deep space, orbit, cloud layer,",
+    "    planetary surface, interior; fantasy: wilds, waterside, underwater, sky,",
+    "    underground, settlement, interior, otherworld; horror: wilds, graveyard,",
+    "    waterside, underwater, town, interior, underground, otherworld). The band",
+    "    is what says what the place affords. Any other key is skipped.",
+    "  - subkind: key it by a subkind GROUP to give it that group's body, parts and",
+    "    situations (fantasy example: 'winged dragon'). Keyed by a bare kind it is",
+    "    added but speaks generic vocabulary, and the console says so.",
+    "A bad entry is logged and skipped; it never stops the nodes loading.",
     "",
     "List every built-in value of a field with:",
     "    python scripts/builtin_options.py markings --kind starship",
@@ -78,7 +92,11 @@
   "fantasy": {
     "pools": {
       "subkind": {
+        "serpent wyrm": ["marsh wyrm"],
         "mythic beast": ["moon hare"]
+      },
+      "environment": {
+        "wilds": ["stone-ringed hollow"]
       }
     }
   },

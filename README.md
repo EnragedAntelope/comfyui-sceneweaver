@@ -250,7 +250,15 @@ Drop a `user_options.json` beside the pack to add your own values to any pool -
 your own creature types, environments, situations. It is gitignored, so it
 survives a `git pull`, and `user_options.example.json` shows the shape. Sci-fi
 values go at the top level; fantasy and horror values go in a `"fantasy"` or
-`"horror"` section. To see what a pool already holds:
+`"horror"` section.
+
+A key under a field says where the value goes. A kind (`"dragon"`) adds it to
+the pools that kind's subkinds really read. Two fields take a group instead: key
+a new **environment** by its band (`"wilds"`, `"orbit"`) and it inherits what
+that band affords; key a new **subkind** by its group (`"serpent wyrm"`) and it
+inherits that group's body, parts and situations. A bad entry is logged in the
+ComfyUI console and skipped - it never stops the nodes loading. To see what a
+pool already holds:
 
 ```
 python scripts/builtin_options.py subkind --kind "alien creature"

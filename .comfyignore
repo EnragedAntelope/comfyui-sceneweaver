@@ -17,8 +17,12 @@ package.json
 package-lock.json
 node_modules/
 
-# Maintainer scripts: the distribution sweep and the pool lister.
-scripts/
+# Maintainer scripts: the distribution sweep and the audits. The pool lister is
+# the one exception -- the README tells every user to run it to see what a pool
+# already holds before adding to it, and a Manager install has no other copy.
+# comfy-cli matches with pathspec's gitwildmatch, where a later "!" re-includes.
+scripts/*
+!scripts/builtin_options.py
 
 # Contributor documentation and the README's images. The README itself ships,
 # and it references its images by absolute raw.githubusercontent URL precisely
