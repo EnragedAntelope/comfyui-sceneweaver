@@ -386,6 +386,48 @@ test("Escape closes and Enter takes the first match", async () => {
   assert.equal(overlay(), null);
 });
 
+test("the arrow keys move a highlight and Enter takes that row", async () => {
+  const node = await createNode(EXTENSION, SCENE_NODE);
+  const kind = widget(node, "entity1_kind");
+  kind.onClick({ e: clickAt(node, 100), node, canvas: null });
+  const input = overlay().querySelector("input");
+  const press = (key) => input.dispatchEvent(new window.KeyboardEvent("keydown", { key }));
+  const rows = () => Array.from(document.querySelectorAll(".sceneweaver-search-list li"));
+  const active = () => rows().findIndex((li) => li.classList.contains("is-active"));
+
+  assert.equal(active(), -1, "nothing is highlighted until an arrow key is used");
+  press("ArrowDown");
+  assert.equal(active(), 0);
+  press("ArrowDown");
+  press("ArrowDown");
+  assert.equal(active(), 2);
+  press("ArrowUp");
+  assert.equal(active(), 1);
+  const wanted = rows()[1].textContent;
+  press("Enter");
+  assert.equal(kind.value, wanted);
+  assert.equal(overlay(), null);
+});
+
+test("the highlight stays inside the list and resets when the filter changes", async () => {
+  const node = await createNode(EXTENSION, SCENE_NODE);
+  widget(node, "entity1_kind").onClick({ e: clickAt(node, 100), node, canvas: null });
+  const input = overlay().querySelector("input");
+  const press = (key) => input.dispatchEvent(new window.KeyboardEvent("keydown", { key }));
+  const rows = () => Array.from(document.querySelectorAll(".sceneweaver-search-list li"));
+
+  for (let i = 0; i < 200; i += 1) press("ArrowDown");
+  assert.equal(rows().findIndex((li) => li.classList.contains("is-active")), rows().length - 1);
+  press("ArrowUp");
+  for (let i = 0; i < 200; i += 1) press("ArrowUp");
+  assert.equal(rows().findIndex((li) => li.classList.contains("is-active")), 0);
+
+  input.value = "zz-no-such-value";
+  input.dispatchEvent(new window.Event("input"));
+  press("ArrowDown");
+  assert.equal(rows().length, 0, "an empty list highlights nothing and does not throw");
+});
+
 test("the stepper zones at each end still reach the original handler", async () => {
   const node = makeFakeNode(SCENE_NODE);
   const form = node.widgets.find((w) => w.name === "entity1_form");

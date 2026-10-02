@@ -58,6 +58,12 @@
   background: #2c2c31;
 }
 
+.sceneweaver-search-list li.is-active {
+  background: #2c2c31;
+  outline: 1px solid #5a8ac6;
+  outline-offset: -1px;
+}
+
 .sceneweaver-search-list li.is-current {
   color: #8ab4f0;
 }

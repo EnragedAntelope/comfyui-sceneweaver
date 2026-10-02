@@ -465,8 +465,20 @@ export function openFieldSearch(node, widget, spec, anchor) {
   list.className = `${OVERLAY_CLASS}-list`;
   overlay.append(input, list);
 
+  // The row the arrow keys have reached, or -1 until they are used: with nothing
+  // highlighted Enter still takes the first match, as it always did.
+  let active = -1;
+  const highlight = (index) => {
+    const rows = Array.from(list.children);
+    if (!rows.length) return;
+    active = Math.max(0, Math.min(rows.length - 1, index));
+    rows.forEach((row, i) => row.classList.toggle("is-active", i === active));
+    rows[active].scrollIntoView?.({ block: "nearest" });
+  };
+
   const render = () => {
     const needle = input.value.trim().toLowerCase();
+    active = -1;
     list.replaceChildren();
     for (const value of values) {
       if (needle && !String(value).toLowerCase().includes(needle)) continue;
@@ -485,15 +497,35 @@ export function openFieldSearch(node, widget, spec, anchor) {
   input.addEventListener("input", render);
   input.addEventListener("keydown", (event) => {
     if (event.key === "Escape") closeSearch();
-    if (event.key === "Enter") list.firstElementChild?.click();
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault?.();
+      highlight(active + (event.key === "ArrowDown" ? 1 : -1));
+    }
+    if (event.key === "Enter") (list.children[Math.max(active, 0)] ?? null)?.click();
   });
 
   render();
   document.body.append(overlay);
+  keepOnScreen(overlay);
   input.focus();
   return overlay;
 }
 
+
+/**
+ * Pull the overlay back inside the viewport. It opens at the click, so a click near
+ * the bottom or right edge put most of the list off-screen. A no-op where there is
+ * no layout (jsdom reports an empty box).
+ */
+function keepOnScreen(overlay) {
+  const box = overlay.getBoundingClientRect?.();
+  if (!box || !box.width || !box.height) return;
+  const margin = 8;
+  const left = Math.max(margin, Math.min(box.left, window.innerWidth - box.width - margin));
+  const top = Math.max(margin, Math.min(box.top, window.innerHeight - box.height - margin));
+  overlay.style.left = `${left}px`;
+  overlay.style.top = `${top}px`;
+}
 
 /**
  * Route a click on a combo widget into the search overlay.
