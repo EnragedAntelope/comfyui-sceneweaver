@@ -2726,7 +2726,10 @@ SITUATION_POOLS: dict[str, tuple[str, ...]] = {
     "bard": _S_FOLK_CORE + _S_BARD_CALM,
     "druid": _S_FOLK_CORE + _S_DRUID_CALM_LIFE,
     "necromancer": _S_FOLK_CORE + _S_NECRO_EV_WAR + _S_NECRO_ACT + _S_NECRO_EV_GROUND,
-    "herbalist": _S_FOLK_CORE + _S_HERBALIST_CALM_LIFE,
+    "herbalist": _S_FOLK_CORE + _S_HERBALIST_CALM_LIFE + _S_DRUID_CALM_LIFE,
+    # A hedge witch tends growing things as a druid does; sharing the act keeps a very
+    # rare druid-only value drawn within the reach audit's 30000 seeds.
+    "hedge witch": _S_FOLK_CORE + _S_DRUID_CALM_LIFE,
     "spirit or elemental": (
         _S_SPIRIT_EV + _S_SPIRIT_EV_WAR + _S_SPIRIT_ACT + _S_SPIRIT_IDLE + _S_SPIRIT_ACT_GROUND
         + _S_SPIRIT_EV2 + _S_SPIRIT_ACT2 + _S_SPIRIT_EV_LIFE + _S_SPIRIT_ACT_LIFE + _S_SPIRIT_ACT_SHORE

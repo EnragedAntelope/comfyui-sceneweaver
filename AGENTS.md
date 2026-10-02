@@ -11,11 +11,13 @@ genre is a data module and two registration lines.
 _Last verified: 2026-10-02_
 
 - **Status:** live at v0.5.1 on the ComfyUI Registry; `main` carries all three
-  genres on one coherence engine. Branch `tmp/sceneweaver-0.5.2` (user_options,
-  recreate, gates, docs) is in progress, with a content release (0.6.0) planned
-  after it. The repo is public at `EnragedAntelope/comfyui-sceneweaver`; the full
-  pre-release history stays local (a git bundle outside the repo, and the
-  `coherence-round-*` branches).
+  genres on one coherence engine. Branch `tmp/sceneweaver-0.5.2` holds the
+  unreleased work: user_options keys, a working recreate, the speedup and gates,
+  and a content round (places, subjects, relations and colours in all three
+  packs). It passes every gate below on a clean checkout and is not yet pushed,
+  versioned or released. The repo is public at `EnragedAntelope/comfyui-sceneweaver`;
+  the full pre-release history stays local (a git bundle outside the repo, and
+  the `coherence-round-*` branches).
 - **Works:** both node classes per genre register through the V3
   `comfy_entrypoint`; the output is prose built from genre-authored sentences;
   coherence is declared (affordances, needs, traits, stances, cardinality, tiers)
@@ -25,8 +27,10 @@ _Last verified: 2026-10-02_
   order and validates both example workflows. Every gate under "Build and test"
   is green. The mechanisms and every round's decisions and measurements are in
   `docs/architecture.md` ("Round XV" to "Round XXVI" are the render-test rounds).
-- **In progress:** 0.5.2 as above. Round XXVI still awaits the maintainer's
-  render test.
+- **In progress:** releasing the branch above (version bump, PR, GitHub release,
+  Registry check). The new content has had no render test; round XXVI also still
+  awaits the maintainer's. Not built: a headless horseman, carrion crows, an
+  exorcist and a mortician (the last two would only reskin the village priest).
 - **Known gaps:**
   - A situation can disagree with the pose a model draws (a fire drake breathing
     fire instead of "snapping at a spear") with no text contradiction behind it.
