@@ -1,0 +1,221 @@
+"""The 0.6.0 content additions, held to the rules they were authored under.
+
+Each class pins what a value was *given*, not just that it exists: a place's
+affordances, a subject's needs, a relation's roles and tag. A value added without
+its card passes ``validate_data.py`` only when the card is checkable there, and a
+card nobody asserts is a card the next edit can quietly drop.
+"""
+from __future__ import annotations
+
+import unittest
+from typing import Iterable
+
+import data.genre as G
+from data import fantasy as F
+from data import horror as H
+from data.fantasy import FANTASY_PACK
+from data.horror import HORROR_PACK
+from data.scifi import SCIFI_PACK
+from engine.scene import generate_scene
+
+SEEDS = range(250)
+
+
+def _scenes(pack, widgets, seeds: "Iterable[int]" = SEEDS, **kwargs):
+    for seed in seeds:
+        yield generate_scene(seed, pack, widgets=widgets, entity_count=1, **kwargs)
+
+
+class HorrorRelationTests(unittest.TestCase):
+    NEW = ("dragging", "feeding on", "luring", "worshipping", "carrying off")
+
+    def test_every_new_relation_has_roles_and_a_tag(self) -> None:
+        for value in self.NEW:
+            with self.subTest(value=value):
+                self.assertIn(value, HORROR_PACK.pools["relation"][G.POOL_DEFAULT_KEY])
+                self.assertIn(value, HORROR_PACK.relation_roles)
+                self.assertIn(value, HORROR_PACK.tags[G.RELATION_FIELD])
+
+    def test_the_violent_ones_are_graphic_and_hidden_by_no_gore(self) -> None:
+        graphic = {"dragging", "feeding on", "carrying off"}
+        for value in self.NEW:
+            expected = G.TAG_CONFLICT_ONLY if value in graphic else G.TAG_NEUTRAL
+            self.assertEqual(HORROR_PACK.tags[G.RELATION_FIELD][value], expected, value)
+        drawn = set()
+        for seed in range(300):
+            _text, doc = generate_scene(
+                seed, HORROR_PACK, widgets={"relation_1_2": "Random"},
+                scene_filter="No gore", entity_count=2,
+            )
+            drawn.update(r["value"] for r in doc["relations"])
+        self.assertFalse(drawn & graphic, "No gore must not draw a graphic relation")
+
+    def test_a_drawn_relation_respects_who_can_do_it_to_whom(self) -> None:
+        caps = H.KIND_CAPABILITIES
+        seen = set()
+        for seed in range(3000):
+            _text, doc = generate_scene(
+                seed, HORROR_PACK, widgets={"relation_1_2": "Random"}, entity_count=2
+            )
+            for relation in doc["relations"]:
+                value = relation["value"]
+                if value not in self.NEW:
+                    continue
+                seen.add(value)
+                first, second = (doc["entities"][i - 1]["kind"] for i in relation["endpoints"])
+                need_first, need_second = H.RELATION_ROLES[value]
+                self.assertLessEqual(need_first, caps[first], (value, first))
+                self.assertLessEqual(need_second, caps[second], (value, second))
+        self.assertEqual(seen, set(self.NEW), "a new relation that is never drawn is a dead option")
+
+
+class HorrorPlaceTests(unittest.TestCase):
+    PLACES = {
+        "hedge maze": "wilds",
+        "abandoned desert mining town": "town",
+        "abandoned theatre stage": "interior",
+        "overgrown greenhouse": "interior",
+        "wax museum gallery": "interior",
+        "lighthouse lamp room": "interior",
+    }
+
+    def test_each_place_is_banded_and_drawn(self) -> None:
+        for place, band in self.PLACES.items():
+            with self.subTest(place=place):
+                self.assertIn(place, HORROR_PACK.environment_bands[band])
+                for text, _doc in _scenes(HORROR_PACK, {"environment": place}, range(15)):
+                    self.assertIn(place, text)
+
+    def test_a_glass_room_has_daylight_and_a_hedge_has_no_room_for_a_giant(self) -> None:
+        affords = lambda place: G.affordances_of(HORROR_PACK, place)  # noqa: E731
+        self.assertNotIn("dark", affords("overgrown greenhouse"))
+        self.assertNotIn("dark", affords("lighthouse lamp room"))
+        self.assertNotIn("vast", affords("hedge maze"))
+        self.assertIn("dark", affords("wax museum gallery"))
+
+    def test_the_new_colours_are_not_banned_words(self) -> None:
+        for colour in ("deep crimson", "deep orange", "pale teal", "dull gold"):
+            self.assertIn(colour, HORROR_PACK.pools["emitter_color"][G.POOL_DEFAULT_KEY])
+        for colour in ("faded blue", "dull ochre", "tarnished brass", "deep teal"):
+            self.assertIn(colour, HORROR_PACK.pools["accent_color"][G.POOL_DEFAULT_KEY])
+
+
+class HorrorSubjectTests(unittest.TestCase):
+    def test_a_mummy_never_weeps_fresh_blood(self) -> None:
+        graphic = {
+            value for value, tag in HORROR_PACK.tags["surface_detail"].items()
+            if tag == G.TAG_CONFLICT_ONLY
+        } | {"blood-smeared mouth", "gore-clotted maw", "cracked bleeding lips"}
+        self.assertFalse(
+            graphic & set(HORROR_PACK.pools["surface_detail"]["mummy"]),
+            "a desiccated wrapped body carries none of the undead pool's wounds",
+        )
+        self.assertFalse(graphic & set(HORROR_PACK.pools["aperture"]["mummy"]))
+
+    def test_a_mummy_is_spoken_so_a_model_draws_wrappings_not_a_mother(self) -> None:
+        text, doc = next(
+            _scenes(HORROR_PACK, {"entity1_kind": "undead", "entity1_subkind": "mummy"}, [3])
+        )
+        self.assertEqual(doc["entities"][0]["subkind"], "mummy")
+        self.assertIn("bandage-wrapped mummy", text)
+
+    def test_a_mummy_is_never_on_a_lake_bed(self) -> None:
+        for _text, doc in _scenes(
+            HORROR_PACK, {"entity1_kind": "undead", "entity1_subkind": "mummy"}
+        ):
+            affords = G.affordances_of(HORROR_PACK, doc["environment"])
+            self.assertIn("air", affords, doc["environment"])
+
+    def test_a_taxidermy_fox_is_a_fox_coloured_object(self) -> None:
+        allowed = set(HORROR_PACK.pools["primary_color"]["taxidermy fox"])
+        self.assertFalse(allowed & {"faded pink", "faded crimson", "tarnished gold"})
+        for _text, doc in _scenes(
+            HORROR_PACK, {"entity1_kind": "cursed object", "entity1_subkind": "taxidermy fox"}
+        ):
+            colour = doc["entities"][0].get("primary_color")
+            self.assertTrue(colour is None or colour in allowed, colour)
+
+
+class FantasyContentTests(unittest.TestCase):
+    PLACES = {
+        "jungle temple ruins": "wilds",
+        "desert oasis": "wilds",
+        "pirate cove": "waterside",
+        "gladiatorial arena": "settlement",
+        "tournament jousting field": "settlement",
+        "ice palace hall": "interior",
+    }
+
+    def test_each_place_is_banded_and_drawn(self) -> None:
+        for place, band in self.PLACES.items():
+            with self.subTest(place=place):
+                self.assertIn(place, FANTASY_PACK.environment_bands[band])
+                for text, _doc in _scenes(FANTASY_PACK, {"environment": place}, range(15)):
+                    self.assertIn(place, text)
+
+    def test_a_pirate_cove_is_navigable_and_an_oasis_is_not_a_shore(self) -> None:
+        self.assertIn("navigable", G.affordances_of(FANTASY_PACK, "pirate cove"))
+        self.assertNotIn("shoreline", G.affordances_of(FANTASY_PACK, "desert oasis"))
+        self.assertIn("cold", G.affordances_of(FANTASY_PACK, "ice palace hall"))
+
+    def test_a_giant_scorpion_is_only_drawn_where_there_is_dust(self) -> None:
+        places = set()
+        for _text, doc in _scenes(
+            FANTASY_PACK, {"entity1_kind": "mythic beast", "entity1_subkind": "giant scorpion"}
+        ):
+            places.add(doc["environment"])
+        self.assertTrue(places)
+        for place in places:
+            self.assertIn("dust", G.affordances_of(FANTASY_PACK, place), place)
+
+    def test_a_woolly_mammoth_needs_room_for_something_huge(self) -> None:
+        places = set()
+        for _text, doc in _scenes(
+            FANTASY_PACK, {"entity1_kind": "mythic beast", "entity1_subkind": "woolly mammoth"}
+        ):
+            places.add(doc["environment"])
+        self.assertTrue(places)
+        for place in places:
+            self.assertIn("vast", G.affordances_of(FANTASY_PACK, place), place)
+
+    def test_each_new_role_has_its_own_clothes_and_hands(self) -> None:
+        for role in ("gladiator", "pirate captain", "witch hunter"):
+            with self.subTest(role=role):
+                self.assertIn(role, FANTASY_PACK.pool_groups["subkind"]["adventurer"])
+                for field in ("material", "armament", "appendages"):
+                    self.assertTrue(FANTASY_PACK.pools[field].get(role), (role, field))
+
+    def test_a_beast_does_not_borrow_another_animals_mouth_or_markings(self) -> None:
+        self.assertNotIn("snarling muzzle", F.APERTURE_POOLS["woolly mammoth"])
+        self.assertNotIn("striped flank banding", F.MARKINGS_POOLS["woolly mammoth"])
+        self.assertNotIn("snarling muzzle", F.APERTURE_POOLS["giant scorpion"])
+        self.assertNotIn("striped flank banding", F.MARKINGS_POOLS["giant scorpion"])
+
+
+class SciFiContentTests(unittest.TestCase):
+    PLACES = ("frontier spaceport landing pad", "temperate belt of a tidally locked world")
+
+    def test_an_open_surface_place_grants_no_structure(self) -> None:
+        """A granted ``structure`` would admit every corridor act on an open pad."""
+        for place in self.PLACES:
+            with self.subTest(place=place):
+                self.assertIn(place, SCIFI_PACK.environment_bands["planetary surface"])
+                affords = G.affordances_of(SCIFI_PACK, place)
+                self.assertNotIn("structure", affords)
+                self.assertIn("ground", affords)
+
+    def test_a_surface_place_names_an_alien_sky_so_it_is_not_drawn_as_earth(self) -> None:
+        for place in self.PLACES:
+            spoken = G.spoken_value(SCIFI_PACK, "environment", place)
+            self.assertTrue(
+                any(word in spoken for word in ("moons", "sun", "giant")), spoken
+            )
+
+    def test_the_pad_and_the_belt_are_drawn(self) -> None:
+        for place in self.PLACES:
+            for text, _doc in _scenes(SCIFI_PACK, {"environment": place}, range(10)):
+                self.assertIn(G.spoken_value(SCIFI_PACK, "environment", place), text)
+
+
+if __name__ == "__main__":
+    unittest.main()

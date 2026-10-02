@@ -329,6 +329,8 @@ _ENV_WILDS = (
     "field of standing stones",
     "old battlefield of rusted banners",
     "thorn-wrapped hillside of barrow mounds",
+    "jungle temple ruins",
+    "desert oasis",
 )
 _ENV_WATERSIDE = (
     "storm-lashed sea cliffs",
@@ -339,6 +341,7 @@ _ENV_WATERSIDE = (
     "mangrove fen",
     "frozen lake shore",
     "rocky coast of a stormy sea",
+    "pirate cove",
 )
 _ENV_UNDERWATER = (
     "sunken temple ruins",
@@ -372,6 +375,8 @@ _ENV_SETTLEMENT = (
     "elven treetop village",
     "dwarven mountain stronghold gate",
     "ruined city plaza",
+    "gladiatorial arena",
+    "tournament jousting field",
 )
 _ENV_INTERIOR = (
     "royal throne room",
@@ -384,6 +389,7 @@ _ENV_INTERIOR = (
     "tavern common room",
     "blacksmith's forge",
     "treasure vault",
+    "ice palace hall",
 )
 _ENV_OTHERWORLD = (
     "fairy ring glade",
@@ -459,6 +465,18 @@ CONTEXT_POOLS: dict[str, tuple[str, ...]] = {
     "salt-crusted wasteland": _CTX_BARRENS,
     "petrified forest": _CTX_BARRENS,
     "volcanic ashlands": _CTX_BARRENS + ("distant volcano trailing a plume of ash",),
+    "jungle temple ruins": (
+        "toppled stone block wrapped in vines", "toppled carved idol half-buried in roots",
+        "stream tumbling over mossy blocks", "hanging curtain of creepers",
+    ),
+    "desert oasis": (
+        "cluster of date palms around a spring", "line of tethered camels",
+        "striped trader's tent", "wind-carved rock arch",
+    ),
+    "pirate cove": (
+        "hidden sea cave mouth in the cliff", "overturned rowing boat on the shingle",
+        "rotting jetty of salvaged planks", "stack of weathered barrels",
+    ),
     "waterside": _CTX_FRESH,
     "storm-lashed sea cliffs": _CTX_SEA,
     "black sand beach": _CTX_SEA,
@@ -532,6 +550,13 @@ CONTEXT_POOLS: dict[str, tuple[str, ...]] = {
         "toppled statue of a forgotten ruler", "broken fountain choked with weeds",
         "collapsed colonnade",
     ),
+    "gladiatorial arena": (
+        "tiered stone seating", "iron portcullis gate", "rack of blunted weapons",
+    ),
+    "tournament jousting field": (
+        "row of striped pavilions", "tiered wooden spectator seating", "rack of tournament lances",
+        "pennant-hung barrier fence",
+    ),
     "royal throne room": (
         "row of tall stained-glass windows", "row of hanging battle banners",
         "raised dais under a carved canopy",
@@ -550,6 +575,9 @@ CONTEXT_POOLS: dict[str, tuple[str, ...]] = {
     ),
     "vaulted library": (
         "wall of leather-bound books", "reading lectern", "tall rolling ladder",
+    ),
+    "ice palace hall": (
+        "row of fluted ice pillars", "frozen fountain", "throne carved from a single block of ice",
     ),
     "dungeon cell block": (
         "row of iron-barred cells", "set of rusted manacles on the wall", "iron candelabra",
@@ -637,7 +665,7 @@ SUBKIND_GROUPS: dict[str, tuple[str, ...]] = {
                      "cockatrice"),
     "chimeric beast": ("manticore", "chimera", "sphinx"),
     "great beast": ("dire wolf", "cave bear", "great tusked boar", "basilisk", "behemoth",
-                    "giant cave spider", "hellhound", "treant"),
+                    "giant cave spider", "hellhound", "treant", "woolly mammoth", "giant scorpion"),
     "sea beast": ("kraken", "hippocamp", "giant sea turtle"),
     # giant-kin
     "troll": ("cave troll", "bridge troll", "frost troll", "moss troll", "river troll"),
@@ -657,7 +685,7 @@ SUBKIND_GROUPS: dict[str, tuple[str, ...]] = {
     "adventurer": ("knight", "paladin", "ranger", "cleric", "bard", "rogue", "sorcerer",
                    "hedge witch", "druid", "monk", "necromancer", "warlord", "blacksmith",
                    "herbalist", "travelling merchant", "archer", "beastmaster", "potion-brewer",
-                   "wandering scholar"),
+                   "wandering scholar", "gladiator", "pirate captain", "witch hunter"),
     "elf": ("wood elf archer", "high elf mage", "elven bladedancer", "dark elf assassin"),
     "dwarf": ("mountain dwarf smith", "dwarf axe-warden", "dwarf runesmith", "dwarf miner"),
     "orc": ("orc warchief", "orc shaman", "orc raider"),
@@ -797,6 +825,10 @@ FORM_POOLS: dict[str, tuple[str, ...]] = {
                           "hump-shouldered boar body with iron-dark tusks"),
     "basilisk": ("eight-legged lizard body", "low serpentine lizard body"),
     "behemoth": ("vast horned quadruped body", "elephantine armoured body"),
+    "woolly mammoth": ("shaggy mammoth body with a high domed skull",
+                       "tusked mammoth body with a sloping back"),
+    "giant scorpion": ("armoured scorpion body with a curled stinger tail",
+                       "broad-clawed scorpion body with a segmented tail"),
     "giant cave spider": ("long-legged spider body with a crystal-studded abdomen",
                           "bloated spider body with a spined abdomen"),
     # A lean hound read as a pet dog (#1122).
@@ -954,6 +986,7 @@ MATERIAL_POOLS: dict[str, tuple[str, ...]] = {
     "great beast": ("thick shaggy fur", "coarse heavy fur", "bristly hide", "armoured hide"),
     "basilisk": ("stony scales", "rough ridged scales"),
     "giant cave spider": ("bristled chitin", "glossy chitin"),
+    "giant scorpion": ("glossy chitin", "bristled chitin"),
     "hellhound": ("sooty scorched hide", "short cinder-flecked fur"),
     "treant": ("gnarled bark", "moss-draped bark"),
     "sea beast": ("rubbery mottled skin", "sleek scales", "barnacled shell"),
@@ -990,6 +1023,9 @@ MATERIAL_POOLS: dict[str, tuple[str, ...]] = {
     "herbalist": ("herb-hung layered robes", "linen smock"),
     "travelling merchant": ("fur-trimmed coat", "layered silk robes"),
     "wandering scholar": ("ink-stained scholar's robe", "travel-worn cloak and tunic"),
+    "gladiator": ("studded leather harness", "scarred leather cuirass and greaves"),
+    "pirate captain": ("long salt-stained sea coat", "brocade waistcoat and sea coat"),
+    "witch hunter": ("long black leather coat", "dark travelling cloak and tunic"),
     "elf": ("suit of leaf-patterned silk armour", "silver-thread robes", "fitted dark leathers"),
     # A mage in fighting leathers with a rapier read as a duellist (#1072).
     "high elf mage": ("silver-thread robes", "hooded star-embroidered robes"),
@@ -1144,6 +1180,8 @@ MARKINGS_POOLS: dict[str, tuple[str, ...]] = {
                      "silver-tipped fur"),
     "winged beast": ("barred wing feathers", "pale facial markings", "dappled flank spots"),
     "giant cave spider": ("pale banded leg rings", "jagged back patterning"),
+    "giant scorpion": ("pale banded leg rings", "jagged back patterning"),
+    "woolly mammoth": ("dark saddle patch", "grey-streaked flanks"),
     "sea beast": ("mottled shell patterning", "pale ridge banding"),
     "giant-kin": ("ochre war paint", "blue woad swirls", "tribal bone charms"),
     "small folk": ("smeared war paint", "stolen heraldic badges", "bead-and-feather charms"),
@@ -1230,6 +1268,8 @@ APPENDAGE_POOLS: dict[str, tuple[str, ...]] = {
     "basilisk": ("crested spine", "clawed forepaw"),
     "behemoth": ("curved horn", "curved tusk", "armoured tail"),
     "giant cave spider": ("long leg", "hooked pedipalp"),
+    "woolly mammoth": ("long tusk", "bony shoulder hump", "stubby tail"),
+    "giant scorpion": ("scorpion tail", "hooked pedipalp", "long leg"),
     "treant": ("branch arm", "root leg", "leafy crown"),
     "kraken": ("sucker-lined tentacle", "long hooked tentacle"),
     "hippocamp": ("finned tail", "webbed foreleg"),
@@ -1266,6 +1306,9 @@ APPENDAGE_POOLS: dict[str, tuple[str, ...]] = {
     "knight": ("fur-trimmed pauldron", "steel gauntlet", "winged helm", "tattered cape"),
     "paladin": ("fur-trimmed pauldron", "steel gauntlet", "winged helm", "tattered cape"),
     "warlord": ("fur-trimmed pauldron", "steel gauntlet", "winged helm", "tattered cape"),
+    "gladiator": ("fur-trimmed pauldron", "steel gauntlet", "leather bracer"),
+    "pirate captain": ("feathered hat", "tattered cape", "leather bracer"),
+    "witch hunter": ("hooded mantle", "feathered hat", "leather bracer"),
     "druid": ("hooded mantle", "tattered cape", "leather bracer"),
     "monk": ("hooded mantle", "tattered cape", "leather bracer"),
     "cleric": ("hooded mantle", "tattered cape", "leather bracer"),
@@ -1381,6 +1424,8 @@ ARMAMENT_POOLS: dict[str, tuple[str, ...]] = {
     "roc": ("hooked talon", "tearing beak"),
     "great tusked boar": ("goring tusk",),
     "giant cave spider": ("venomous fang",),
+    "woolly mammoth": ("goring tusk",),
+    "giant scorpion": ("barbed tail spike",),
     "kraken": ("barbed tentacle club",),
     "giant-kin": ("tree-trunk club", "iron-banded war maul", "great throwing stone", "stone-headed axe",
                   "rusted cleaver", "broad hunting knife"),
@@ -1417,6 +1462,9 @@ ARMAMENT_POOLS: dict[str, tuple[str, ...]] = {
     "wandering scholar": ("quarterstaff", "dagger"),
     "herbalist": ("dagger",),
     "travelling merchant": ("dagger", "crossbow"),
+    "gladiator": ("battle axe", "flail", "flanged mace", "dagger"),
+    "pirate captain": ("rapier", "dagger", "crossbow"),
+    "witch hunter": ("crossbow", "longsword", "dagger"),
     "undead": ("rusted longsword", "notched axe", "cracked shield", "reaping scythe", "bone staff"),
     "lich": ("bone staff", "gnarled staff"),
     "high elf mage": ("gnarled staff",),
@@ -1447,6 +1495,7 @@ SENSOR_POOLS: dict[str, tuple[str, ...]] = {
     "dragon": ("slit-pupiled eye", "hooded eye", "heat-sensing pit"),
     "mythic beast": ("keen eye", "large dark eye", "golden eye"),
     "giant cave spider": ("many-faceted eye",),
+    "giant scorpion": ("beady eye",),
     "giant-kin": ("small sunken eye", "rheumy yellowed eye"),
     "cyclops": ("single great eye",),
     "small folk": ("beady eye", "large yellow eye"),
@@ -1468,6 +1517,8 @@ APERTURE_POOLS: dict[str, tuple[str, ...]] = {
     "dragon": ("fanged maw", "long toothed jaw", "hissing maw"),
     "mythic beast": ("snarling muzzle", "fanged maw"),
     "hoofed beast": ("soft muzzle", "flaring nostrils"),
+    "woolly mammoth": ("soft muzzle", "flaring nostrils"),
+    "giant scorpion": ("fanged maw",),
     "pegasus": ("soft muzzle", "flaring nostrils"),
     "winged beast": ("hooked beak", "curved beak"),
     "sphinx": ("serene human mouth",),
@@ -2274,8 +2325,11 @@ _S_ARTIFACT_IDLE = ("lying wrapped in a moth-eaten cloth", "sitting among wither
                     "gathering dust on a forgotten shelf")
 _S_ARTIFACT_EV2 = (
     "raising a halo of floating stones around itself", "pulling a thread of lightning down from above",
-    "bursting into a halo of cold blue flame", "levitating in a storm of whirling sparks",
+    "levitating in a storm of whirling sparks",
+    "trembling as hairline cracks spread across it",
 )
+#: Flame needs air: a relic burst into cold fire at the bottom of a coral grotto.
+_S_ARTIFACT_EV_FLAME = ("bursting into a halo of cold blue flame",)
 _S_ARTIFACT_ACT2 = ("turning slowly on its pedestal to face the viewer",)
 _S_ARTIFACT_EV_GROUND = ("half-sunk into the ground and still sinking",
                          "cracking the ground around it with pulses of force")
@@ -2549,6 +2603,7 @@ _BUCKETS = (
     (_S_ARTIFACT_ACT, "activity", "n", _A, _A, ""),
     (_S_ARTIFACT_IDLE, "idle", "n", _A, _A, ""),
     (_S_ARTIFACT_EV2, "event", "n", _A, _A, ""),
+    (_S_ARTIFACT_EV_FLAME, "event", "n", _AIR, _A, ""),
     (_S_ARTIFACT_ACT2, "activity", "n", _A, _A, ""),
     (_S_ARTIFACT_EV_GROUND, "event", "n", _GROUND, _A, ""),
     (_S_ARTIFACT_IDLE_WALLS, "idle", "n", _WALLS, _A, ""),
@@ -2712,33 +2767,33 @@ SITUATION_POOLS: dict[str, tuple[str, ...]] = {
     ),
     "artifact": (
         _S_ARTIFACT_EV + _S_ARTIFACT_EV_WAR + _S_ARTIFACT_ACT + _S_ARTIFACT_IDLE
-        + _S_ARTIFACT_IDLE_WALLS + _S_ARTIFACT_EV_SHORE + _S_ARTIFACT_DORMANT + _S_ARTIFACT_EV2
+        + _S_ARTIFACT_IDLE_WALLS + _S_ARTIFACT_EV_SHORE + _S_ARTIFACT_DORMANT + _S_ARTIFACT_EV2 + _S_ARTIFACT_EV_FLAME
         + _S_ARTIFACT_ACT2 + _S_ARTIFACT_EV_GROUND + _S_ARTIFACT_EV_COLD + _S_ARTIFACT_ACT_COLD
         + _S_ARTIFACT_ACT_DEEP + _S_ARTIFACT_DORMANT_DEEP + _S_ARTIFACT_WIELD + _S_ARTIFACT_WIELD_WAR
         + _S_ARTIFACT_GUARDED + _S_ARTIFACT_SEALED + _S_ARTIFACT_LIFE + _S_ARTIFACT_RUBBLE
         + _S_ARTIFACT_RUBBLE_WAR + _S_ARTIFACT_SKY
     ),
     "monument": (
-        _S_ARTIFACT_EV + _S_ARTIFACT_EV_WAR + _S_ARTIFACT_EV2 + _S_ARTIFACT_EV_GROUND
+        _S_ARTIFACT_EV + _S_ARTIFACT_EV_WAR + _S_ARTIFACT_EV2 + _S_ARTIFACT_EV_FLAME + _S_ARTIFACT_EV_GROUND
         + _S_ARTIFACT_EV_COLD + _S_ARTIFACT_ACT_COLD + _S_MONUMENT_ACT + _S_MONUMENT_IDLE
         + _S_ARTIFACT_DORMANT + _S_ARTIFACT_ACT_DEEP + _S_ARTIFACT_DORMANT_DEEP + _S_MONUMENT_WITNESS
         + _S_ARTIFACT_SEALED + _S_ARTIFACT_LIFE + _S_ARTIFACT_RUBBLE + _S_ARTIFACT_RUBBLE_WAR + _S_ARTIFACT_SKY
     ),
     "sword in the stone": (
-        _S_ARTIFACT_EV + _S_ARTIFACT_EV_WAR + _S_ARTIFACT_EV2 + _S_ARTIFACT_EV_GROUND
+        _S_ARTIFACT_EV + _S_ARTIFACT_EV_WAR + _S_ARTIFACT_EV2 + _S_ARTIFACT_EV_FLAME + _S_ARTIFACT_EV_GROUND
         + _S_ARTIFACT_EV_COLD + _S_ARTIFACT_ACT_COLD + _S_MONUMENT_ACT + _S_MONUMENT_IDLE
         + _S_ARTIFACT_DORMANT + _S_ARTIFACT_ACT_DEEP + _S_ARTIFACT_DORMANT_DEEP + _S_MONUMENT_WITNESS
         + _S_ARTIFACT_SEALED + _S_ARTIFACT_LIFE + _S_ARTIFACT_RUBBLE + _S_ARTIFACT_SKY + _S_SWORD_STONE
     ),
     "portal arch": (
-        _S_ARTIFACT_EV + _S_ARTIFACT_EV_WAR + _S_ARTIFACT_EV2 + _S_ARTIFACT_EV_GROUND
+        _S_ARTIFACT_EV + _S_ARTIFACT_EV_WAR + _S_ARTIFACT_EV2 + _S_ARTIFACT_EV_FLAME + _S_ARTIFACT_EV_GROUND
         + _S_ARTIFACT_EV_COLD + _S_ARTIFACT_ACT_COLD + _S_MONUMENT_ACT + _S_MONUMENT_IDLE
         + _S_ARTIFACT_DORMANT + _S_ARTIFACT_ACT_DEEP + _S_ARTIFACT_DORMANT_DEEP + _S_MONUMENT_WITNESS
         + _S_ARTIFACT_SEALED + _S_ARTIFACT_LIFE + _S_ARTIFACT_RUBBLE + _S_ARTIFACT_RUBBLE_WAR
         + _S_ARTIFACT_SKY + _S_PORTAL
     ),
     "weeping idol": (
-        _S_ARTIFACT_EV + _S_ARTIFACT_EV_WAR + _S_ARTIFACT_EV2 + _S_ARTIFACT_EV_GROUND
+        _S_ARTIFACT_EV + _S_ARTIFACT_EV_WAR + _S_ARTIFACT_EV2 + _S_ARTIFACT_EV_FLAME + _S_ARTIFACT_EV_GROUND
         + _S_ARTIFACT_EV_COLD + _S_ARTIFACT_ACT_COLD + _S_MONUMENT_ACT + _S_MONUMENT_IDLE
         + _S_ARTIFACT_DORMANT + _S_ARTIFACT_ACT_DEEP + _S_ARTIFACT_DORMANT_DEEP + _S_MONUMENT_WITNESS
         + _S_ARTIFACT_SEALED + _S_ARTIFACT_LIFE + _S_ARTIFACT_RUBBLE + _S_ARTIFACT_RUBBLE_WAR
@@ -2985,6 +3040,10 @@ PLACE_AFFORDANCES: dict[str, frozenset[str]] = {
     "overgrown elven ruins": frozenset({"ground", "floor", "sky", "vast", "sunlight", "life", "structure"}),
     "thorn-wrapped hillside of barrow mounds": frozenset({"ground", "floor", "sky", "vast", "life"}),
     "field of standing stones": frozenset({"ground", "floor", "sky", "vast", "sunlight", "open-ground"}),
+    # A jungle canopy has no room for something huge; an oasis is dry land around a spring,
+    # not a shore, so nothing that needs open water is drawn there.
+    "jungle temple ruins": frozenset({"ground", "floor", "sky", "sunlight", "life", "structure"}),
+    "desert oasis": frozenset({"ground", "floor", "sky", "vast", "sunlight", "dust", "life"}),
     "old battlefield of rusted banners": frozenset({"ground", "floor", "sky", "vast", "sunlight",
                                                     "open-ground"}),
     # --- waterside ---
@@ -3002,6 +3061,7 @@ PLACE_AFFORDANCES: dict[str, frozenset[str]] = {
     "shallow river ford": frozenset({"ground", "floor", "sky", "vast", "sunlight", "shoreline",
                                      "open-ground"}),
     "frozen lake shore": frozenset({"ground", "floor", "sky", "vast", "sunlight", "shoreline", "cold"}),
+    "pirate cove": frozenset({"ground", "floor", "sky", "vast", "sunlight", "shoreline", "navigable"}),
     "reed marsh": frozenset({"ground", "floor", "sky", "vast", "sunlight", "shoreline", "life"}),
     "mangrove fen": frozenset({"ground", "floor", "sky", "vast", "shoreline", "life"}),
     # --- underwater ---
@@ -3031,10 +3091,14 @@ PLACE_AFFORDANCES: dict[str, frozenset[str]] = {
     "elven treetop village": frozenset({"floor", "structure", "sky", "sunlight", "life"}),
     "dwarven mountain stronghold gate": frozenset({"ground", "floor", "structure", "sky", "cold"}),
     "ruined city plaza": frozenset({"ground", "floor", "structure", "sky", "sunlight", "life", "open-ground"}),
+    "gladiatorial arena": frozenset({"floor", "structure", "sky", "sunlight", "open-ground"}),
+    "tournament jousting field": frozenset({"ground", "floor", "structure", "sky", "sunlight", "life",
+                                            "open-ground"}),
     # --- interior ---
     "blacksmith's forge": frozenset({"floor", "structure", "heat"}),
     "dungeon cell block": frozenset({"floor", "structure", "dark"}),
     "treasure vault": frozenset({"floor", "structure", "dark"}),
+    "ice palace hall": frozenset({"floor", "structure", "cold"}),
     # --- otherworld ---
     "fairy ring glade": frozenset({"ground", "floor", "sky", "sunlight", "life"}),
     "astral void between worlds": frozenset({"void", "vast"}),
@@ -3086,6 +3150,7 @@ _FORM_KEY_STANCES: dict[str, frozenset[str]] = {
     "manticore": _WALK, "chimera": _WALK, "sphinx": _WALK, "dire wolf": _WALK, "cave bear": _WALK,
     "great tusked boar": _WALK, "basilisk": frozenset({"walks", "slithers"}), "behemoth": _WALK,
     "giant cave spider": _WALK, "hellhound": _WALK, "treant": _WALK,
+    "woolly mammoth": _WALK, "giant scorpion": _WALK,
     "kraken": _SWIM, "hippocamp": _SWIM, "giant sea turtle": _SWIM,
     "troll": _WALK, "ogre-kin": _WALK, "giant": _WALK, "ettin": _WALK,
     "goblinoid": _WALK, "kobold": _WALK, "gnome-kin": _WALK, "pixie": _FEY, "sprite": _FEY, "imp": _FEY,
@@ -3259,7 +3324,7 @@ DEFAULT_NEEDS: dict[str, dict[str, frozenset[str]]] = {
         **{place: _WALLS for place in _ENV_SETTLEMENT + _ENV_INTERIOR if place in CONTEXT_POOLS},
         **{place: _GROUND | _LIFE for place in (
             "ancient oak forest", "enchanted forest glade", "forest of giant mushrooms",
-            "bramble-choked valley",
+            "bramble-choked valley", "jungle temple ruins", "desert oasis",
         )},
         **{place: _GROUND | _COLD for place in (
             "high mountain pass", "snowbound mountain peak", "glacier valley",
@@ -3269,6 +3334,7 @@ DEFAULT_NEEDS: dict[str, dict[str, frozenset[str]]] = {
         "fairy ring glade": _LIFE, "astral void between worlds": frozenset({"void"}),
         "blazing elemental plane": frozenset({"heat"}), "realm of endless night": frozenset({"dark"}),
         "frozen realm of the frost giants": _COLD,
+        "ice palace hall": _WALLS | _COLD,
     },
 }
 
@@ -3285,7 +3351,7 @@ VALUE_STANCES: dict[str, dict[str, frozenset[str]]] = {
 _INHERENTLY_VAST = (
     "elder dragon", "leviathan", "kraken", "roc", "behemoth", "bronze colossus",
     # A type named "giant" is never small ("a small gaunt giant sea turtle").
-    "giant sea turtle", "giant cave spider",
+    "giant sea turtle", "giant cave spider", "giant scorpion", "woolly mammoth",
     # A portal is a gateway a body walks through; "a small portal arch" was a trinket.
     "portal arch",
 )
@@ -4301,8 +4367,10 @@ SPOKEN["environment"] = _SPOKEN_ENVIRONMENT
 # #706 a marsh hydra on a snowbound peak.
 # A marsh is a shore, not a coral reef.
 VALUE_NEEDS["subkind"]["marsh hydra"] = frozenset({"shoreline"})
+# Arid ground only: a giant scorpion on a frozen lake shore is a different animal.
+VALUE_NEEDS["subkind"]["giant scorpion"] = frozenset({"dust"})
 # #739 a bronze colossus filled a wizard's study.
-for _v in ("bronze colossus", "behemoth", "elder dragon"):
+for _v in ("bronze colossus", "behemoth", "elder dragon", "woolly mammoth"):
     VALUE_NEEDS["subkind"][_v] = VALUE_NEEDS["subkind"].get(_v, frozenset()) | frozenset({"vast"})
 VALUE_NEEDS.setdefault("scale", {}).update({v: frozenset({"vast"}) for v in ("colossal", "titanic")})
 # #748 a river barge on a stormy sea coast.
@@ -4337,7 +4405,8 @@ _HELD_KEYS = (
     "giant-kin", "small folk", "goblin shaman", "winged fey", "imp", "hybrid folk", "minotaur",
     "sea folk", "folk", "elf", "wood elf archer", "dwarf", "orc", "halfling", "knight", "paladin",
     "cleric", "archer", "ranger", "rogue", "bard", "monk", "sorcerer", "necromancer", "hedge witch",
-    "druid", "wandering scholar", "herbalist", "travelling merchant", "undead", "construct",
+    "druid", "wandering scholar", "herbalist", "travelling merchant", "gladiator", "pirate captain",
+    "witch hunter", "undead", "construct",
     "crystal golem", "mummy", "clockwork guardian", "animated armour",
 )
 _add_traits("armament", {v: ("held-weapon",) for key in _HELD_KEYS for v in ARMAMENT_POOLS.get(key, ())})

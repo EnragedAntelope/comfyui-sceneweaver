@@ -569,6 +569,8 @@ _ENVIRONMENT_SURFACE = (
     "spore basin of a fungal world",
     "plain of luminous gas-vent flora",
     "crust field of lithophyte mats",
+    "frontier spaceport landing pad",
+    "temperate belt of a tidally locked world",
 )
 
 _ENVIRONMENT_INTERIOR = (
@@ -649,6 +651,10 @@ CONTEXT_POOLS: dict[str, tuple[str, ...]] = {
     "domed colony concourse": (
         "row of pressurised habitat blocks", "curve of the dome lattice overhead",
         "row of pressurised colony airlocks", "line of parked cargo hover-haulers",
+    ),
+    "frontier spaceport landing pad": (
+        "row of squat fuel tanks", "stack of cargo containers", "tall antenna mast with a beacon",
+        "cluster of low prefab cargo sheds",
     ),
     "deep space": (
         "scatter of dead hulls",
@@ -4910,6 +4916,9 @@ PLACE_AFFORDANCES: dict[str, frozenset[str]] = {
     "asteroid mining pit": frozenset({"ground", "floor", "sky", "vast", "sunlight", "dust"}),
     "barren alien wilderness": frozenset({"ground", "floor", "sky", "vast", "sunlight", "dust"}),
     "terraforming processor field": frozenset({"ground", "floor", "sky", "vast", "sunlight", "dust"}),
+    # Open ground, not a structure: a granted "structure" would admit every corridor act.
+    "frontier spaceport landing pad": frozenset({"ground", "floor", "sky", "vast", "sunlight", "dust"}),
+    "temperate belt of a tidally locked world": frozenset({"ground", "floor", "sky", "vast", "sunlight", "dust"}),
     "bioluminescent fungal floor": frozenset({"ground", "floor", "sky", "vast", "sunlight", "life"}),
     "alien fungal growth": frozenset({"ground", "floor", "sky", "vast", "sunlight", "life"}),
     "overgrown ruin field of an abandoned colony": frozenset({"ground", "floor", "sky", "vast", "sunlight", "life"}),
@@ -5074,6 +5083,7 @@ _CONTEXT_NEEDS: dict[str, frozenset[str]] = {
     **{value: frozenset({"submerged"})
        for value in CONTEXT_POOLS["hydrothermal vent field of a water world"]},
     **{value: frozenset({"floor", "structure"}) for value in CONTEXT_POOLS["domed colony concourse"]},
+    **{value: frozenset({"ground"}) for value in CONTEXT_POOLS["frontier spaceport landing pad"]},
 }
 VALUE_NEEDS: dict[str, dict[str, frozenset[str]]] = {
     CONTEXT_FIELD: _CONTEXT_NEEDS,
@@ -7823,6 +7833,9 @@ _SPOKEN_ENVIRONMENT: dict[str, str] = {
     "frozen sea ice": "frozen sea ice of a methane world",
     "domed colony concourse":
         "pressurised colony concourse under a lattice dome",
+    "frontier spaceport landing pad": "frontier spaceport landing pad beneath twin pale moons",
+    "temperate belt of a tidally locked world":
+        "temperate belt of a tidally locked world with a vast red sun fixed low on the horizon",
 }
 
 #: A sealed garment says so in its spoken form, because a model draws "vac suit"
