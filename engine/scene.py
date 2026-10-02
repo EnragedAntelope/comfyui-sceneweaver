@@ -988,6 +988,43 @@ def _rule_bindings(pack: GenrePack, slots: int):
             yield rule, None, None
 
 
+#: ``(id(pack), slots) -> (pack, bound)``. A pack is frozen and shared, so what its
+#: rules bind to cannot change under a render; the fixed point asks for it dozens
+#: of times a scene and re-binding every rule each time was most of a scene's cost.
+#: The pack is held beside its entry so an ``id`` can never be mistaken for a
+#: different pack, and the table is emptied rather than grown without limit.
+_BOUND_RULES: "dict[tuple[int, int], tuple[GenrePack, tuple]]" = {}
+_BOUND_RULES_LIMIT = 32
+
+
+def _bound_rules(pack: GenrePack, slots: int) -> tuple:
+    """``(rule, trigger, target, triggers)`` for every binding, in rule order.
+
+    ``target`` is the address the rule acts on (what an exclusion forbids, what a
+    requirement names), already bound to the slot or pair. Order is the order of
+    ``_rule_bindings``, because the reasons a rule reports are listed in it.
+    """
+    entry = _BOUND_RULES.get((id(pack), slots))
+    if entry is not None and entry[0] is pack:
+        return entry[1]
+    bound = []
+    for rule, slot, pair in _rule_bindings(pack, slots):
+        acted_on = rule.excludes_field if rule.type == RULE_EXCLUDE else rule.requires_field
+        if not acted_on:
+            continue
+        bound.append((
+            rule,
+            bind_address(rule.field, slot, pair),
+            bind_address(acted_on, slot, pair),
+            rule.triggers,
+        ))
+    bound = tuple(bound)
+    if len(_BOUND_RULES) >= _BOUND_RULES_LIMIT:
+        _BOUND_RULES.clear()
+    _BOUND_RULES[(id(pack), slots)] = (pack, bound)
+    return bound
+
+
 def _control_values_ruled_out_by_state(
     pack: GenrePack,
     control_field: str,
@@ -1098,15 +1135,12 @@ def _banned_by_state(
     """
     banned: dict[str, set[str]] = {}
     reasons: dict[str, list[str]] = {}
-    for rule, slot, pair in _rule_bindings(pack, slots):
-        trigger = bind_address(rule.field, slot, pair)
-        if state.get(trigger) not in rule.triggers:
+    for rule, trigger, target, triggers in _bound_rules(pack, slots):
+        if state.get(trigger) not in triggers:
             continue
         if rule.type == RULE_EXCLUDE:
-            target = bind_address(rule.excludes_field, slot, pair)
             forbidden = set(rule.excludes_values)
         else:
-            target = bind_address(rule.requires_field, slot, pair)
             definition = address_of.get(target)
             if definition is None:
                 continue
@@ -1140,11 +1174,9 @@ def _required_targets(
     that must hold one of the required values, empty or not.
     """
     required: set[str] = set()
-    for rule, slot, pair in _rule_bindings(pack, slots):
-        if rule.type != RULE_REQUIRE or not rule.requires_field:
-            continue
-        if state.get(bind_address(rule.field, slot, pair)) in rule.triggers:
-            required.add(bind_address(rule.requires_field, slot, pair))
+    for rule, trigger, target, triggers in _bound_rules(pack, slots):
+        if rule.type == RULE_REQUIRE and state.get(trigger) in triggers:
+            required.add(target)
     return required
 
 

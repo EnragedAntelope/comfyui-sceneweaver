@@ -2571,6 +2571,13 @@ def archetype_for(
     return pack.archetypes[name] if name is not None else None
 
 
+#: ``(id(pack), field) -> (pack, options)``. A pack is frozen, so the union cannot
+#: change; the engine asked for it ten thousand times per sixty scenes. The pack is
+#: held beside its entry so a recycled ``id`` is never taken for another pack.
+_POOL_OPTIONS: "dict[tuple[int, str], tuple[GenrePack, tuple[str, ...]]]" = {}
+_POOL_OPTIONS_LIMIT = 512
+
+
 def pool_options(pack: GenrePack, name: str) -> tuple[str, ...]:
     """Union of every value ``name`` can take, in first-seen order.
 
@@ -2578,12 +2585,19 @@ def pool_options(pack: GenrePack, name: str) -> tuple[str, ...]:
     registration, so a value that is legal under *some* kind must stay
     selectable, or locking it and then switching kind would silently drop it.
     """
+    entry = _POOL_OPTIONS.get((id(pack), name))
+    if entry is not None and entry[0] is pack:
+        return entry[1]
     seen: dict[str, None] = {}
     by_kind = pack.pools.get(name) or {}
     for key in (POOL_DEFAULT_KEY, *by_kind):
         for value in by_kind.get(key, ()):
             seen.setdefault(value, None)
-    return tuple(seen)
+    options = tuple(seen)
+    if len(_POOL_OPTIONS) >= _POOL_OPTIONS_LIMIT:
+        _POOL_OPTIONS.clear()
+    _POOL_OPTIONS[(id(pack), name)] = (pack, options)
+    return options
 
 
 def spoken_value(pack: GenrePack, field: str, value: str) -> str:

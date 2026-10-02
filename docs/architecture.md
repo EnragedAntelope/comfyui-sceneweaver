@@ -921,6 +921,41 @@ as a regression gate; a future session that widens the pools can lower it. Each
 substring is matched at a WORD START, so `ice` does not fire on `service` and
 `ash` not on `crash`.
 
+### Fantasy and horror
+
+`--pack fantasy` and `--pack horror` run the same sweep against those packs, with
+each pack's own biggest scale rungs held under the same ceiling
+(`SCALE_EXTREMES_BY_PACK`: fantasy `colossal` + `titanic`, horror `gargantuan`).
+CI runs both. Neither pack's kinds draw uniformly, so what is gated is the
+ceiling, not the spread. Measured at 1000 seeds, every slot occupied, `scene_filter=Any`:
+
+| Measure | Ceiling | Fantasy | Horror |
+|---|---|---|---|
+| Largest single `kind` share | 20% | 12.4% (`folk`) | 18.3% (`spirit`) |
+| Smallest single `kind` share | - | 3.1% (`structure`) | 4.6% (`haunted place`) |
+| Scale-extreme share of drawn `scale` | 10% | 2.7% | 1.5% |
+
+Horror's largest kind sits 1.7 points under the ceiling. If a horror kind is
+added and that share breaches it, fix it by authoring (more places a kind
+can stand in, or more of the other kinds), never by raising the ceiling.
+
+| pack | motif | share |
+|---|---|---|
+| fantasy | `stone` | 47.1% |
+| fantasy | `gold` | 37.1% |
+| fantasy | `fire` | 35.8% |
+| fantasy | `bone` | 31.2% |
+| fantasy | `growth` | 24.8% |
+| fantasy | `ice` | 7.1% |
+| horror | `bone` | 35.8% |
+| horror | `blood` | 30.7% |
+| horror | `water` | 22.8% |
+| horror | `rot` | 22.2% |
+
+Both packs sit well under the shared motif ceiling, which is the sci-fi
+baseline plus headroom. A pack that wants a tighter gate declares it in
+`MOTIF_CEILINGS`.
+
 ### Which fields are voiced
 
 There is no single number any more, and the tail is not dead. Two mechanisms

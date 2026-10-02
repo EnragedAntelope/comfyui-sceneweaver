@@ -14,9 +14,9 @@ jobs:
   test:
     name: Tests
     runs-on: ubuntu-latest
-    # Without this a hung step runs to the 6-hour default. The suite plus both
-    # sweeps finish well inside 30 minutes.
-    timeout-minutes: 30
+    # Without this a hung step runs to the 6-hour default. The suite takes about
+    # 25 minutes on a runner, so this leaves room for the next content round.
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -56,6 +56,10 @@ jobs:
         # single-scene symptom. Fails if one kind or the scale extremes break
         # their documented ceiling; the baseline is in docs/architecture.md.
         run: python scripts/sample_distribution.py --seeds 500
+      - name: Measure the fantasy distribution
+        run: python scripts/sample_distribution.py --pack fantasy --seeds 500
+      - name: Measure the horror distribution
+        run: python scripts/sample_distribution.py --pack horror --seeds 500
       - name: Audit the reported concern classes
         # The user's own graph: a Scene Entity wired into the Scene Weaver. Every class a
         # reported image fell into must stay absent; the flags are frozen in scripts/concern_flags.py.

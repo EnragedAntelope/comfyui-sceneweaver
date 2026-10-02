@@ -2,7 +2,8 @@
 
     python scripts/sample_distribution.py                 # 1000 seeds, Everything
     python scripts/sample_distribution.py --seeds 5000
-    python scripts/sample_distribution.py --detail-level Standard --filter Peaceful
+    python scripts/sample_distribution.py --pack fantasy   # or horror
+    python scripts/sample_distribution.py --filter Peaceful
 
 **Bias is measured, not assumed.** Identity Forge only discovered that 13.7% of
 its default male renders were carrying a handbag by sweeping a thousand seeds --
@@ -12,9 +13,9 @@ at one scene at a time. This script is the check that looks at all of them.
 
 It reports four things and enforces three ceilings:
 
-* **per-kind share** -- which of the nine kinds a slot actually gets. A kind
+* **per-kind share** -- which of a pack's kinds a slot actually gets. A kind
   above ``KIND_CEILING`` means one subject dominates the pack.
-* **``scale`` extremes** -- ``colossal`` + ``planetary`` share, held under
+* **``scale`` extremes** -- each pack's biggest rungs (``SCALE_EXTREMES_BY_PACK``), held under
   ``SCALE_EXTREME_CEILING`` by the pack's own weights. Scale reads by contrast:
   a generator that makes everything enormous has no scale at all.
 * **per-value share within each field** -- the handbag check. A value far above
@@ -30,7 +31,7 @@ when a ceiling is breached, so it can be a gate rather than a report nobody
 reads. Re-run it after any pool change and update the baseline recorded in
 ``docs/architecture.md``.
 
-**It imports ``data.scifi``, not the pack entrypoint.** The ``user_options.json``
+**It imports ``data.<pack>``, not the pack entrypoint.** The ``user_options.json``
 merge happens in the repo-root ``__init__.py``, so importing the data module
 yields the built-ins and only the built-ins -- a maintainer's private entries can
 never reach a number that gets written into a committed document. See
@@ -48,16 +49,34 @@ _ROOT = Path(__file__).resolve().parent.parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from data.genre import SCENE_FILTERS, SCENE_NODE_SLOTS, pool_for  # noqa: E402
+from data.genre import SCENE_FILTERS, SCENE_NODE_SLOTS, pool_options  # noqa: E402
 from data.scifi import SCIFI_PACK  # noqa: E402
+
+#: The pack to measure when none is passed; ``--pack`` picks the others.
+PACK_SLUGS = ("scifi", "fantasy", "horror")
+
+
+def load_pack(slug: str):
+    """The built-in pack for ``slug``, imported lazily so a run loads only one."""
+    if slug == "fantasy":
+        from data.fantasy import FANTASY_PACK  # noqa: E402
+
+        return FANTASY_PACK
+    if slug == "horror":
+        from data.horror import HORROR_PACK  # noqa: E402
+
+        return HORROR_PACK
+    return SCIFI_PACK
+
 from engine.scene import generate_scene  # noqa: E402
 
-#: No kind may take more than this share of occupied slots. Nine kinds draw
-#: uniformly, so the expected share is ~11%; the ceiling leaves room for the
-#: constraint pass to redistribute without letting one subject take over.
+#: No kind may take more than this share of occupied slots. A pack's kinds draw
+#: near-uniformly (sci-fi nine, fantasy twelve, horror eight), so the expected share
+#: is 8-13%; the ceiling leaves room for the constraint pass to redistribute without
+#: letting one subject take over. A breach is fixed by authoring, never by raising it.
 KIND_CEILING = 0.20
 
-#: ``colossal`` + ``planetary`` share of drawn scales. Two values out of a
+#: Share of drawn scales that are a pack's biggest rungs. Two values out of a
 #: seven-rung ladder would be ~29% on a flat draw; the pack weights them down,
 #: because a scene where everything is enormous has no sense of scale at all.
 #: Measured at 7.2% over 1000 seeds.
@@ -92,7 +111,15 @@ MOTIF_CEILINGS: dict[str, float] = {"ring": 0.15}
 #: feeling repetitive.
 VALUE_SKEW_FACTOR = 2.5
 
-SCALE_EXTREMES = ("colossal", "planetary")
+#: The rungs that read as "everything is enormous" when over-drawn, per pack: the
+#: top of each pack's own ladder. Fantasy's ladder also carries fixed heights
+#: ("forty-foot-tall"), which are specific to a creature and are not extremes.
+SCALE_EXTREMES_BY_PACK = {
+    "scifi": ("colossal", "planetary"),
+    "fantasy": ("colossal", "titanic"),
+    "horror": ("gargantuan",),
+}
+SCALE_EXTREMES = SCALE_EXTREMES_BY_PACK["scifi"]
 
 
 def motif_hits(text: str, motifs) -> set[str]:
@@ -110,9 +137,9 @@ def motif_hits(text: str, motifs) -> set[str]:
     }
 
 
-def sweep(seeds: int, scene_filter: str):
+def sweep(seeds: int, scene_filter: str, pack=SCIFI_PACK):
     """``(per-field counter, slots, scenes, motif counter)``."""
-    fields: dict[str, Counter] = {name: Counter() for name in SCIFI_PACK.entity_fields}
+    fields: dict[str, Counter] = {name: Counter() for name in pack.entity_fields}
     fields["environment"] = Counter()
     fields["situation"] = Counter()
     motifs: Counter = Counter()
@@ -123,16 +150,16 @@ def sweep(seeds: int, scene_filter: str):
         # the kind widgets alone stopped being enough when the count arrived,
         # and this silently measured one slot per scene until it did.
         text, document = generate_scene(
-            seed, SCIFI_PACK, scene_filter=scene_filter,
+            seed, pack, scene_filter=scene_filter,
             entity_count=SCENE_NODE_SLOTS,
         )
-        for name in motif_hits(text, SCIFI_PACK.motifs):
+        for name in motif_hits(text, pack.motifs):
             motifs[name] += 1
         if document["environment"]:
             fields["environment"][document["environment"]] += 1
         for record in document["entities"]:
             slots += 1
-            for name in SCIFI_PACK.entity_fields:
+            for name in pack.entity_fields:
                 if record.get(name):
                     fields[name][record[name]] += 1
             if record.get("situation"):
@@ -149,7 +176,10 @@ def _share_table(counter: Counter, total: int, limit: int) -> list[str]:
     ]
 
 
-def report(fields, slots: int, scenes: int, top: int, motifs: "Counter | None" = None) -> list[str]:
+def report(
+    fields, slots: int, scenes: int, top: int, motifs: "Counter | None" = None,
+    pack=SCIFI_PACK, extremes: "tuple[str, ...]" = SCALE_EXTREMES,
+) -> list[str]:
     failures: list[str] = []
 
     print(f"scenes {scenes}   occupied slots {slots}")
@@ -167,14 +197,14 @@ def report(fields, slots: int, scenes: int, top: int, motifs: "Counter | None" =
     print()
 
     scale_total = sum(fields["scale"].values())
-    extreme = sum(fields["scale"][value] for value in SCALE_EXTREMES)
+    extreme = sum(fields["scale"][value] for value in extremes)
     share = extreme / scale_total if scale_total else 0.0
-    print(f"scale extremes ({' + '.join(SCALE_EXTREMES)}): {share:.2%} of drawn scales")
-    flat = len(SCALE_EXTREMES) / max(1, len(pool_for(SCIFI_PACK, "scale")))
+    print(f"scale extremes ({' + '.join(extremes)}): {share:.2%} of drawn scales")
+    flat = len(extremes) / max(1, len(pool_options(pack, "scale")))
     print(f"    a flat draw over the ladder would give {flat:.2%}")
     if share > SCALE_EXTREME_CEILING:
         failures.append(
-            f"colossal+planetary at {share:.2%}, over the {SCALE_EXTREME_CEILING:.0%} "
+            f"{'+'.join(extremes)} at {share:.2%}, over the {SCALE_EXTREME_CEILING:.0%} "
             "ceiling: scale reads by contrast and everything being enormous has none"
         )
     print()
@@ -187,7 +217,7 @@ def report(fields, slots: int, scenes: int, top: int, motifs: "Counter | None" =
         print(f"  {name}  --  voiced on {voiced:.1%} of {'scenes' if name == 'environment' else 'slots'}")
         for line in _share_table(counter, total, top):
             print(line)
-        spec = SCIFI_PACK.entity_fields.get(name)
+        spec = pack.entity_fields.get(name)
         if total and counter and not (spec and spec.weights):
             uniform = 1.0 / len(counter)
             value, count = counter.most_common(1)[0]
@@ -216,13 +246,17 @@ def main(argv: "list[str] | None" = None) -> int:
     parser.add_argument("--seeds", type=int, default=1000)
     parser.add_argument("--filter", dest="scene_filter", default="Any", choices=SCENE_FILTERS)
     parser.add_argument("--top", type=int, default=5, help="values listed per field")
+    parser.add_argument("--pack", choices=PACK_SLUGS, default="scifi")
     args = parser.parse_args(argv)
+    pack = load_pack(args.pack)
 
-    print(f"sample_distribution -- {SCIFI_PACK.display} pack")
+    print(f"sample_distribution -- {pack.display} pack")
     print(f"scene_filter={args.scene_filter}")
     print()
-    fields, slots, scenes, motifs = sweep(args.seeds, args.scene_filter)
-    failures = report(fields, slots, scenes, args.top, motifs)
+    fields, slots, scenes, motifs = sweep(args.seeds, args.scene_filter, pack)
+    failures = report(
+        fields, slots, scenes, args.top, motifs, pack, SCALE_EXTREMES_BY_PACK[args.pack]
+    )
     print()
     if failures:
         print(f"FAILED with {len(failures)} finding(s):")
