@@ -675,6 +675,238 @@ function loadStyles() {
   link.href = new URL("./sceneweaver.css", import.meta.url).href;
   document.head.append(link);
 }
+
+// ---------------------------------------------------------------------------
+// (e) Re-deriving the face, and a working "Fix node (recreate)"
+// ---------------------------------------------------------------------------
+
+/**
+ * Re-derive everything the face shows from the widget values it holds now.
+ *
+ * Restoring `widgets_values` (a workflow load, a paste, an undo, another pack's
+ * recreate) assigns `.value` and fires no widget callback, so the per-kind labels,
+ * the narrowed option lists and the hidden slots would otherwise stay whatever the
+ * freshly built node had until the user touched a kind. Labels and options only;
+ * the widget array is never touched.
+ */
+export function syncFace(node, spec) {
+  applyEveryKindScope(node, spec);
+  applyEveryScopeNarrowing(node, spec);
+  applyCompactFace(node, spec);
+}
+
+/*
+ * "Fix node (recreate)" is not a ComfyUI feature. ComfyUI-Manager contributes it
+ * (js/node_fixer.js) and its implementation adds the replacement node first, then
+ * throws while reconnecting -- node ids are strings and `connect` only resolves a
+ * numeric id, and `convertWidgetToInput` is called on every widget-backed input --
+ * so the original is never removed and the graph is left with a duplicate. Upstream
+ * issue: Comfy-Org/ComfyUI-Manager#3126. Stylebook and Identity Forge ship the same
+ * fix, and for the same reason this pack ships its own and never calls Manager's.
+ *
+ * Three rules make a recreate correct, each one a bug avoided:
+ *   1. Pass the node OBJECT to connect(), never its id.
+ *   2. Restore widget values by NAME, never by index; a value the fresh combo no
+ *      longer offers is dropped and named, not forced.
+ *   3. Reconnect links by SLOT NAME, never by slot number.
+ * And remove the original before reconnecting: an input holds one link.
+ */
+const RECREATE_LABEL = "Fix node (recreate)";
+// A pattern, not the exact label: if Manager renames its entry or fixes it, there
+// is still exactly one recreate entry in the menu, and it is ours.
+const RECREATE_PATTERN = /recreate/i;
+
+function getLink(graph, linkId) {
+  if (linkId == null) return null;
+  try {
+    if (typeof graph.getLink === "function") return graph.getLink(linkId);
+  } catch (_) {
+    // fall through to the map form
+  }
+  try {
+    return graph.links[linkId] || null;
+  } catch (_) {
+    return null;
+  }
+}
+
+/** Every link touching `node`, keyed by slot NAME: the schema is why we recreate. */
+function snapshotLinks(node) {
+  const graph = node.graph;
+  const inputs = [];
+  const outputs = [];
+  for (const input of node.inputs || []) {
+    const link = getLink(graph, input.link);
+    const origin = link && graph.getNodeById(link.origin_id);
+    if (origin) inputs.push({ name: input.name, origin, originSlot: link.origin_slot });
+  }
+  for (const output of node.outputs || []) {
+    for (const linkId of output.links || []) {
+      const link = getLink(graph, linkId);
+      const target = link && graph.getNodeById(link.target_id);
+      if (target) outputs.push({ name: output.name, target, targetSlot: link.target_slot });
+    }
+  }
+  return { inputs, outputs };
+}
+
+function comboValues(widget) {
+  const values = widget?.options?.values;
+  if (typeof values === "function") {
+    try {
+      return values(widget) || null;
+    } catch (_) {
+      return null;
+    }
+  }
+  return Array.isArray(values) ? values : null;
+}
+
+/** Copy values by name; returns the names that could not be restored. */
+function copyWidgetValues(from, to) {
+  const dropped = [];
+  const target = widgetMap(to);
+  for (const widget of from.widgets || []) {
+    if (!widget || !widget.name) continue;
+    if (widget.type === "button" || widget.serialize === false) continue;
+    const match = target.get(widget.name);
+    const values = match && comboValues(match);
+    if (!match || (values && !values.includes(widget.value))) {
+      dropped.push(widget.name);
+      continue;
+    }
+    match.value = widget.value;
+  }
+  return dropped;
+}
+
+/**
+ * Replace `node` with a fresh instance of the same type, keeping its position,
+ * size, title, colours, mode, widget values and every link. A failure before the
+ * original is removed rolls the fresh node back and leaves the graph as it was.
+ */
+export function recreateNode(node) {
+  const graph = node.graph || app.graph;
+  const LiteGraph = window.LiteGraph;
+  if (!graph || !LiteGraph) return false;
+
+  const type = node.comfyClass || node.type;
+  const fresh = LiteGraph.createNode(type);
+  if (!fresh) {
+    console.warn(`${LOG_PREFIX} could not create a replacement node of type ${type}`);
+    return false;
+  }
+
+  const links = snapshotLinks(node);
+  let dropped;
+  try {
+    fresh.pos = [node.pos[0], node.pos[1]];
+    if (node.title) fresh.title = node.title;
+    if (node.color) fresh.color = node.color;
+    if (node.bgcolor) fresh.bgcolor = node.bgcolor;
+    if (typeof node.mode === "number") fresh.mode = node.mode;
+    graph.add(fresh);
+    dropped = copyWidgetValues(node, fresh);
+    // A raw value copy restores the values but not what a kind callback does with
+    // them: re-derive the labels, narrowed lists and hidden slots.
+    if (fresh.__sceneweaver) syncFace(fresh, fresh.__sceneweaver);
+    if (node.size) {
+      fresh.setSize([
+        Math.max(node.size[0], fresh.size[0]),
+        Math.max(node.size[1], fresh.size[1]),
+      ]);
+    }
+    if (node.flags?.collapsed) fresh.flags = { ...(fresh.flags || {}), collapsed: true };
+  } catch (error) {
+    try {
+      graph.remove(fresh);
+    } catch (_) {
+      // nothing more to undo
+    }
+    throw error;
+  }
+
+  // Before reconnecting: an input holds one link, so reconnecting first would
+  // fight the link still attached to the original.
+  graph.remove(node);
+
+  const unresolved = [];
+  const attempt = (name, fn) => {
+    try {
+      if (fn() === false) unresolved.push(name);
+    } catch (error) {
+      unresolved.push(name);
+      console.warn(`${LOG_PREFIX} could not restore the link on ${name}:`, error);
+    }
+  };
+  for (const link of links.inputs) {
+    const slot = fresh.findInputSlot(link.name);
+    // The node object, never its id: ids are strings and connect() resolves numbers.
+    attempt(link.name, () => (slot >= 0 ? link.origin.connect(link.originSlot, fresh, slot) : false));
+  }
+  for (const link of links.outputs) {
+    const slot = fresh.findOutputSlot(link.name);
+    attempt(link.name, () => (slot >= 0 ? fresh.connect(slot, link.target, link.targetSlot) : false));
+  }
+  if (unresolved.length) {
+    console.warn(
+      `${LOG_PREFIX} recreated ${type}, but these connections could not be restored: ${unresolved.join(", ")}`,
+    );
+  }
+  if (dropped.length) {
+    console.warn(
+      `${LOG_PREFIX} recreated ${type}, but these widgets no longer exist or no longer ` +
+        `accept their saved value and were left at their default: ${dropped.join(", ")}`,
+    );
+  }
+  if (typeof graph.afterChange === "function") graph.afterChange();
+  app.canvas?.setDirty?.(true, true);
+  return true;
+}
+
+/** Drop every other pack's recreate entry and add ours, in the same place in the menu. */
+function replaceRecreateOption(node, options) {
+  for (let index = options.length - 1; index >= 0; index -= 1) {
+    const content = options[index]?.content;
+    if (typeof content === "string" && RECREATE_PATTERN.test(content)) options.splice(index, 1);
+  }
+  options.push({
+    content: RECREATE_LABEL,
+    callback: () => {
+      try {
+        recreateNode(node);
+      } catch (error) {
+        console.error(`${LOG_PREFIX} recreate failed; the graph was left unchanged:`, error);
+      }
+    },
+  });
+}
+
+/**
+ * An own property on the instance, not another prototype wrapper: every pack adds
+ * its entries by wrapping the prototype and the last wrapper installed runs last,
+ * so only an instance property sees the finished list whatever the load order.
+ */
+function installRecreateMenu(node) {
+  const inherited = node.getExtraMenuOptions;
+  node.getExtraMenuOptions = function (canvas, options) {
+    let result;
+    if (typeof inherited === "function") {
+      try {
+        result = inherited.call(this, canvas, options);
+      } catch (error) {
+        console.warn(`${LOG_PREFIX} an upstream menu handler failed:`, error);
+      }
+    }
+    try {
+      replaceRecreateOption(this, options);
+    } catch (error) {
+      console.warn(`${LOG_PREFIX} could not install the recreate menu entry:`, error);
+    }
+    return result;
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Setup
 // ---------------------------------------------------------------------------
@@ -760,9 +992,8 @@ export function setupNode(node, spec) {
     if (setAll.value !== spec.set_all.off) setAll.value = spec.set_all.off;
   }
 
-  applyEveryKindScope(node, spec);
-  applyEveryScopeNarrowing(node, spec);
-  applyCompactFace(node, spec);
+  installRecreateMenu(node);
+  syncFace(node, spec);
   return true;
 }
 
@@ -824,9 +1055,9 @@ app.registerExtension({
     nodeType.prototype.onConnectionsChange = function (type, index, connected, link_info) {
       const result = onConnectionsChange ? onConnectionsChange.apply(this, arguments) : undefined;
       try {
-        applyCompactFace(this, spec);
+        syncFace(this, spec);
       } catch (err) {
-        console.error(`${LOG_PREFIX} compact face failed:`, err);
+        console.error(`${LOG_PREFIX} face sync failed:`, err);
       }
       return result;
     };
@@ -835,9 +1066,9 @@ app.registerExtension({
     nodeType.prototype.onConfigure = function () {
       const result = onConfigure ? onConfigure.apply(this, arguments) : undefined;
       try {
-        applyCompactFace(this, spec);
+        syncFace(this, spec);
       } catch (err) {
-        console.error(`${LOG_PREFIX} compact face failed:`, err);
+        console.error(`${LOG_PREFIX} face sync failed:`, err);
       }
       return result;
     };
