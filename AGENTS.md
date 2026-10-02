@@ -10,7 +10,7 @@ genre is a data module and two registration lines.
 
 _Last verified: 2026-10-02_
 
-- **Status:** live at v0.5.1 on the ComfyUI Registry; `main` carries all three
+- **Status:** live at v0.5.1 on the ComfyUI Registry (0.6.0 is versioned on the branch, unmerged); `main` carries all three
   genres on one coherence engine. Branch `tmp/sceneweaver-0.5.2` holds the
   unreleased work: user_options keys, a working recreate, the speedup and gates,
   and a content round (places, subjects, relations and colours in all three
