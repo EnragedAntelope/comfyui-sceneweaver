@@ -5,8 +5,10 @@ their node pairs; see "The fantasy pack" and "The horror pack" in
 `docs/architecture.md`). Horror's gore filter shipped as genre labels over the
 existing filter axis (R5 there), so no named tag axes were needed for it. The
 fantasy Tone filter, cross-genre traits in the payload and `time_of_day` are still
-designs. This document keeps the content brainstorm and the decisions behind both
-packs, and how each idea maps onto machinery the sci-fi pack proved.
+designs, and **the maintainer has not committed to building any of them**. This
+document keeps the content brainstorm and the decisions behind both packs, and
+how each idea maps onto machinery the sci-fi pack proved. Section 9 assesses
+`time_of_day` (2026-10-02).
 
 The step-by-step build checklist lives in `docs/architecture.md` ("How to add a
 fantasy genre, concretely"). This file does not repeat it; it supplies the
@@ -282,3 +284,56 @@ failing open.
    have no day at all, and the places that do already carry `sunlight`. Its one
    risk is a clash with a style prefix ("golden hour" against "night"), which the
    README will call out.
+
+## 9. `time_of_day`: an assessment, not a commitment (2026-10-02)
+
+The maintainer asked what `time_of_day` would help, what it would hurt and how
+much work it is. **It is not scheduled and nothing here is promised.** If it is
+ever built, it defaults to **unspoken** (`None`): an existing node, a saved
+workflow and a style prefix see no change until someone picks a time or Random.
+That supersedes decision 4's "Random", which would have started every fresh node
+saying "at night" over whatever style the user supplied.
+
+**What it would help.**
+
+* **Acts that need a time.** A vampire rising at dusk, a troll turning to stone
+  in the first light, a werewolf under a full moon, a will-o'-wisp over a fen at
+  night. Today none of these is expressible: neither pack uses a time word, so a
+  scene cannot be "the hour before dawn" and a creature's identity cannot depend
+  on it.
+* **Variety without new places.** One graveyard becomes several scenes.
+* **Batches.** A user can pin "night" for a whole run, which a style prefix
+  cannot do per scene.
+
+**What it would hurt.**
+
+* **The pack owns no rendering.** `data/fantasy.py` records that words like
+  "moonlight" are the style pack's, not the subject's. A time of day is closer to
+  the line than any current field: the pitch is that it is a *place fact* (what
+  the place affords), spoken as a setting ("a graveyard at dusk"), never as
+  lighting ("dusk lighting", "moonlit"). That discipline must be enforced by the
+  validator, not remembered.
+* **Style clashes.** A prefix that says "golden hour" against a scene that says
+  "night" gives the encoder two answers. Stylebook users are the most exposed.
+* **Interiors.** A crypt or a ballroom has no hour; the time must be dropped
+  there, never spoken, or "a boiler room at dawn" appears.
+* **A wider surface for render traps.** Every time word is a new word a model can
+  draw literally.
+
+**How much work.** About one coherence round, and one contract change.
+
+* The contract change: today only `environment` grants affordances
+  (`affordances_of`, about a dozen call sites across `engine/` and `data/genre.py`).
+  A scene field that *contributes* affordances (`dark`, `moonlight`, `sunlight`)
+  generalises that, and a place must be able to refuse a time (an interior).
+* New control, appended at the end of `widget_order` (never inserted), with
+  `widget_order` frozen by `tests/test_widget_order_frozen.py` extended by one key.
+* Content: needs and acts tagged per time, re-scoping existing `sunlight`/`dark`
+  needs to read the drawn time, and a reach audit pass so every new act is drawn.
+* Gates: a validator check that no value in any pool is a lighting word, a
+  coherence-sweep class for "interior spoken with a time", and a render test.
+
+A cheaper partial step exists if wanted: ship only the acts that need a time,
+drawn by a hidden scene-level draw that is not a widget, and decide later whether
+the user should be able to pin it. That avoids the widget-order and style-clash
+costs but gives the user no control, which is most of the point.

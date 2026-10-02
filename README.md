@@ -229,7 +229,7 @@ an **engine's glow** belong to the subject, so SceneWeaver owns those. A colour
 
 ## Example workflows
 
-Two working graphs ship in [`example_workflows/`](https://github.com/EnragedAntelope/comfyui-sceneweaver/tree/main/example_workflows):
+Two working graphs ship in [`example_workflows/`](https://github.com/EnragedAntelope/comfyui-sceneweaver/tree/main/example_workflows). Each carries the Scene Weaver and Scene Entity pair for all three genres, so swap whichever you want into the encoder:
 
 | Workflow | What it shows |
 |---|---|
@@ -270,8 +270,9 @@ python scripts/builtin_options.py subkind --kind cryptid --pack horror
 
 The genre boundary is a **seam in the data layer**, not an assumption baked into
 the engine - the grammar, the vocabulary and the coherence rules all live in a
-genre module, which is how fantasy and horror arrived as data. Next up: a time of
-day control for fantasy and horror, and a tone control for fantasy. The plan is in
+genre module, which is how fantasy and horror arrived as data. Ideas under
+consideration, not promised: a time of day control for fantasy and horror, and a
+tone control for fantasy. They are written up in
 [`docs/genre-roadmap.md`](https://github.com/EnragedAntelope/comfyui-sceneweaver/blob/main/docs/genre-roadmap.md).
 
 **Want a fourth genre, or something else entirely?**
