@@ -551,7 +551,7 @@ FORM_POOLS: dict[str, tuple[str, ...]] = {
     "drowned dead": ("swollen dripping frame", "weed-draped stooped frame"),
     # spirit
     "apparition": ("translucent drifting figure", "veiled floating figure",
-                   "half-seen translucent figure", "slender figure with long lank hair"),
+                   "faint translucent figure", "slender figure with long lank hair"),
     "wrathful spirit": ("tattered billowing shape", "long-limbed contorted shape",
                         "hooded drifting shape", "figure bent backwards at the waist"),
     # cryptid
@@ -682,7 +682,7 @@ MATERIAL_POOLS: dict[str, tuple[str, ...]] = {
     "writhing mass of snakes": ("slick overlapping scales", "dull dry scales"),
     "swarm of centipedes": ("segmented chitin plates",),
     "swarm of beetles": ("glossy wing cases",),
-    "afflicted": ("filthy nightshirt", "threadbare sackcloth smock", "stained bandage wrappings"),
+    "afflicted": ("filthy nightshirt", "threadbare sackcloth smock", "sweat-stained linen shift"),
 }
 
 _COLOR_SKIN = ("grey-green", "corpse grey", "bruised purple", "jaundiced yellow", "waxen white",
@@ -750,6 +750,7 @@ MARKINGS_POOLS: dict[str, tuple[str, ...]] = {
     "swarm": (),
     "eldritch horror": ("pulsing vein patterning", "clustered warty growths"),
     "mortal": ("painted ritual sigils", "sewn-on bone charms", "mud-spattered hems"),
+    "afflicted": ("mud-spattered hems", "patched elbows"),
     "cursed object": ("scratched sigils", "faded painted flowers", "tiny bite marks"),
     "furnishing": ("scratched sigils", "scorch marks", "crazed gilding"),
     "haunted place": ("scrawled warning sigils", "water stains", "scorch marks",
@@ -847,7 +848,7 @@ EMITTER_POOLS: dict[str, tuple[str, ...]] = {
     "undead": ("reflective eye", "sunken pinprick eye"),
     # "luminous shimmer" drew a second, glowing ghost beside the first (#1270),
     # the luminous-outline trap of round XXIII again.
-    "spirit": ("inner light in its chest", "ghostly lantern held in one hand", "light behind its eyes",
+    "spirit": ("inner light in its chest", "drifting will-o'-wisp light beside it", "light behind its eyes",
                "hollow burning eye"),
     "cryptid": ("reflective eye", "burning eye"),
     # Glowing pustules were drawn as a second row of red eyes (#1302).
@@ -1126,7 +1127,7 @@ CARDINALITY: dict[str, dict[str, str]] = {
     ),
     "emitters": _cardinality(
         ("a lone part", ("spectral flame in its chest", "inner light in its chest",
-                         "ghostly lantern held in one hand",
+                         "drifting will-o'-wisp light beside it",
                          "guttering candle behind a broken pane", "rusted grave lantern at its gate",
                          "faint lamp high in its lamp room", "lamp in a high broken window",
                          "blinking red warning lamp", "lamp in a top-floor ward window",
@@ -1357,7 +1358,7 @@ _S_OCCULT_ACT = (
     "laying out cards by candle stub", "drawing a chalk circle", "stirring a bubbling iron pot",
 )
 _S_SURVIVOR_EV = (
-    "running for their life", "diving for cover", "stumbling and falling",
+    "running for their life", "diving for cover", "stumbling backwards away from something in the dark",
     "hiding behind an overturned table", "spinning toward a noise",
 )
 _S_SURVIVOR_EV_GEAR = (
@@ -3104,6 +3105,12 @@ TRAIT_REASONS.update({
     "brick-built|dressed-stone": "a brick hall is built of brick",
     "open-landscape|keepsake-object": "a hand-sized keepsake in an open landscape is drawn house-sized",
 })
+
+# 1003 render test (sceneweaver103): a skeleton dragging entrails drew a chain; a
+# plague victim with bone charms drew a mummy hung with bones.
+_add_traits(SITUATION_FIELD, {v: ("flesh-intact",) for v in (
+    "dragging a trail of spilled entrails behind it", "clawing open its own stitched-shut abdomen",
+)})
 
 HORROR_PACK = GenrePack(
     slug="horror",

@@ -611,13 +611,13 @@ CONCERNS: tuple[Concern, ...] = (
     Concern(
         "a creature inside a hull goes for a craft",
         lambda r, d, t: bool(re.search(
-            r"\b(drones?|pods?|hulls?|shuttlecraft|probes?)\b", said(r, "situation"))),
+            r"\b(drones?|pods?|hulls?|shuttlecraft|ships?|probes?)\b", said(r, "situation"))),
         widgets={"environment": "cockpit interior", "entity1_kind": "alien creature"},
     ),
     Concern(
         "a tiny or small creature takes a craft",
         lambda r, d, t: said(r, "scale") in ("tiny", "small") and bool(re.search(
-            r"\b(drones?|pods?|shuttlecraft|probes?|whole hull|across a hull)\b",
+            r"\b(drones?|pods?|shuttlecraft|ships?|probes?|whole hull|across a hull)\b",
             said(r, "situation"))),
         widgets={"environment": "frozen methane flats", "entity1_kind": "alien creature"},
     ),
@@ -688,7 +688,7 @@ CONCERNS: tuple[Concern, ...] = (
         "a starship shows exhaust while its act already describes a plume",
         lambda r, d, t: bool(re.search(r"\b(plume|sheath|long burn|stuck open)\b",
                                        said(r, "situation")))
-        and bool(re.search(r"\b(thrusters?|nozzles?|torch|exhaust|nacelles?|vents?)\b",
+        and bool(re.search(r"\b(thrusters?|nozzles?|torch|exhaust|nacelles?|drive pods?|vents?)\b",
                            said(r, "emitters"))),
         widgets={"entity1_kind": "starship"},
     ),

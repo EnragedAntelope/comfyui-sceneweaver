@@ -169,8 +169,11 @@ _VOWEL_CONSONANT_PREFIXES: tuple[str, ...] = (
 )
 
 #: Singular words that end in "s" and are not caught by the two rules below.
+#: The adverbs are here because a head read off "figure bent backwards at the
+#: waist" lands on one, and the phrase is singular.
 _SINGULAR_S: frozenset[str] = frozenset({
-    "gas", "canvas", "atlas", "lens", "bus", "plus", "chaos",
+    "gas", "canvas", "atlas", "lens", "bus", "plus", "chaos", "cyclops",
+    "backwards", "forwards", "sideways",
 })
 
 

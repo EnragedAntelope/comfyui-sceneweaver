@@ -77,7 +77,7 @@ generation ships to gate rings, monoliths, resonant lattice spires, collapsing
 stars and stripped-out hulks.
 
 **And a situation for each one.** Entities are never just *standing there*. They
-are towing a disabled shuttlecraft in a tractor beam, going down under a mass of
+are towing a crippled courier starship in a tractor beam, going down under a mass of
 smaller units, spinning a habitat ring up to speed, kneeling to read a bootprint,
 lashing out with a hooked limb. An action in progress is what makes a still frame a *scene*.
 

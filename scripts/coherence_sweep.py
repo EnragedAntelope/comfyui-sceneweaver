@@ -110,7 +110,7 @@ BREAKAGE = _words("losing", "collapsing", "breaking", "buckling", "shattering", 
                   "shorting", "sparks?", "sparking", "torn", "severed", "shower of parts")
 #: The object of a creature's act, when it is a craft.
 CRAFT = _words("drones?", "pods?", "hulls?", "shuttlecraft", "shuttles?", "landers?",
-               "probes?", "starships?", "interceptors?", "spacecraft")
+               "probes?", "starships?", "ships?", "interceptors?", "spacecraft")
 #: A creature that reads as an Earth animal. The subkind and form carry it.
 EARTH_ANALOG = _words("arachnoid", "insectoid", "cephalopod", "serpent", "serpentine",
                       "worm-form", "hexapodal")
@@ -118,7 +118,7 @@ EARTH_ANALOG = _words("arachnoid", "insectoid", "cephalopod", "serpent", "serpen
 EARTH_INTEGUMENT = _words("chitinous carapace", "keratinous plate", "leathery hide",
                           "scaled hide", "feathered pelt")
 #: Exhaust on the hull, and an act that describes its own plume.
-EXHAUST = _words("thrusters?", "nozzles?", "torch", "exhaust", "nacelles?", "plume")
+EXHAUST = _words("thrusters?", "nozzles?", "torch", "exhaust", "nacelles?", "drive pods?", "plume")
 PLUME_ACT = _words("plume", "sheath", "long burn", "thrusters?", "stuck open")
 #: A calm working crew in the scenery.
 CREW = _words("crew", "pressure suits", "technicians", "workers")

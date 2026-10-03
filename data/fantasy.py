@@ -894,7 +894,7 @@ FORM_POOLS: dict[str, tuple[str, ...]] = {
     "golem": _FORM_GOLEM,
     "bronze colossus": ("towering statuesque body", "vast armoured statuesque body"),
     "animated armour": ("hollow plate-armoured body", "towering plate-armoured body"),
-    "clockwork guardian": ("clockwork humanoid body", "lion-headed clockwork humanoid body"),
+    "clockwork guardian": ("gear-driven humanoid body", "lion-headed gear-driven humanoid body"),
     "living statue": ("statuesque humanoid body", "robed statuesque body"),
     "gargoyle": ("winged crouching stone body", "horned winged stone body"),
     # structure
@@ -2004,7 +2004,7 @@ _S_GIANT_EV_WAR = (
     "swinging a massive weapon in a wide arc", "grabbing for a fleeing adventurer", "hurling a great stone",
     "smashing a wooden cart to splinters", "roaring a challenge", "stamping forward in a rage",
 )
-_S_GIANT_EV_AIR_WAR = ("roaring with a dozen arrows jutting from its shoulder",)
+_S_GIANT_EV_AIR_WAR = ("bellowing in pain with two arrows jutting from its shoulder",)
 _S_GIANT_EV = ("heaving a fallen log aside", "tripping over its own feet")
 _S_GIANT_ACT = (
     "scratching its head in slow confusion", "gnawing on a huge bone", "sniffing the air",
@@ -4753,6 +4753,11 @@ CONSTRAINTS = CONSTRAINTS + (
         reason="a giant or a fey is drawn at whatever size its height says, so it is always said",
     ),
 )
+
+# 1003 render test (sceneweaver103): "clockwork" drew a clock face on the chest; a
+# battlefield "strewn with rusted blades" drew a forest of swords.
+_SPOKEN_SUBKIND["clockwork guardian"] = "gear-driven brass guardian"
+_SPOKEN_ENVIRONMENT["old battlefield of rusted banners"] = "old grassy battlefield of faded banners"
 
 FANTASY_PACK = GenrePack(
     slug="fantasy",

@@ -264,7 +264,7 @@ class RenderTest1003Tests(unittest.TestCase):
         traits = SCIFI_PACK.value_traits
         self.assertIn(
             "beams-at-a-vessel",
-            traits["situation"]["towing a disabled shuttlecraft in a tractor beam"],
+            traits["situation"]["towing a crippled courier starship in a tractor beam"],
         )
         self.assertIn(
             "background-vessel", traits["context"]["distant wrecked starship turning end over end"]
@@ -281,6 +281,52 @@ class RenderTest1003Tests(unittest.TestCase):
                 self.assertNotIn("is bleached bones", text)
                 return
         self.fail("no scene drew the plural context")
+
+
+class RenderTest1003bTests(unittest.TestCase):
+    """The sceneweaver103 renders: Trek words, a clock-faced automaton, two cyclopes."""
+
+    def _all(self, pack) -> set:
+        return {v for pools in pack.pools.values() for vs in pools.values() for v in vs}
+
+    def test_no_star_trek_vocabulary(self) -> None:
+        import re
+        trek = re.compile(r"nacelle|warp coil|saucer|shuttlecraft", re.I)
+        values = self._all(SCIFI_PACK)
+        values |= {v for spoken in SCIFI_PACK.spoken.values() for v in spoken.values()}
+        values -= {"landing shuttlecraft"}  # the widget token; it is spoken "stubby landing craft"
+        self.assertEqual(sorted(v for v in values if trek.search(v)), [])
+        self.assertEqual(G.spoken_value(SCIFI_PACK, "subkind", "landing shuttlecraft"), "stubby landing craft")
+
+    def test_singular_heads_ending_in_s(self) -> None:
+        from engine.grammar import head_is_plural, with_article_if_singular
+        self.assertFalse(head_is_plural("hulking cyclops"))
+        self.assertEqual(with_article_if_singular("figure bent backwards at the waist"),
+                         "a figure bent backwards at the waist")
+
+    def test_no_clock_and_no_sword_forest(self) -> None:
+        values = self._all(FANTASY_PACK)
+        self.assertFalse([v for v in values if "clockwork" in v and v != "clockwork guardian"])
+        self.assertNotIn("clockwork", G.spoken_value(FANTASY_PACK, "subkind", "clockwork guardian"))
+        self.assertNotIn(
+            "blades", G.spoken_value(FANTASY_PACK, "environment", "old battlefield of rusted banners")
+        )
+
+    def test_a_ghost_holds_nothing_and_a_skeleton_has_no_gut(self) -> None:
+        self.assertFalse([v for v in self._all(HORROR_PACK) if "held in one hand" in v])
+        conflicts = HORROR_PACK.trait_conflicts
+        self.assertIn(("bare-bone", "flesh-intact"), conflicts)
+        self.assertIn(
+            "flesh-intact",
+            HORROR_PACK.value_traits["situation"]["dragging a trail of spilled entrails behind it"],
+        )
+
+    def test_a_plague_victim_is_not_a_mummy(self) -> None:
+        self.assertNotIn("stained bandage wrappings", self._all(HORROR_PACK))
+        self.assertNotIn(
+            "sewn-on bone charms",
+            G.pool_for(HORROR_PACK, "markings", {"subkind": "pox-ridden wanderer", "kind": "mortal"}),
+        )
 
 
 if __name__ == "__main__":
