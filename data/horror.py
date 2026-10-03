@@ -436,7 +436,7 @@ CONTEXT_POOLS: dict[str, tuple[str, ...]] = {
         "rusted grate in the floor", "trickle of black seepage", "rusted access ladder",
     ),
     "otherworld": (
-        "door standing open onto nothing", "staircase that ends in midair",
+        "door standing open onto nothing", "staircase ending in midair",
         "row of identical doors",
     ),
 }
@@ -1631,7 +1631,8 @@ _BUCKETS = (
     (_S_CRAWLER_ACT, "activity", "n", _WALLS, _CLIMB, ""),
     (_S_CRAWLER_EV, "event", "n", _WALLS, _CLIMB, ""),
     (_S_EFFIGY_ACT, "activity", "n", _GROUND, _A, ""),
-    (_S_EFFIGY_EV, "event", "n", _GROUND, _A, ""),
+    # "among the stalks" drew corn growing in a cave of bones.
+    (_S_EFFIGY_EV, "event", "n", _GROUND | frozenset({"life"}), _A, ""),
     (_S_WATCHER_ACT_SKY, "activity", "n", _SKY, _A, ""),
     (_S_ELDRITCH_EV, "event", "n", _A, _A, ""),
     (_S_ELDRITCH_EV_GORE, "event", "c", _A, _A, ""),

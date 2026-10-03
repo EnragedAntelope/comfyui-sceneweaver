@@ -1053,7 +1053,7 @@ FORM_POOLS: dict[str, tuple[str, ...]] = {
         "branching crystalline lattice", "flattened ray-body",
         "coiled spiral shell", "four-armed bilateral body", "tripodal frame",
         "stalked polyp column", "broad-backed grazer frame",
-        "flat frilled disc body", "vertically stacked disc segments",
+        "flat frilled disc body", "tall ridged segmented body",
         "long finned ribbon body", "inverted funnel body",
         "tessellated plate column", "nested shell cluster",
         "broad flat winged body", "vast translucent drifting membrane",
@@ -1169,7 +1169,7 @@ FORM_POOLS: dict[str, tuple[str, ...]] = {
                         "curled armour-plated rolling body"),
     # A rock-eater walks to its rock: a rooted column with legs lashed out (#684).
     "stone feeder":    ("hunched boulder-backed body", "squat plated rock-crusher body"),
-    "caste swarm":     ("vertically stacked disc segments", "broad flat winged body"),
+    "caste swarm":     ("tall ridged segmented body", "broad flat winged body"),
     "mimic body":      ("broad flat winged body", "nested shell cluster"),
     "filter swarm":    ("inverted funnel body", "fan-gilled drifting body"),
     "symbiotic body":  ("crystalline spoke cluster", "fused twin-bodied frame"),
@@ -5787,7 +5787,7 @@ _STANCE_STATIC = frozenset({"rests"})
 _RING_FORMS: frozenset[str] = frozenset({
     "torus-braced hull", "disc-and-boom hull", "torus", "stacked disc tiers",
     "spoke-and-hub wheel", "trussed wheel", "smooth torus", "hollow open hoop",
-    "flat frilled disc body", "vertically stacked disc segments",
+    "flat frilled disc body", "tall ridged segmented body",
     "pair of long habitat cylinders on a central spine", "disc of dust and rock", "banded disc",
     "stacked disc column", "floating circle of shards",
     "looped torque ring",
@@ -5887,7 +5887,7 @@ def _form_stances() -> dict[str, frozenset[str]]:
     stances["fan-gilled drifting body"] = frozenset({"swims", "hovers"})
     #: A disc-bodied colony rests on what it grew on; only a void dweller drifts.
     stances["flat frilled disc body"] = _STANCE_HOVER
-    stances["vertically stacked disc segments"] = _STANCE_HOVER
+    stances["tall ridged segmented body"] = _STANCE_HOVER
     stances["branching crystalline lattice"] = _STANCE_STATIC
     stances["tessellated plate column"] = _STANCE_STATIC
     stances["stalked polyp column"] = _STANCE_STATIC
@@ -9632,12 +9632,35 @@ _add_traits(ENVIRONMENT_FIELD, {
     and not {"structure", "room"} & PLACE_AFFORDANCES.get(place, PLACE_AFFORDANCES.get(band, frozenset()))
 })
 
+# 1003 render test: a sphere-hulled ship on a low pass over a landing pad
+# was drawn as a ball standing on the ground; an open landscape has nothing to hold
+# it level.
+_add_traits("form", {"sphere-and-spar hull": ("spherical-hull",)})
+
+# 1003 render test: a warship towing a shuttle in a tractor beam, with a
+# wrecked starship in the background, was drawn beaming the distant wreck. An act
+# aimed at a vessel or hulk owns the frame's other ships.
+_add_traits("situation", {_v: ("beams-at-a-vessel",) for _v in (
+    "towing a disabled shuttlecraft in a tractor beam", "guiding a cargo pod in a tractor beam",
+    "hauling a stripped hulk in a tractor beam", "scanning a drifting wreck with a fan of sensor beams",
+    "spinning up a cutting beam against a derelict hull", "sweeping a helmet beam across a derelict hull",
+)})
+_add_traits("context", {_v: ("background-vessel",) for _v in (
+    "distant formation holding station", "distant wrecked starship turning end over end",
+    "split hull of a vast wrecked starship", "wreck of something larger",
+    "column of cargo starships moving out", "scatter of dead hulls",
+)})
+
 TRAIT_CONFLICTS = TRAIT_CONFLICTS + (
+    ("beams-at-a-vessel", "background-vessel"),
+    ("open-landscape", "spherical-hull"),
     ("tracked-drive", "wheeled-drive"),
     ("world-scale-subject", "small-body"),
 )
 _TRAIT_REASONS.update({
     "tracked-drive|wheeled-drive": "a tracked hauler runs on tracks, not wheels",
+    "open-landscape|spherical-hull": "a sphere hull over open ground is drawn as a ball on it",
+    "background-vessel|beams-at-a-vessel": "a beam aimed at a ship is drawn reaching the ship behind",
     "world-scale-subject|small-body": "a small world is drawn as a boulder on the ground",
 })
 

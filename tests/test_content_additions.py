@@ -149,7 +149,7 @@ class FantasyContentTests(unittest.TestCase):
         self.assertNotIn("shoreline", G.affordances_of(FANTASY_PACK, "desert oasis"))
         self.assertIn("cold", G.affordances_of(FANTASY_PACK, "ice palace hall"))
 
-    def test_a_giant_scorpion_is_only_drawn_where_there_is_dust(self) -> None:
+    def test_a_giant_scorpion_is_only_drawn_where_it_is_warm(self) -> None:
         places = set()
         for _text, doc in _scenes(
             FANTASY_PACK, {"entity1_kind": "mythic beast", "entity1_subkind": "giant scorpion"}
@@ -157,7 +157,7 @@ class FantasyContentTests(unittest.TestCase):
             places.add(doc["environment"])
         self.assertTrue(places)
         for place in places:
-            self.assertIn("dust", G.affordances_of(FANTASY_PACK, place), place)
+            self.assertIn("warm", G.affordances_of(FANTASY_PACK, place), place)
 
     def test_a_woolly_mammoth_needs_room_for_something_huge(self) -> None:
         places = set()
@@ -230,6 +230,57 @@ class RenderTestFixTests(unittest.TestCase):
 
     def test_the_taxidermy_fox_is_gone(self) -> None:
         self.assertNotIn("taxidermy fox", HORROR_PACK.pools["subkind"]["cursed object"])
+
+
+class RenderTest1003Tests(unittest.TestCase):
+    """The 1003 render test: a manor for a hut, a desert-only scorpion, a beam to a wreck."""
+
+    def _pool(self, pack, field: str, subkind: str, kind: str) -> tuple:
+        return G.pool_for(pack, field, {"subkind": subkind, "kind": kind})
+
+    def test_a_witchs_hut_is_not_a_manor(self) -> None:
+        hut = ("witch's hut", "structure")
+        for field, manorial in (
+            ("markings", "painted crests above the gate"), ("aperture", "portcullis gate"),
+            ("surface_detail", "crumbling battlements"), ("extras", "row of stone gargoyles"),
+            ("scale", "colossal"),
+        ):
+            self.assertNotIn(manorial, self._pool(FANTASY_PACK, field, *hut), field)
+
+    def test_a_scorpion_lives_wherever_it_is_warm(self) -> None:
+        self.assertEqual(G.resolved_needs(FANTASY_PACK, "subkind", "giant scorpion"), {"warm"})
+        warm = [
+            place for place in FANTASY_PACK.pools["environment"][G.POOL_DEFAULT_KEY]
+            if "warm" in G.affordances_of(FANTASY_PACK, place)
+        ]
+        self.assertGreaterEqual(len(warm), 8)
+        self.assertIn("gladiatorial arena", warm)
+
+    def test_a_statues_arm_sweep_needs_both_hands(self) -> None:
+        self.assertIn("sweeping a heavy arm in a wide arc", F._BOTH_HANDS)
+
+    def test_a_beam_at_a_vessel_owns_the_frames_other_ships(self) -> None:
+        self.assertIn(("beams-at-a-vessel", "background-vessel"), SCIFI_PACK.trait_conflicts)
+        traits = SCIFI_PACK.value_traits
+        self.assertIn(
+            "beams-at-a-vessel",
+            traits["situation"]["towing a disabled shuttlecraft in a tractor beam"],
+        )
+        self.assertIn(
+            "background-vessel", traits["context"]["distant wrecked starship turning end over end"]
+        )
+
+    def test_a_sphere_hull_never_rests_on_open_ground(self) -> None:
+        self.assertIn(("open-landscape", "spherical-hull"), SCIFI_PACK.trait_conflicts)
+
+    def test_a_plural_context_takes_a_plural_verb(self) -> None:
+        for seed in range(3000):
+            text, doc = generate_scene(seed, FANTASY_PACK, entity_count=1)
+            if doc.get("context") == "bleached bones of a great beast":
+                self.assertNotRegex(text, r"great beast (is|catches) ")
+                self.assertNotIn("is bleached bones", text)
+                return
+        self.fail("no scene drew the plural context")
 
 
 if __name__ == "__main__":

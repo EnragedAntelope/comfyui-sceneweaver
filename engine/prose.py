@@ -652,6 +652,11 @@ def _relation_sentence(
     return text
 
 
+#: The context patterns' verbs whose subject is the context, singular -> plural.
+#: Not "shows": in "The background shows ..." the subject is the background.
+_CONTEXT_PLURAL_VERBS = {"is": "are", "catches": "catch"}
+
+
 def _context_sentence(scene: ResolvedScene, pack: GenrePack) -> str:
     """The scene's context as its own sentence, or "" for none.
 
@@ -677,7 +682,20 @@ def _context_sentence(scene: ResolvedScene, pack: GenrePack) -> str:
     rendered = _render_segments(pattern._segments, available, grammar, frozenset())
     if rendered is None:
         return ""
-    body = _tidy(rendered[0])
+    body = rendered[0]
+    # The pattern's verb is written for one thing; a plural context ("bleached
+    # bones of a great beast") takes the plural verb on whichever side of it the
+    # verb sits ("Behind it are ...", "... are visible").
+    if head_is_plural(spoken):
+        before, found, after = body.partition(available[f"a_{CONTEXT_FIELD}"])
+        if found:
+            for singular, plural in _CONTEXT_PLURAL_VERBS.items():
+                if before.endswith(f" {singular} "):
+                    before = before[: -len(singular) - 1] + plural + " "
+                if after.startswith(f" {singular} "):
+                    after = f" {plural}" + after[len(singular) + 1:]
+            body = before + found + after
+    body = _tidy(body)
     return _sentence(body) if body else ""
 
 

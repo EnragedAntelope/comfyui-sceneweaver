@@ -986,6 +986,8 @@ MATERIAL_POOLS: dict[str, tuple[str, ...]] = {
     "phoenix": ("ember-tipped plumage", "iridescent plumage"),
     "chimeric beast": ("short lion fur", "matted mane and hide", "leathery hide"),
     "great beast": ("thick shaggy fur", "coarse heavy fur", "bristly hide", "armoured hide"),
+    # A mammoth is shaggy: "armoured hide" read as a stone-plated beast.
+    "woolly mammoth": ("thick shaggy fur", "coarse heavy fur", "long matted fur"),
     "basilisk": ("stony scales", "rough ridged scales"),
     "giant cave spider": ("bristled chitin", "glossy chitin"),
     "giant scorpion": ("glossy chitin", "bristled chitin", "ridged armoured chitin",
@@ -1072,6 +1074,9 @@ MATERIAL_POOLS: dict[str, tuple[str, ...]] = {
     "crystal spire": ("enchanted crystal", "clear faceted quartz"),
     # A tree palace of whitewashed plaster was a cottage; a dwarven gate of living wood was elven (#934, #1052).
     "dwelling": ("timber and whitewashed plaster", "rough fieldstone"),
+    # 1003 render test: the dwelling and structure pools gave a hut crests, gargoyles
+    # and balconies, so it read as a manor.
+    "witch's hut": ("rough timber and wattle", "moss-grown fieldstone"),
     "elven tree palace": ("carved living wood", "silver-barked living wood"),
     "dwarven stronghold gate": ("basalt blocks", "rough fieldstone", "dressed limestone blocks"),
     # vessel
@@ -1198,6 +1203,8 @@ MARKINGS_POOLS: dict[str, tuple[str, ...]] = {
     "construct": ("carved spiral patterning", "inlaid gold lines", "chiselled geometric banding"),
     "structure": ("hanging heraldic banners", "carved relief friezes", "painted crests above the gate"),
     "arcane tower": ("carved relief friezes", "inlaid silver bands"),
+    # A hut with crests and banners read as a manor house.
+    "witch's hut": ("carved spiral patterning", "bead-and-feather charms"),
     "sailing ship": ("painted serpent designs", "striped sails", "heraldic pennants",
                      "gilded stern carvings"),
     "flying ship": ("painted serpent designs", "striped sails", "heraldic pennants",
@@ -1232,6 +1239,7 @@ SURFACE_DETAIL_POOLS: dict[str, tuple[str, ...]] = {
     "construct": ("cracks sealed with gold", "moss in the seams", "chipped carving", "rust streaks"),
     "structure": ("ivy climbing the walls", "crumbling battlements", "weathered stonework",
                   "fresh whitewash", "arrow-scarred walls"),
+    "witch's hut": ("moss in the seams", "weathered wear", "smoke-blackened eaves"),
     "sailing ship": ("salt-stained timbers", "fresh paint along the hull", "barnacled waterline",
                      "rain-darkened canvas"),
     "flying ship": ("fresh paint along the hull", "rain-darkened canvas", "wind-scoured timbers"),
@@ -1353,6 +1361,7 @@ APPENDAGE_POOLS: dict[str, tuple[str, ...]] = {
     "standing stone circle": ("capstone lintel", "fallen outlier stone"),
     "arcane tower": ("slender spire", "floating stone ring", "open balcony"),
     "dwelling": ("stone chimney", "open balcony", "turf roof"),
+    "witch's hut": ("crooked stone chimney", "turf roof"),
     "elven tree palace": ("open balcony", "hanging rope bridge", "spiral stair around the trunk"),
     "dwarven stronghold gate": ("square turret", "carved stone pinnacle"),
     "windmill": ("lattice sail", "stone chimney"),
@@ -1549,6 +1558,7 @@ APERTURE_POOLS: dict[str, tuple[str, ...]] = {
     "mummy": ("linen-wrapped face", "gaping wrapped jaw"),
     "construct": ("carved grille mouth", "open visor slit"),
     "structure": ("arched gateway", "portcullis gate", "great oak door", "round stained-glass window"),
+    "witch's hut": ("low crooked door", "small round window"),
     "sailing ship": ("stern cabin window", "open cargo hatch", "boarding gangway"),
     "flying ship": ("stern cabin window", "open cargo hatch"),
     "land vehicle": ("curtained side window", "open rear door"),
@@ -1594,6 +1604,7 @@ EXTRAS_POOLS: dict[str, tuple[str, ...]] = {
     "death knight": ("rusted manacle", "tattered banner", "cracked burial urn"),
     "construct": ("chain leash", "broken iron shackle", "carved rune plate"),
     "structure": ("hanging banner", "courtyard well", "row of stone gargoyles"),
+    "witch's hut": ("iron cauldron by the door", "bundles of drying herbs", "string of hanging bones"),
     # "furled" (rolled up) rendered as literal fur fringe on the banners --
     # the same substance-word-collision class as "forked" tongue -> fork.
     "sailing ship": ("rolled banner", "cargo of barrels", "ship's boat", "iron anchor"),
@@ -1663,6 +1674,8 @@ SCALE_POOLS: dict[str, tuple[str, ...]] = {
     "undead": ("small", "large", "huge"),
     "construct": ("small", "large", "huge", "colossal", "titanic"),
     "structure": ("small", "large", "huge", "colossal"),
+    # A huge or colossal hut is a manor.
+    "witch's hut": ("small", "tiny"),
     "vessel": ("small", "large", "huge", "colossal"),
     "artifact": ("tiny", "small", "large", "huge"),
 }
@@ -1734,7 +1747,7 @@ def _cardinality(*groups: tuple[str, tuple[str, ...]]) -> dict[str, str]:
 CARDINALITY: dict[str, dict[str, str]] = {
     "appendages": _cardinality(
         ("a lone part", (
-            "long braided hair", "carved capstone", "worn stone base", "tall mast",
+            "long braided hair", "carved capstone", "crooked stone chimney", "worn stone base", "tall mast",
             "carved finial", "spiral horn", "flowing tail", "flowing mane", "weed-tangled mane",
             "short tail", "tail plume", "plumed crest", "scorpion tail", "shaggy mane",
             "goat head", "serpent tail", "braided mane", "hackled mane", "long tail",
@@ -1961,8 +1974,7 @@ _S_GREAT_EV_LIFE = ("crashing through thick undergrowth",)
 _S_GREAT_ACT = ("rearing up to make itself look bigger",)
 _S_SCORPION_EV_WAR = (
     "raising its stinger high over its back", "lunging with pincers spread wide",
-    "stabbing its sting down at a fallen shield", "seizing a desert lizard in its pincers",
-    "charging with its tail arched over its back",
+    "stabbing its sting down at a fallen shield", "charging with its tail arched over its back",
 )
 _S_SCORPION_EV = (
     "clacking its pincers at an intruder", "rearing back with its claws raised",
@@ -1972,12 +1984,15 @@ _S_SCORPION_ACT = (
     "scuttling sideways across the rocks", "creeping forward with its tail curled",
     "tapping a stone with one pincer", "turning slowly to track movement",
     "picking its way over loose stones", "testing the air with its pincers",
+    "lurking in a crack in the rock with its pincers raised",
+    "drumming its legs on the stone in warning",
 )
 _S_SCORPION_ACT_DUST = (
     "pushing up out of loose sand", "dragging its kill toward a burrow",
+    "seizing a desert lizard in its pincers",
     "half-buried in sand with only its stinger showing",
 )
-_S_SCORPION_IDLE = ("lying flat and motionless on a sun-baked rock", "watching with its pincers folded")
+_S_SCORPION_IDLE = ("watching with its pincers folded",)
 _S_SCORPION_SLEEP = ("lying still with its legs drawn in",)
 _S_SEABEAST_EV_DEEP = ("rising from the depths",)
 _S_SEABEAST_ACT_DEEP = ("gliding along the seabed", "trailing a cloud of silt")
@@ -2250,7 +2265,7 @@ _S_VESSEL_EV = (
     "shedding cargo as it lurches", "lurching onto one side", "swaying under a sudden gust",
     "shuddering to a sudden stop",
 )
-_S_VESSEL_EV_WAR = ("bristling with armed defenders", "burning with flaming arrows stuck in its timbers",
+_S_VESSEL_EV_WAR = ("bristling with armed defenders", "burning fiercely along its whole deck",
                     "breaking apart under a heavy blow")
 _S_VESSEL_ACT = (
     "flying a long pennant", "riding low under a heavy load", "carrying a crowd of cheering passengers",
@@ -3418,7 +3433,7 @@ _HUGE_DEEDS = (
 _COMBUSTION = (
     "spewing a torrent of flame", "unleashing a gout of roaring fire",
     "diving aside from a blast of flame", "stamping out a campfire", "sending up a signal fire",
-    "burning with flaming arrows stuck in its timbers", "blazing with a column of holy fire",
+    "burning fiercely along its whole deck", "blazing with a column of holy fire",
 )
 _CIVIL_ROLES = ("blacksmith", "herbalist", "travelling merchant", "wandering scholar", "bard", "potion-brewer")
 
@@ -4416,7 +4431,15 @@ SPOKEN["environment"] = _SPOKEN_ENVIRONMENT
 # A marsh is a shore, not a coral reef.
 VALUE_NEEDS["subkind"]["marsh hydra"] = frozenset({"shoreline"})
 # Arid ground only: a giant scorpion on a frozen lake shore is a different animal.
-VALUE_NEEDS["subkind"]["giant scorpion"] = frozenset({"dust"})
+# 1003 render test: dust alone kept a scorpion in six deserts. ``warm`` is granted to
+# hot dry places, a jungle, and the warm caverns and arenas a scorpion also haunts.
+for _p in (
+    "red sandstone canyon", "desert of shifting dunes", "salt-crusted wasteland",
+    "volcanic ashlands", "petrified forest", "desert oasis", "jungle temple ruins",
+    "magma cavern", "dragon's hoard cavern", "gladiatorial arena", "blazing elemental plane",
+):
+    PLACE_AFFORDANCES[_p] = PLACE_AFFORDANCES[_p] | {"warm"}
+VALUE_NEEDS["subkind"]["giant scorpion"] = frozenset({"warm"})
 # #739 a bronze colossus filled a wizard's study.
 for _v in ("bronze colossus", "behemoth", "elder dragon", "woolly mammoth"):
     VALUE_NEEDS["subkind"][_v] = VALUE_NEEDS["subkind"].get(_v, frozenset()) | frozenset({"vast"})
@@ -4441,6 +4464,9 @@ _add_traits("form", {
 # #715 a troll hurling a great stone with a knife and a bundle of logs in hand;
 # #755 a naga offering a gift with open hands and a sword.
 _BOTH_HANDS = (
+    # 1003 a living statue swept an arm and held a spear: a stone scythe appeared and
+    # the spear floated.
+    "sweeping a heavy arm in a wide arc",
     "hurling a great stone", "offering a gift with open hands", "carrying a heavy stone block",
     "heaving a fallen log aside", "juggling three pebbles", "playing a haunting tune on a set of panpipes",
     "strumming a lute", "swinging an uprooted young tree like a club", "tearing the roof from a stone tower",
