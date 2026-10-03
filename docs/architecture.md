@@ -2714,3 +2714,40 @@ Added: a beetle swarm, a dressmaker's mannequin, a condemned hospital and a
 shuttered sanatorium (horror); a bathyscaphe and a seabed crawler (sci-fi);
 three diffuse-being shapes for the one amorphous mass; three spears for the
 halberd; a power cell array's own shapes.
+
+## Round XXVII: the 0.6.0 render tests (1002 and 1003)
+
+The maintainer's render tests of the 0.6.0 branch, all three packs. Every image
+was replayed from its embedded prompt; the fixes are value-level unless named
+here, and each carries a regression row in `tests/test_content_additions.py`
+(`RenderTestFixTests`, `RenderTest1003Tests`, `RenderTest1003bTests`).
+
+### Engine
+
+- **A count follows a noun a rule re-drew** (`engine/scene.py::_redraw_stale_counts`).
+  Three re-draw paths re-drew a noun's count partner; the constraint pass did
+  not, so a warden whose hand-held lantern a rule swapped for a headlamp ("a lone
+  part") kept "a pair of". One guard after every pass re-draws a count its noun's
+  pool no longer offers; it draws only when the count is stale.
+- **A plural context takes a plural verb** (`engine/prose.py::_context_sentence`):
+  "bleached bones of a great beast are visible", "Behind it are ...". Only the
+  verbs whose subject is the context are swapped ("The background shows ..."
+  keeps its verb).
+- **Singular heads ending in "s"**: "cyclops" (a plural reading drew two of
+  them) and the adverbs "backwards", "forwards", "sideways", which a head read
+  off "figure bent backwards at the waist" lands on.
+
+### Rules worth knowing
+
+- A beam aimed at a vessel (a tractor beam, a cutting beam, a scan of a wreck)
+  conflicts with a background vessel: the model drew the beam reaching the ship
+  behind. A sphere hull conflicts with open landscape (drawn as a ball on the
+  ground); a vertical spire lander hull needs ground.
+- Fantasy `warm` is granted to the hot places, and a giant scorpion needs it
+  rather than dust, so it is no longer drawn only in deserts.
+- No Star Trek vocabulary in sci-fi (nacelle, warp coil, saucer, shuttlecraft):
+  those words drew the Enterprise and a NASA orbiter. A test holds the line.
+- An intangible spirit carries nothing: a held lantern drew a second, solid
+  figure to hold it, and a will-o'-wisp in its place drew a stray flame.
+- A singing harp has its own situation pool, built around its own acts; it
+  shared the generic artifact pool and was mostly drawn standing on a stone.

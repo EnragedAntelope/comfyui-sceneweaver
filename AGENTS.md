@@ -8,14 +8,13 @@ genre is a data module and two registration lines.
 
 ## Current state
 
-_Last verified: 2026-10-02_
+_Last verified: 2026-10-03_
 
-- **Status:** live at v0.5.1 on the ComfyUI Registry (0.6.0 is versioned on the branch, unmerged); `main` carries all three
-  genres on one coherence engine. Branch `tmp/sceneweaver-0.6.0` holds the
-  unreleased work: user_options keys, a working recreate, the speedup and gates,
-  and a content round (places, subjects, relations and colours in all three
-  packs). It passes every gate below on a clean checkout and is not yet pushed,
-  versioned or released. The repo is public at `EnragedAntelope/comfyui-sceneweaver`;
+- **Status:** v0.6.0 on `main`, released on GitHub and published to the ComfyUI
+  Registry by `publish.yml`; all three genres on one coherence engine. 0.6.0
+  added user_options keys that follow the scope chain, a working recreate, the
+  speedup and gates, a content round in all three packs, and two render-test
+  rounds of fixes. The repo is public at `EnragedAntelope/comfyui-sceneweaver`;
   the full pre-release history stays local (a git bundle outside the repo, and
   the `coherence-round-*` branches).
 - **Works:** both node classes per genre register through the V3
@@ -26,10 +25,11 @@ _Last verified: 2026-10-02_
   compatibility surface: `tests/test_widget_order_frozen.py` freezes the shipped
   order and validates both example workflows. Every gate under "Build and test"
   is green. The mechanisms and every round's decisions and measurements are in
-  `docs/architecture.md` ("Round XV" to "Round XXVI" are the render-test rounds).
-- **In progress:** releasing the branch above (version bump, PR, GitHub release,
-  Registry check). The new content has had no render test; round XXVI also still
-  awaits the maintainer's. Not built: a headless horseman, carrion crows, an
+  `docs/architecture.md` ("Round XV" to "Round XXVII" are the render-test rounds).
+- **In progress:** nothing on a branch. The maintainer keeps render-testing;
+  each reported image becomes a fix plus a regression row. Head cropping on tall
+  subjects was seen and deliberately not addressed yet (no forced "full figure"
+  framing until it recurs). Not built: a headless horseman, carrion crows, an
   exorcist and a mortician (the last two would only reskin the village priest).
 - **Known gaps:**
   - A situation can disagree with the pose a model draws (a fire drake breathing
