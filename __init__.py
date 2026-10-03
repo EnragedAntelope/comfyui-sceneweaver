@@ -1,6 +1,6 @@
 """comfyui-sceneweaver - V3 custom node pack entrypoint.
 
-Exposes two nodes per genre -- the sci-fi pair and the fantasy pair:
+Exposes two nodes per genre -- the sci-fi, fantasy and horror pairs:
 
 * ``Scene Weaver - Sci-Fi`` (``SceneWeaverSciFi``) - the core node, complete on
   its own. One click gives an environment, up to four entities and the
@@ -8,9 +8,10 @@ Exposes two nodes per genre -- the sci-fi pair and the fantasy pair:
 * ``Scene Entity - Sci-Fi`` (``SceneEntitySciFi``) - an optional layer node that
   describes one entity in full depth and emits a ``SCENE_ENTITY`` payload. Wire
   it into a Scene Weaver slot to promote that slot; nothing requires it.
-* ``Scene Weaver - Fantasy`` / ``Scene Entity - Fantasy`` -- the same pair,
-  generated from the fantasy pack. An entity of either genre wires into a scene
-  of either genre.
+* ``Scene Weaver - Fantasy`` / ``Scene Entity - Fantasy`` and ``Scene Weaver -
+  Horror`` / ``Scene Entity - Horror`` -- the same pair, generated from the
+  fantasy and horror packs. An entity of any genre wires into a scene of any
+  genre.
 
 **Genre is node identity, never a wire.** Both classes are *generated* from a
 ``GenrePack`` (``data/genre.py``), and this file is the only place a concrete

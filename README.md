@@ -77,7 +77,7 @@ generation ships to gate rings, monoliths, resonant lattice spires, collapsing
 stars and stripped-out hulks.
 
 **And a situation for each one.** Entities are never just *standing there*. They
-are towing a disabled shuttlecraft in a tractor beam, going down under a mass of
+are towing a crippled courier starship in a tractor beam, going down under a mass of
 smaller units, spinning a habitat ring up to speed, kneeling to read a bootprint,
 lashing out with a hooked limb. An action in progress is what makes a still frame a *scene*.
 
@@ -229,7 +229,7 @@ an **engine's glow** belong to the subject, so SceneWeaver owns those. A colour
 
 ## Example workflows
 
-Two working graphs ship in [`example_workflows/`](https://github.com/EnragedAntelope/comfyui-sceneweaver/tree/main/example_workflows):
+Two working graphs ship in [`example_workflows/`](https://github.com/EnragedAntelope/comfyui-sceneweaver/tree/main/example_workflows). Each carries the Scene Weaver and Scene Entity pair for all three genres, so swap whichever you want into the encoder:
 
 | Workflow | What it shows |
 |---|---|
@@ -250,7 +250,15 @@ Drop a `user_options.json` beside the pack to add your own values to any pool -
 your own creature types, environments, situations. It is gitignored, so it
 survives a `git pull`, and `user_options.example.json` shows the shape. Sci-fi
 values go at the top level; fantasy and horror values go in a `"fantasy"` or
-`"horror"` section. To see what a pool already holds:
+`"horror"` section.
+
+A key under a field says where the value goes. A kind (`"dragon"`) adds it to
+the pools that kind's subkinds really read. Two fields take a group instead: key
+a new **environment** by its band (`"wilds"`, `"orbit"`) and it inherits what
+that band affords; key a new **subkind** by its group (`"serpent wyrm"`) and it
+inherits that group's body, parts and situations. A bad entry is logged in the
+ComfyUI console and skipped - it never stops the nodes loading. To see what a
+pool already holds:
 
 ```
 python scripts/builtin_options.py subkind --kind "alien creature"
@@ -262,8 +270,9 @@ python scripts/builtin_options.py subkind --kind cryptid --pack horror
 
 The genre boundary is a **seam in the data layer**, not an assumption baked into
 the engine - the grammar, the vocabulary and the coherence rules all live in a
-genre module, which is how fantasy and horror arrived as data. Next up: a time of
-day control for fantasy and horror, and a tone control for fantasy. The plan is in
+genre module, which is how fantasy and horror arrived as data. Ideas under
+consideration, not promised: a time of day control for fantasy and horror, and a
+tone control for fantasy. They are written up in
 [`docs/genre-roadmap.md`](https://github.com/EnragedAntelope/comfyui-sceneweaver/blob/main/docs/genre-roadmap.md).
 
 **Want a fourth genre, or something else entirely?**

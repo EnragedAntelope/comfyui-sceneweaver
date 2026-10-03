@@ -223,8 +223,16 @@ def register_routes(specs: Mapping[str, tuple[GenrePack, int]]) -> bool:
 
     body = frontend_payload(specs)
 
-    @PromptServer.instance.routes.get(FRONTEND_ROUTE)
-    async def _fields(_request):  # type: ignore[no-untyped-def]  # pragma: no cover
-        return web.json_response(body)
+    # The registration is guarded as well as the import: `PromptServer` can be
+    # importable without a running server (no `instance`), and a ComfyUI that
+    # renames part of this API must cost the frontend its labels, not the user
+    # their nodes.
+    try:
+        @PromptServer.instance.routes.get(FRONTEND_ROUTE)
+        async def _fields(_request):  # type: ignore[no-untyped-def]  # pragma: no cover
+            return web.json_response(body)
+    except Exception as exc:  # noqa: BLE001 -- never block node registration
+        _LOG.warning("fields route not registered (ComfyUI server API changed?): %s", exc)
+        return False
 
     return True

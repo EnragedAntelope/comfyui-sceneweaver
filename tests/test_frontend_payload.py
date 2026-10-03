@@ -20,12 +20,15 @@ from __future__ import annotations
 
 import json
 import re
+import sys
+import types
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from data.genre import ENTITY_NODE_SLOTS, KIND_FIELD, NONE, RANDOM, SCENE_NODE_SLOTS
 from data.scifi import SCIFI_PACK
-from nodes.frontend import FRONTEND_ROUTE, frontend_payload, node_payload
+from nodes.frontend import FRONTEND_ROUTE, frontend_payload, node_payload, register_routes
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 FIXTURE_PATH = REPO_ROOT / "tests" / "frontend" / "fixtures" / "nodes.json"
@@ -194,6 +197,47 @@ class ShapeTests(unittest.TestCase):
             for key, descriptor in real["fields"].items():
                 with self.subTest(node=name, field=key):
                     self.assertIsInstance(descriptor["scope"], list)
+
+
+class RouteRegistrationTests(unittest.TestCase):
+    """The route is a convenience: whatever ComfyUI's server looks like, the nodes load."""
+
+    SPECS = {"SceneWeaverSciFi": (SCIFI_PACK, SCENE_NODE_SLOTS)}
+
+    def _modules(self, prompt_server):
+        server = types.ModuleType("server")
+        server.PromptServer = prompt_server
+        aiohttp = types.ModuleType("aiohttp")
+        aiohttp.web = types.SimpleNamespace(json_response=lambda body: body)
+        return {"server": server, "aiohttp": aiohttp}
+
+    def test_a_server_class_with_no_running_instance_is_not_fatal(self) -> None:
+        """Importable but not started -- the state an offline import is in."""
+        with mock.patch.dict(sys.modules, self._modules(type("PromptServer", (), {}))):
+            with self.assertLogs(level="WARNING"):
+                self.assertFalse(register_routes(self.SPECS))
+
+    def test_a_server_whose_routes_api_changed_is_not_fatal(self) -> None:
+        broken = type("PromptServer", (), {"instance": types.SimpleNamespace(routes=None)})
+        with mock.patch.dict(sys.modules, self._modules(broken)):
+            with self.assertLogs(level="WARNING"):
+                self.assertFalse(register_routes(self.SPECS))
+
+    def test_a_working_server_gets_the_route(self) -> None:
+        registered = []
+
+        class Routes:
+            def get(self, path):
+                def decorate(handler):
+                    registered.append(path)
+                    return handler
+                return decorate
+
+        server = type("PromptServer", (), {"instance": types.SimpleNamespace(routes=Routes())})
+        with mock.patch.dict(sys.modules, self._modules(server)):
+            self.assertTrue(register_routes(self.SPECS))
+        self.assertEqual(registered, [FRONTEND_ROUTE])
+
 
 if __name__ == "__main__":  # pragma: no cover
     unittest.main()

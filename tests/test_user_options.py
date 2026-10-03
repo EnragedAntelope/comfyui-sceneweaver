@@ -30,6 +30,8 @@ import unittest
 from pathlib import Path
 
 from data.genre import filtered_pool, pool_for, pool_options
+from data.fantasy import FANTASY_PACK
+from data.horror import HORROR_PACK
 from data.scifi import SCIFI_PACK
 from data.user_options import (
     USER_OPTIONS_FILENAME,
@@ -172,6 +174,100 @@ class BadFileTests(unittest.TestCase):
         self.assertIn("hunter green", pool_for(merged, "primary_color"))
         self.assertIn("running dark past a picket line",
                       merged.pools["situation"]["starship"])
+
+
+ALL_PACKS = (SCIFI_PACK, FANTASY_PACK, HORROR_PACK)
+CUSTOM = "zzz-test custom value"
+
+
+def _drawn(pack, widgets, seeds=range(300)):
+    return sum(
+        CUSTOM in generate_scene(seed, pack, widgets=widgets, entity_count=1)[0]
+        for seed in seeds
+    )
+
+
+class KeyedByWhereItIsReadTests(unittest.TestCase):
+    """A value is added where the scope chain reads it, not where the user guessed.
+
+    A kind key is dead wherever every subkind of that kind has a pool key of its own
+    (a fantasy dragon's form), and an environment with no band silently escapes every
+    rule written against a band -- which `GenrePack` refuses outright.
+    """
+
+    def test_a_kind_keyed_value_is_drawn_where_subkinds_have_their_own_pools(self) -> None:
+        for field in ("form", "material", "situation"):
+            with self.subTest(field=field):
+                merged = merge_user_options(
+                    FANTASY_PACK, {"pools": {field: {"dragon": [CUSTOM]}}}
+                )
+                self.assertGreater(_drawn(merged, {"entity1_kind": "dragon"}), 0)
+
+    def test_a_kind_keyed_value_still_works_where_the_kind_key_is_read(self) -> None:
+        merged = merge_user_options(
+            SCIFI_PACK, {"pools": {"situation": {"starship": [CUSTOM]}}}
+        )
+        self.assertIn(CUSTOM, merged.pools["situation"]["starship"])
+        self.assertGreater(_drawn(merged, {"entity1_kind": "starship"}), 0)
+
+    def test_an_environment_keyed_by_its_band_is_drawable_in_every_pack(self) -> None:
+        for pack in ALL_PACKS:
+            band = next(iter(pack.environment_bands))
+            with self.subTest(pack=pack.slug, band=band):
+                merged = merge_user_options(pack, {"pools": {"environment": {band: [CUSTOM]}}})
+                self.assertIn(CUSTOM, merged.environment_bands[band])
+                text, _ = generate_scene(1, merged, widgets={"environment": CUSTOM})
+                self.assertIn(CUSTOM, text)
+
+    def test_an_environment_with_no_band_is_skipped_not_fatal(self) -> None:
+        for pack in ALL_PACKS:
+            with self.subTest(pack=pack.slug):
+                with self.assertLogs("data.user_options", "WARNING"):
+                    merged = merge_user_options(
+                        pack, {"pools": {"environment": {"_default": [CUSTOM]}}}
+                    )
+                self.assertNotIn(CUSTOM, merged.pools["environment"]["_default"])
+
+    def test_a_subkind_keyed_by_its_group_speaks_with_that_groups_body(self) -> None:
+        merged = merge_user_options(
+            FANTASY_PACK, {"pools": {"subkind": {"winged dragon": [CUSTOM]}}}
+        )
+        self.assertIn(CUSTOM, merged.pool_groups["subkind"]["winged dragon"])
+        group_forms = set(pool_for(FANTASY_PACK, "form", {"subkind": "wyvern", "kind": "dragon"}))
+        for seed in range(30):
+            _, document = generate_scene(
+                seed, merged,
+                widgets={"entity1_kind": "dragon", "entity1_subkind": CUSTOM},
+                entity_count=1,
+            )
+            form = document["entities"][0].get("form")
+            self.assertTrue(form is None or form in group_forms, form)
+
+    def test_a_subkind_keyed_by_a_bare_kind_says_it_will_speak_generically(self) -> None:
+        with self.assertLogs("data.user_options", "WARNING") as logs:
+            merge_user_options(FANTASY_PACK, {"pools": {"subkind": {"dragon": [CUSTOM]}}})
+        self.assertTrue(any("ungrouped" in line for line in logs.output))
+
+
+class FailureNeverStopsTheNodesTests(unittest.TestCase):
+    """Rule 3: whatever the file says, the pack still loads."""
+
+    def test_a_merge_that_raises_returns_the_built_in_pack(self) -> None:
+        import data.user_options as module
+
+        def boom(*_args, **_kwargs):
+            raise ValueError("planted failure")
+
+        original = module.merge_user_options
+        module.merge_user_options = boom
+        try:
+            with self.assertLogs("data.user_options", "WARNING"):
+                result = apply_user_options(
+                    SCIFI_PACK, REPO_ROOT / "user_options.example.json"
+                )
+        finally:
+            module.merge_user_options = original
+        self.assertIs(result, SCIFI_PACK)
 
 
 class NoLeakTests(unittest.TestCase):

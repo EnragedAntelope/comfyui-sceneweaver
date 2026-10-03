@@ -921,6 +921,41 @@ as a regression gate; a future session that widens the pools can lower it. Each
 substring is matched at a WORD START, so `ice` does not fire on `service` and
 `ash` not on `crash`.
 
+### Fantasy and horror
+
+`--pack fantasy` and `--pack horror` run the same sweep against those packs, with
+each pack's own biggest scale rungs held under the same ceiling
+(`SCALE_EXTREMES_BY_PACK`: fantasy `colossal` + `titanic`, horror `gargantuan`).
+CI runs both. Neither pack's kinds draw uniformly, so what is gated is the
+ceiling, not the spread. Measured at 1000 seeds, every slot occupied, `scene_filter=Any`:
+
+| Measure | Ceiling | Fantasy | Horror |
+|---|---|---|---|
+| Largest single `kind` share | 20% | 12.4% (`folk`) | 18.3% (`spirit`) |
+| Smallest single `kind` share | - | 3.1% (`structure`) | 4.6% (`haunted place`) |
+| Scale-extreme share of drawn `scale` | 10% | 2.7% | 1.5% |
+
+Horror's largest kind sits 1.7 points under the ceiling. If a horror kind is
+added and that share breaches it, fix it by authoring (more places a kind
+can stand in, or more of the other kinds), never by raising the ceiling.
+
+| pack | motif | share |
+|---|---|---|
+| fantasy | `stone` | 47.1% |
+| fantasy | `gold` | 37.1% |
+| fantasy | `fire` | 35.8% |
+| fantasy | `bone` | 31.2% |
+| fantasy | `growth` | 24.8% |
+| fantasy | `ice` | 7.1% |
+| horror | `bone` | 35.8% |
+| horror | `blood` | 30.7% |
+| horror | `water` | 22.8% |
+| horror | `rot` | 22.2% |
+
+Both packs sit well under the shared motif ceiling, which is the sci-fi
+baseline plus headroom. A pack that wants a tighter gate declares it in
+`MOTIF_CEILINGS`.
+
 ### Which fields are voiced
 
 There is no single number any more, and the tail is not dead. Two mechanisms
@@ -2679,3 +2714,40 @@ Added: a beetle swarm, a dressmaker's mannequin, a condemned hospital and a
 shuttered sanatorium (horror); a bathyscaphe and a seabed crawler (sci-fi);
 three diffuse-being shapes for the one amorphous mass; three spears for the
 halberd; a power cell array's own shapes.
+
+## Round XXVII: the 0.6.0 render tests (1002 and 1003)
+
+The maintainer's render tests of the 0.6.0 branch, all three packs. Every image
+was replayed from its embedded prompt; the fixes are value-level unless named
+here, and each carries a regression row in `tests/test_content_additions.py`
+(`RenderTestFixTests`, `RenderTest1003Tests`, `RenderTest1003bTests`).
+
+### Engine
+
+- **A count follows a noun a rule re-drew** (`engine/scene.py::_redraw_stale_counts`).
+  Three re-draw paths re-drew a noun's count partner; the constraint pass did
+  not, so a warden whose hand-held lantern a rule swapped for a headlamp ("a lone
+  part") kept "a pair of". One guard after every pass re-draws a count its noun's
+  pool no longer offers; it draws only when the count is stale.
+- **A plural context takes a plural verb** (`engine/prose.py::_context_sentence`):
+  "bleached bones of a great beast are visible", "Behind it are ...". Only the
+  verbs whose subject is the context are swapped ("The background shows ..."
+  keeps its verb).
+- **Singular heads ending in "s"**: "cyclops" (a plural reading drew two of
+  them) and the adverbs "backwards", "forwards", "sideways", which a head read
+  off "figure bent backwards at the waist" lands on.
+
+### Rules worth knowing
+
+- A beam aimed at a vessel (a tractor beam, a cutting beam, a scan of a wreck)
+  conflicts with a background vessel: the model drew the beam reaching the ship
+  behind. A sphere hull conflicts with open landscape (drawn as a ball on the
+  ground); a vertical spire lander hull needs ground.
+- Fantasy `warm` is granted to the hot places, and a giant scorpion needs it
+  rather than dust, so it is no longer drawn only in deserts.
+- No Star Trek vocabulary in sci-fi (nacelle, warp coil, saucer, shuttlecraft):
+  those words drew the Enterprise and a NASA orbiter. A test holds the line.
+- An intangible spirit carries nothing: a held lantern drew a second, solid
+  figure to hold it, and a will-o'-wisp in its place drew a stray flame.
+- A singing harp has its own situation pool, built around its own acts; it
+  shared the generic artifact pool and was mostly drawn standing on a stone.
