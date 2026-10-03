@@ -499,7 +499,7 @@ SUBKIND_GROUPS: dict[str, tuple[str, ...]] = {
     "keepsake": ("porcelain doll", "music box", "spirit board", "puzzle box",
                  "ventriloquist dummy"),
     "furnishing": ("cracked mirror", "haunted family picture", "antique rocking chair",
-                   "grandfather clock", "dressmaker's mannequin", "taxidermy fox"),
+                   "grandfather clock", "dressmaker's mannequin"),
     # haunted place
     "dwelling": ("abandoned farmhouse", "gothic manor", "isolated cabin", "derelict motel"),
     "sacred ruin": ("ruined chapel", "family mausoleum", "boarded-up church"),
@@ -590,10 +590,6 @@ FORM_POOLS: dict[str, tuple[str, ...]] = {
     "grandfather clock": ("tall narrow wooden case", "carved case with a brass pendulum"),
     "dressmaker's mannequin": ("faceless jointed figure on an iron stand",
                                "jointed dress form in a faded wedding gown"),
-    # The form must not open with the subject's own head noun ("fox"): the engine's
-    # repeat guard silences it every time, which left one of these dead.
-    "taxidermy fox": ("mid-stride display mount on a wooden plinth",
-                      "curled display mount beneath a glass dome"),
     # haunted place
     "abandoned farmhouse": ("two-storey clapboard house", "sagging house with a deep porch"),
     "gothic manor": ("turreted gothic mansion", "sprawling many-gabled mansion"),
@@ -673,7 +669,6 @@ MATERIAL_POOLS: dict[str, tuple[str, ...]] = {
     "antique rocking chair": ("worm-eaten oak", "cracked lacquered wood", "carved black walnut"),
     "grandfather clock": ("worm-eaten oak", "carved black walnut", "cracked lacquered wood"),
     "dressmaker's mannequin": ("yellowed canvas over horsehair", "varnished jointed wood"),
-    "taxidermy fox": ("matted russet fur", "balding mottled pelt"),
     # haunted place
     "dwelling": ("weathered clapboard", "blackened brick", "rotting timber", "moss-streaked stone"),
     "sacred ruin": ("moss-streaked stone", "blackened brick", "weathered marble", "rotting timber"),
@@ -703,8 +698,6 @@ PRIMARY_COLOR_POOLS: dict[str, tuple[str, ...]] = {
     POOL_DEFAULT_KEY: _COLOR_GARB,
     "undead": _COLOR_SKIN,
     "bog body": ("peat brown", "dark umber", "blackened brown"),
-    # A fox is not drawn in an object's faded crimson or pink.
-    "taxidermy fox": ("drab brown", "yellowed ivory", "pale grey"),
     "mummy": ("yellowed ivory", "dark umber", "drab brown"),
     "spirit": _COLOR_SPIRIT,
     "cryptid": ("pitch black", "ash grey", "drab brown", "waxen white", "mottled brown"),
@@ -827,7 +820,6 @@ APPENDAGE_POOLS: dict[str, tuple[str, ...]] = {
     "furnishing": ("carved finial", "gilded crest"),
     "grandfather clock": ("brass pendulum", "carved finial"),
     "dressmaker's mannequin": ("pin-studded shoulder",),
-    "taxidermy fox": (),
     # haunted place
     "dwelling": ("sagging porch", "crooked chimney", "broken shutter", "weathervane"),
     "sacred ruin": ("leaning stone cross", "crumbling spire", "iron-barred gate"),
@@ -928,7 +920,6 @@ SENSOR_POOLS: dict[str, tuple[str, ...]] = {
     "keepsake": (),
     "porcelain doll": ("painted glass eye", "watching painted eye"),
     "ventriloquist dummy": ("painted glass eye", "watching painted eye"),
-    "taxidermy fox": ("painted glass eye",),
     "furnishing": (),
     "haunted family picture": ("watching painted eye",),
     "haunted place": (),
@@ -959,7 +950,6 @@ APERTURE_POOLS: dict[str, tuple[str, ...]] = {
     "ventriloquist dummy": ("hinged painted jaw",),
     "grandfather clock": ("glass door hanging open", "cracked glass front"),
     "dressmaker's mannequin": (),
-    "taxidermy fox": ("snarling muzzle",),
     "haunted family picture": ("cracked glass front",),
     "cracked mirror": (),
     "antique rocking chair": ("worn wicker seat",),
@@ -1550,8 +1540,6 @@ _S_CHAIR_ROOM = ("rocking beside an old cradle in a dark nursery",)
 _S_MANNEQUIN_EV = ("standing a step closer to a frozen seamstress than it was a moment ago",
                    "turning its faceless head toward a terrified seamstress")
 _S_MANNEQUIN_ROOM = ("standing in the corner of a dark bedroom over a sleeping woman",)
-_S_TAXIDERMY_EV = ("turning its glass eyes toward a terrified hunter backing away",
-                   "creeping down from its plinth behind a distracted man")
 
 # --- haunted places ---
 _S_PLACE_EV = (
@@ -1713,7 +1701,6 @@ _BUCKETS = (
     (_S_CHAIR_WITNESS, "event", "n", frozenset({"air", "floor"}), _A, ""),
     (_S_CHAIR_ROOM, "event", "n", frozenset({"room", "structure"}), _A, ""),
     (_S_MANNEQUIN_EV, "event", "n", frozenset({"air", "floor"}), _A, ""),
-    (_S_TAXIDERMY_EV, "event", "n", frozenset({"air", "floor"}), _A, ""),
     (_S_MANNEQUIN_ROOM, "event", "n", frozenset({"room", "structure"}), _A, ""),
     (_S_INSTITUTION_EV, "event", "n", _A, _A, ""),
     (_S_INSTITUTION_GROUND, "event", "n", _GROUND, _A, ""),
@@ -1845,7 +1832,6 @@ SITUATION_POOLS: dict[str, tuple[str, ...]] = {
     "cracked mirror": _S_OBJECT_CORE + _S_MIRROR_EV + _S_MIRROR_WITNESS,
     "antique rocking chair": _S_OBJECT_CORE + _S_CHAIR_EV + _S_CHAIR_WITNESS + _S_CHAIR_ROOM,
     "dressmaker's mannequin": _S_OBJECT_CORE + _S_MANNEQUIN_EV + _S_MANNEQUIN_ROOM,
-    "taxidermy fox": _S_OBJECT_CORE + _S_TAXIDERMY_EV,
     "haunted place": _S_PLACE_CORE,
     "attraction": _S_PLACE_CORE,
     "rusted carnival ride": _S_PLACE_CORE + _S_RIDE_ACT,

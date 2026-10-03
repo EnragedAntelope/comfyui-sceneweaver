@@ -8048,7 +8048,8 @@ VALUE_NEEDS["situation"].update({
     "idling beside a cargo stack": frozenset({"floor"}),
     "latching onto a hull with magnetic grapples": frozenset({"open-space"}),
     "losing altitude in a downdraft": frozenset({"sky", "cloud-deck"}),
-    "lowering its ramp onto a deck": frozenset({"floor"}),
+    # An open ramp under water is an open door at the bottom of a trench.
+    "lowering its ramp onto a deck": frozenset({"floor", "air"}),
     "parking between two cargo containers": frozenset({"floor"}),
     "sealing a hull breach from the outside": frozenset({"open-space", "structure"}),
     "planting a magnetic beacon on a drifting asteroid": frozenset({"open-space"}),

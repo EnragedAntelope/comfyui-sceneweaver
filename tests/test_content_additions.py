@@ -126,15 +126,6 @@ class HorrorSubjectTests(unittest.TestCase):
             affords = G.affordances_of(HORROR_PACK, doc["environment"])
             self.assertIn("air", affords, doc["environment"])
 
-    def test_a_taxidermy_fox_is_a_fox_coloured_object(self) -> None:
-        allowed = set(HORROR_PACK.pools["primary_color"]["taxidermy fox"])
-        self.assertFalse(allowed & {"faded pink", "faded crimson", "tarnished gold"})
-        for _text, doc in _scenes(
-            HORROR_PACK, {"entity1_kind": "cursed object", "entity1_subkind": "taxidermy fox"}
-        ):
-            colour = doc["entities"][0].get("primary_color")
-            self.assertTrue(colour is None or colour in allowed, colour)
-
 
 class FantasyContentTests(unittest.TestCase):
     PLACES = {
@@ -215,6 +206,30 @@ class SciFiContentTests(unittest.TestCase):
         for place in self.PLACES:
             for text, _doc in _scenes(SCIFI_PACK, {"environment": place}, range(10)):
                 self.assertIn(G.spoken_value(SCIFI_PACK, "environment", place), text)
+
+
+class RenderTestFixTests(unittest.TestCase):
+    """The 1002 render test: a candle in the sand, a ramp open under water, a lute on a gladiator."""
+
+    def test_a_candle_act_needs_a_room_and_a_ramp_needs_air(self) -> None:
+        self.assertIn(
+            "structure",
+            G.resolved_needs(FANTASY_PACK, "situation", "reaching for a guttering candle"),
+        )
+        self.assertIn(
+            "air", G.resolved_needs(SCIFI_PACK, "situation", "lowering its ramp onto a deck")
+        )
+
+    def test_only_a_bard_carries_a_lute(self) -> None:
+        holders = {
+            key for key, values in FANTASY_PACK.pools["extras"].items() if "lute" in values
+        }
+        self.assertEqual(holders, {"bard"})
+        for role in ("gladiator", "pirate captain", "witch hunter"):
+            self.assertNotIn("lute", G.pool_for(FANTASY_PACK, "extras", {"subkind": role, "kind": "folk"}))
+
+    def test_the_taxidermy_fox_is_gone(self) -> None:
+        self.assertNotIn("taxidermy fox", HORROR_PACK.pools["subkind"]["cursed object"])
 
 
 if __name__ == "__main__":

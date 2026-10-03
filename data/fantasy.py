@@ -828,7 +828,9 @@ FORM_POOLS: dict[str, tuple[str, ...]] = {
     "woolly mammoth": ("shaggy mammoth body with a high domed skull",
                        "tusked mammoth body with a sloping back"),
     "giant scorpion": ("armoured scorpion body with a curled stinger tail",
-                       "broad-clawed scorpion body with a segmented tail"),
+                       "broad-clawed scorpion body with a segmented tail",
+                       "low-slung scorpion body with heavy pincers",
+                       "long-tailed scorpion body with a hooked sting"),
     "giant cave spider": ("long-legged spider body with a crystal-studded abdomen",
                           "bloated spider body with a spined abdomen"),
     # A lean hound read as a pet dog (#1122).
@@ -986,7 +988,8 @@ MATERIAL_POOLS: dict[str, tuple[str, ...]] = {
     "great beast": ("thick shaggy fur", "coarse heavy fur", "bristly hide", "armoured hide"),
     "basilisk": ("stony scales", "rough ridged scales"),
     "giant cave spider": ("bristled chitin", "glossy chitin"),
-    "giant scorpion": ("glossy chitin", "bristled chitin"),
+    "giant scorpion": ("glossy chitin", "bristled chitin", "ridged armoured chitin",
+                       "dull plated chitin"),
     "hellhound": ("sooty scorched hide", "short cinder-flecked fur"),
     "treant": ("gnarled bark", "moss-draped bark"),
     "sea beast": ("rubbery mottled skin", "sleek scales", "barnacled shell"),
@@ -1122,6 +1125,8 @@ PRIMARY_COLOR_POOLS: dict[str, tuple[str, ...]] = {
     POOL_DEFAULT_KEY: _COLOR_GARB,
     "dragon": _COLOR_SCALE,
     "mythic beast": _COLOR_COAT,
+    # A coat's dapples and pure white read as a mammal on a scorpion.
+    "giant scorpion": ("ochre", "black", "deep amber", "russet", "ash grey"),
     "giant-kin": _COLOR_SKIN,
     "small folk": _COLOR_GARB,
     "hybrid folk": _COLOR_GARB,
@@ -1210,6 +1215,8 @@ SURFACE_DETAIL_POOLS: dict[str, tuple[str, ...]] = {
                "gleaming unmarked plating", "barnacle crusting", "cracked claw tips"),
     "mythic beast": ("old claw scars", "fresh battle wounds", "mud-caked flanks",
                      "healed arrow scars", "sleek well-fed flanks"),
+    # Flanks and fur are a mammal's; a scorpion shows its scars.
+    "giant scorpion": ("old claw scars", "fresh battle wounds", "healed arrow scars"),
     "hoofed beast": ("burrs matted into the coat", "groomed gleaming hair", "mud-caked legs"),
     "winged beast": ("singed feather tips", "ruffled feathers", "old claw scars"),
     "giant-kin": ("leathery weathered skin", "old pale scars", "caked river mud", "cracked knuckles",
@@ -1269,7 +1276,7 @@ APPENDAGE_POOLS: dict[str, tuple[str, ...]] = {
     "behemoth": ("curved horn", "curved tusk", "armoured tail"),
     "giant cave spider": ("long leg", "hooked pedipalp"),
     "woolly mammoth": ("long tusk", "bony shoulder hump", "stubby tail"),
-    "giant scorpion": ("scorpion tail", "hooked pedipalp", "long leg"),
+    "giant scorpion": ("scorpion tail", "hooked pedipalp"),
     "treant": ("branch arm", "root leg", "leafy crown"),
     "kraken": ("sucker-lined tentacle", "long hooked tentacle"),
     "hippocamp": ("finned tail", "webbed foreleg"),
@@ -1518,7 +1525,7 @@ APERTURE_POOLS: dict[str, tuple[str, ...]] = {
     "mythic beast": ("snarling muzzle", "fanged maw"),
     "hoofed beast": ("soft muzzle", "flaring nostrils"),
     "woolly mammoth": ("soft muzzle", "flaring nostrils"),
-    "giant scorpion": ("fanged maw",),
+    "giant scorpion": ("clicking mouthparts",),
     "pegasus": ("soft muzzle", "flaring nostrils"),
     "winged beast": ("hooked beak", "curved beak"),
     "sphinx": ("serene human mouth",),
@@ -1571,8 +1578,13 @@ EXTRAS_POOLS: dict[str, tuple[str, ...]] = {
     # pipes into a fight were drawn holding two bamboo flutes.
     "satyr": ("set of panpipes", "wineskin", "leather satchel"),
     "faun": ("set of panpipes", "wineskin", "leather satchel"),
+    # A lute is the bard's: a gladiator swung a flail with a lute in the other hand.
     "folk": ("leather satchel", "rolled map", "quiver of arrows", "coin purse", "hooded lantern",
-             "chained spellbook", "herb pouch", "lute", "hunting horn", "bedroll"),
+             "chained spellbook", "herb pouch", "hunting horn", "bedroll"),
+    "bard": ("lute", "leather satchel", "coin purse", "rolled map"),
+    "gladiator": ("coin purse", "hunting horn"),
+    "pirate captain": ("rolled map", "coin purse", "hooded lantern"),
+    "witch hunter": ("hooded lantern", "leather satchel", "herb pouch"),
     "necromancer": ("grinning skull", "chained spellbook", "bone-carved talisman", "pouch of grave dirt"),
     # A standard is a martial subkind's item, not every undead's: a lich (a
     # solitary spellcaster) carrying a banner read as a flag lashed to a bare
@@ -1947,6 +1959,26 @@ _S_CHIMERA_EV_WAR = ("crouching to spring",)
 _S_GREAT_ACT_GROUND = ("tearing at a fallen log", "digging into the ground with its claws")
 _S_GREAT_EV_LIFE = ("crashing through thick undergrowth",)
 _S_GREAT_ACT = ("rearing up to make itself look bigger",)
+_S_SCORPION_EV_WAR = (
+    "raising its stinger high over its back", "lunging with pincers spread wide",
+    "stabbing its sting down at a fallen shield", "seizing a desert lizard in its pincers",
+    "charging with its tail arched over its back",
+)
+_S_SCORPION_EV = (
+    "clacking its pincers at an intruder", "rearing back with its claws raised",
+    "spinning round to face a sudden threat",
+)
+_S_SCORPION_ACT = (
+    "scuttling sideways across the rocks", "creeping forward with its tail curled",
+    "tapping a stone with one pincer", "turning slowly to track movement",
+    "picking its way over loose stones", "testing the air with its pincers",
+)
+_S_SCORPION_ACT_DUST = (
+    "pushing up out of loose sand", "dragging its kill toward a burrow",
+    "half-buried in sand with only its stinger showing",
+)
+_S_SCORPION_IDLE = ("lying flat and motionless on a sun-baked rock", "watching with its pincers folded")
+_S_SCORPION_SLEEP = ("lying still with its legs drawn in",)
 _S_SEABEAST_EV_DEEP = ("rising from the depths",)
 _S_SEABEAST_ACT_DEEP = ("gliding along the seabed", "trailing a cloud of silt")
 _S_SEABEAST_EV_SHORE = ("surfacing beside a rocky shore",)
@@ -2114,8 +2146,10 @@ _S_UNDEAD_ACT = (
     # archetype keeps armament in the fixed head, so a revenant clawing out
     # of a coffin with a scythe already in hand needed a third arm.
     "hunched over in silent grief",
-    "reaching for a guttering candle",
+    "dragging a rusted chain behind it",
 )
+#: A candle stands somewhere: a death knight reached for one in a desert of dunes.
+_S_UNDEAD_CANDLE_WALLS = ("reaching for a guttering candle",)
 _S_BONES_EV = ("collapsing into a heap of bones and rising again", "turning its skull with a jerk")
 _S_BONES_ACT = ("pointing a bony finger", "shuffling in a slow circle")
 _S_UNDEAD_EV_GROUND = ("rising from a shallow grave",)
@@ -2419,6 +2453,12 @@ _BUCKETS = (
     (_S_BEAST_EV_AIR, "event", "n", _AIR, _A, ""),
     (_S_BEAST_ACT, "activity", "n", _A, _A, ""),
     (_S_BEAST_IDLE, "idle", "n", _A, _A, ""),
+    (_S_SCORPION_EV_WAR, "event", "c", _A, _A, ""),
+    (_S_SCORPION_EV, "event", "n", _A, _A, ""),
+    (_S_SCORPION_ACT, "activity", "n", _A, _A, ""),
+    (_S_SCORPION_ACT_DUST, "activity", "n", frozenset({"dust"}), _A, ""),
+    (_S_SCORPION_IDLE, "idle", "n", _A, _A, ""),
+    (_S_SCORPION_SLEEP, "idle", "n", _A, _A, "s"),
     (_S_BEAST_CALM_LIFE, "activity", "p", _LIFE, _A, ""),
     (_S_BEAST_CALM_SHORE, "activity", "p", _SHORE, _A, ""),
     (_S_HOOF_EV_GROUND, "event", "n", _GROUND, _WALK, ""),
@@ -2512,6 +2552,7 @@ _BUCKETS = (
     (_S_UNDEAD_EV_WAR_WALLS, "event", "c", _WALLS, _A, ""),
     (_S_UNDEAD_EV, "event", "n", _A, _A, ""),
     (_S_UNDEAD_ACT, "activity", "n", _A, _A, ""),
+    (_S_UNDEAD_CANDLE_WALLS, "activity", "n", _WALLS, _A, ""),
     (_S_UNDEAD_EV_GROUND, "event", "n", _GROUND, _A, ""),
     (_S_BONES_EV, "event", "n", _A, _A, ""),
     (_S_BONES_ACT, "activity", "n", _A, _A, ""),
@@ -2647,7 +2688,7 @@ _S_FOLK_CORE = (
     + _S_FOLK_EV_FIRE_CAMP + _S_FOLK_ACT_GROUND + _S_FOLK_ACT_WALLS + _S_FOLK_IDLE_LIFE
 )
 _S_UNDEAD_CORE = (
-    _S_UNDEAD_EV_WAR + _S_UNDEAD_EV_WAR_WALLS + _S_UNDEAD_EV + _S_UNDEAD_ACT + _S_UNDEAD_EV_GROUND + _S_UNDEAD_EV_WALLS
+    _S_UNDEAD_EV_WAR + _S_UNDEAD_EV_WAR_WALLS + _S_UNDEAD_EV + _S_UNDEAD_ACT + _S_UNDEAD_CANDLE_WALLS + _S_UNDEAD_EV_GROUND + _S_UNDEAD_EV_WALLS
     + _S_UNDEAD_ACT_WALLS + _S_UNDEAD_DORMANT + _S_UNDEAD_DORMANT_WALLS + _S_UNDEAD_ACT2
 )
 _S_CONSTRUCT_CORE = (
@@ -2698,6 +2739,10 @@ SITUATION_POOLS: dict[str, tuple[str, ...]] = {
     ),
     "chimeric beast": _S_BEAST_CORE + _S_CHIMERA_ACT + _S_CHIMERA_EV_WAR,
     "great beast": _S_BEAST_CORE + _S_GREAT_ACT_GROUND + _S_GREAT_EV_LIFE + _S_GREAT_ACT,
+    "giant scorpion": (
+        _S_SCORPION_EV_WAR + _S_SCORPION_EV + _S_SCORPION_ACT + _S_SCORPION_ACT_DUST
+        + _S_SCORPION_IDLE + _S_SCORPION_SLEEP + _S_STONE_DORMANT
+    ),
     "sea beast": (
         _S_BEAST_CORE + _S_SEABEAST_EV_DEEP + _S_SEABEAST_ACT_DEEP + _S_SEABEAST_EV_SHORE
         + _S_SEABEAST_EV_SHORE_WAR + _S_STONE_DORMANT_DEEP

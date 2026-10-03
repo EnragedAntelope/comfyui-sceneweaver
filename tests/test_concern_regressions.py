@@ -1259,6 +1259,19 @@ CONCERNS: tuple[Concern, ...] = (
         for pack in (SCIFI_PACK, FANTASY_PACK, HORROR_PACK)
     ),
 
+    # 1002 render test (0.6.0 branch).
+    Concern(
+        "a bathyscaphe lowers its ramp at the bottom of an ocean trench",
+        lambda r, d, t: r.get("situation") == "lowering its ramp onto a deck"
+        and "air" not in affordances_of(SCIFI_PACK, d["environment"]),
+        widgets={"entity1_kind": "surface vehicle"},
+    ),
+    Concern(
+        "a giant scorpion snarls, bellows and dozes with its eyes shut like a mammal",
+        lambda r, d, t: bool(re.search(r"snarl|bellow|eyes shut|fanged maw|muzzle", t)),
+        widgets={"entity1_kind": "mythic beast", "entity1_subkind": "giant scorpion"},
+        pack=FANTASY_PACK,
+    ),
 )
 
 #: Values the 925 batch drew as something else: a burning axe, bones, roses, a crown,
