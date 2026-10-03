@@ -1345,7 +1345,46 @@ def _apply_constraints(
     _silence_head_noun_repeats(
         pack, state, address_of, locked_paths, rng, scene_filter, slots
     )
+    _redraw_stale_counts(pack, state, address_of, locked_paths, rng, scene_filter, slots)
     _silence_word_echoes(pack, state, locked_paths, slots)
+
+
+def _redraw_stale_counts(
+    pack: GenrePack,
+    state: dict[str, str | None],
+    address_of: Mapping[str, FieldDef],
+    locked_paths: "set[str]",
+    rng: random.Random,
+    scene_filter: str,
+    slots: int,
+) -> None:
+    """Re-draw a count its noun's pool no longer offers.
+
+    A count scopes on its noun, and a rule that re-draws the noun leaves the
+    count drawn under the old one: the warden's lantern was swapped for a
+    headlamp ("a lone part") and kept "a pair of". One guard here, after every
+    re-draw, rather than one at each place a noun can change. Draws only when
+    the count is stale, so every other scene is unchanged.
+    """
+    for slot in range(1, slots + 1):
+        for name, spec in pack.entity_fields.items():
+            partner = spec.count_partner
+            if partner is None:
+                continue
+            partner_path = slot_path(slot, partner)
+            count = state.get(partner_path)
+            if count is None or partner_path in locked_paths or state.get(slot_path(slot, name)) is None:
+                continue
+            definition = address_of.get(partner_path)
+            if definition is None:
+                continue
+            scope = _scope_for(pack, state, partner_path)
+            if count in filtered_pool(pack, partner, scope, scene_filter):
+                continue
+            banned, _reasons = _banned_by_state(pack, state, address_of, scene_filter, slots)
+            state[partner_path] = _draw(
+                rng, pack, definition, scope, scene_filter, banned.get(partner_path, frozenset())
+            ) or count
 
 
 _FUNCTION_WORDS = frozenset({"a", "an", "the", "of", "and", "in", "on", "with", "its", "their"})

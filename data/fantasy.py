@@ -2347,6 +2347,12 @@ _S_ARTIFACT_WIELD_WAR = (
 _S_ARTIFACT_GUARDED = ("resting beside an old monk keeping vigil over it",)
 _S_ARTIFACT_SEALED = ("bound in chains hung with warding charms", "locked inside a rune-etched iron cage")
 _S_ARTIFACT_LIFE = ("withering the grass in a spreading circle around it",)
+#: A singing harp that only stood on a stone read as a harp left out (#1003).
+_S_HARP_EV = ("lulling a band of armed raiders to sleep around it",
+              "playing a slow lament as a weeping bard kneels before it")
+_S_HARP_LIFE = ("drawing a ring of entranced deer close around it",)
+_S_HARP_ACT = ("playing itself, its strings shimmering with light",
+               "sending rings of pale light rippling out from its strings")
 _S_ARTIFACT_RUBBLE = ("lifting the fallen stones around it into a slow spiral",)
 _S_ARTIFACT_RUBBLE_WAR = ("calling skeletons clawing up out of the earth around it",)
 _S_ARTIFACT_SKY = ("drawing a spiralling storm down out of the sky",)
@@ -2648,6 +2654,9 @@ _BUCKETS = (
     (_S_ARTIFACT_GUARDED, "activity", "p", _AIR | frozenset({"floor"}), _A, ""),
     (_S_ARTIFACT_SEALED, "idle", "n", _A, _A, "d"),
     (_S_ARTIFACT_LIFE, "event", "n", _GROUND | _LIFE, _A, ""),
+    (_S_HARP_EV, "event", "n", _AIR | frozenset({"floor"}), _A, ""),
+    (_S_HARP_ACT, "event", "n", _AIR, _A, ""),
+    (_S_HARP_LIFE, "event", "n", _GROUND | _LIFE, _A, ""),
     (_S_ARTIFACT_RUBBLE, "event", "n", _GROUND, _A, ""),
     (_S_ARTIFACT_RUBBLE_WAR, "event", "c", _GROUND, _A, ""),
     (_S_ARTIFACT_SKY, "event", "n", _SKY, _A, ""),
@@ -2863,6 +2872,13 @@ SITUATION_POOLS: dict[str, tuple[str, ...]] = {
         + _S_ARTIFACT_SKY + _S_IDOL_WAR
     ),
 }
+
+SITUATION_POOLS["singing harp"] = (
+    _S_HARP_EV + _S_HARP_ACT + _S_HARP_LIFE + _S_ARTIFACT_EV + _S_ARTIFACT_EV2 + _S_ARTIFACT_EV_FLAME
+    + _S_ARTIFACT_WIELD + _S_ARTIFACT_ACT + _S_ARTIFACT_GUARDED + _S_ARTIFACT_SEALED + _S_ARTIFACT_IDLE
+    + _S_ARTIFACT_DORMANT + _S_ARTIFACT_ACT_DEEP + _S_ARTIFACT_DORMANT_DEEP + _S_ARTIFACT_EV_SHORE
+    + _S_ARTIFACT_EV_GROUND + _S_ARTIFACT_IDLE_WALLS + _S_ARTIFACT_ACT2
+)
 
 TIER_WEIGHTS: dict[str, float] = {"event": 3.0, "activity": 1.0, "idle": 0.25}
 

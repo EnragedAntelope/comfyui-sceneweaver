@@ -321,6 +321,31 @@ class RenderTest1003bTests(unittest.TestCase):
             HORROR_PACK.value_traits["situation"]["dragging a trail of spilled entrails behind it"],
         )
 
+    def test_a_count_follows_a_noun_a_rule_redrew(self) -> None:
+        # The warden's hand-held light is re-drawn by a rule; its count must follow.
+        for seed in range(400):
+            _, doc = generate_scene(
+                seed, HORROR_PACK,
+                widgets={"entity1_kind": "mortal", "entity1_subkind": "paranormal investigator"},
+                entity_count=1,
+            )
+            entity = doc["entities"][0]
+            if entity.get("emitters") and entity.get("emitter_count"):
+                pool = G.pool_for(HORROR_PACK, "emitter_count",
+                                  {"emitters": entity["emitters"], "kind": "mortal"})
+                self.assertIn(entity["emitter_count"], pool, (seed, entity["emitters"]))
+
+    def test_the_warden_carries_one_light_and_a_ghost_none(self) -> None:
+        self.assertEqual(
+            G.pool_for(HORROR_PACK, "emitters", {"subkind": "lantern-bearing warden", "kind": "mortal"}), ()
+        )
+        self.assertFalse([v for v in self._all(HORROR_PACK) if "will-o" in v])
+
+    def test_a_singing_harp_has_its_own_acts(self) -> None:
+        acts = G.pool_for(FANTASY_PACK, "situation", {"subkind": "singing harp", "kind": "artifact"})
+        self.assertIn("lulling a band of armed raiders to sleep around it", acts)
+        self.assertNotIn("withering the grass in a spreading circle around it", acts)
+
     def test_a_plague_victim_is_not_a_mummy(self) -> None:
         self.assertNotIn("stained bandage wrappings", self._all(HORROR_PACK))
         self.assertNotIn(

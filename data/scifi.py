@@ -3261,7 +3261,7 @@ _SITUATION_STARSHIP = _SITUATION_STARSHIP_COMMON + (
 
 
 _SITUATION_STATION = (
-    "swinging a cargo cradle out over open space",
+    "swinging a long cargo boom out over open space",
     "spraying a fan of glittering coolant crystals from a ruptured line",
     "extending a new module on assembly arms",
     "repelling a boarding assault at the main lock",
@@ -3271,7 +3271,7 @@ _SITUATION_STATION = (
     "shuttering its docks against an incoming barrage",
     "berthing rows of small spacecraft along its central truss",
     "firing point-defence into a swarm",
-    "lowering a cargo cradle onto a waiting hull",
+    "passing a cargo container along a long boom to a docked starship",
     "carrying a cage of refit scaffolding",
     "listing badly with half its hull gone",
     "turning its long truss against the light",
@@ -3298,7 +3298,7 @@ _SITUATION_STATION = (
     "being swarmed by small starships at every docking arm",
     "tumbling out of its rotation",
     "cracking open along a docking arm",
-    "collapsing into a trailing field of wreckage",
+    "breaking apart as whole modules tear away from its spine",
     "venting a glittering spray of ice crystals from a ruptured hull",
     "breaking apart in a spreading cloud of debris",
 )
@@ -4078,7 +4078,7 @@ SITUATION_TIERS: dict[str, str] = {
     'warping the star field around its rim': 'activity',
     'flinging a jet from its poles': 'activity',
     'drifting across a star field': 'idle',
-    'swinging a cargo cradle out over open space': 'activity',
+    'swinging a long cargo boom out over open space': 'activity',
     'spraying a fan of glittering coolant crystals from a ruptured line': 'activity',
     'extending a new module on assembly arms': 'activity',
     'repelling a boarding assault at the main lock': 'event',
@@ -4088,7 +4088,7 @@ SITUATION_TIERS: dict[str, str] = {
     'shuttering its docks against an incoming barrage': 'event',
     'berthing rows of small spacecraft along its central truss': 'activity',
     'firing point-defence into a swarm': 'event',
-    'lowering a cargo cradle onto a waiting hull': 'activity',
+    'passing a cargo container along a long boom to a docked starship': 'activity',
     'carrying a cage of refit scaffolding': 'activity',
     'listing badly with half its hull gone': 'activity',
     'turning its long truss against the light': 'idle',
@@ -4115,7 +4115,7 @@ SITUATION_TIERS: dict[str, str] = {
     'being swarmed by small starships at every docking arm': 'event',
     'tumbling out of its rotation': 'event',
     'cracking open along a docking arm': 'event',
-    'collapsing into a trailing field of wreckage': 'event',
+    'breaking apart as whole modules tear away from its spine': 'event',
     'venting a glittering spray of ice crystals from a ruptured hull': 'event',
     'flaring its body wide in a threat display': 'event',
     'flexing a freshly moulted outer skin': 'activity',
@@ -5441,7 +5441,7 @@ VALUE_NEEDS["situation"].update({
     "climbing a hull on magnetic boots": frozenset({"floor"}),  # spacefarer
     "climbing over a low wall": frozenset({"structure"}),  # robot or mech,small drone
     "collapsing into a singularity": frozenset({}),  # alien artifact
-    "collapsing into a trailing field of wreckage": frozenset({}),  # space station
+    "breaking apart as whole modules tear away from its spine": frozenset({}),  # space station
     "resting deep in the crater it gouged": frozenset({}),  # wreck
     "collapsing under its own weight": frozenset({"gravity"}),  # wreck
     "coming apart along one long seam": frozenset({}),  # _default
@@ -5533,7 +5533,7 @@ VALUE_NEEDS["situation"].update({
     # a "station docking ring interior" (a tight, walled place) as readily
     # as open ground, and rendered a ground vehicle racing indoors.
     "losing a wheel at full throttle": frozenset({"vast"}),  # flying,hovering,legged,surface vehicle,underwater,wheeled/tracked
-    "lowering a cargo cradle onto a waiting hull": frozenset({}),  # space station
+    "passing a cargo container along a long boom to a docked starship": frozenset({}),  # space station
     "lowering a maintenance platform": frozenset({}),  # space station
     "sweeping the terrain below with a scanning beam": frozenset({}),  # courier,starship
     "lowering its jaws to drink": frozenset({}),  # alien creature
@@ -5629,7 +5629,7 @@ VALUE_NEEDS["situation"].update({
     "swarming across a hull in a moving carpet": frozenset({}),  # alien creature
     "sweeping a searchlight across a hull": frozenset({}),  # courier,starship
     "swinging a beacon through the dark": frozenset({}),  # space station
-    "swinging a cargo cradle out over open space": frozenset({}),  # space station
+    "swinging a long cargo boom out over open space": frozenset({}),  # space station
     "snapping at the air in a sudden strike": frozenset({"gravity", "air"}),  # alien creature
     "tearing loose from a docking clamp": frozenset({}),  # _default
     "tearing into a fallen hull": frozenset({}),  # alien creature,diffuse being
@@ -6155,9 +6155,9 @@ VALUE_TRAITS: dict[str, dict[str, tuple[str, ...]]] = {
             "unloading cargo onto a docking arm",
             "hauling a stripped hulk in a tractor beam",
             "nosing through a cloud of stirred-up silt",
-            "swinging a cargo cradle out over open space",
+            "swinging a long cargo boom out over open space",
             "planting sensor stakes in a grid",
-            "lowering a cargo cradle onto a waiting hull",
+            "passing a cargo container along a long boom to a docked starship",
         )),
         # ``powered-act`` is derived at the end of the module from
         # ``DORMANT_ACTS``: every situation not declared dormant carries it.
@@ -6774,7 +6774,7 @@ _SITUATION_CONFLICT = (
     "being swarmed by small starships at every docking arm",
     "tumbling out of its rotation",
     "cracking open along a docking arm",
-    "collapsing into a trailing field of wreckage",
+    "breaking apart as whole modules tear away from its spine",
     "venting a glittering spray of ice crystals from a ruptured hull",
     # creature or being
     "stalking prey through the corridors",
@@ -6986,10 +6986,10 @@ _SITUATION_PEACEFUL = (
     # celestial body
     "being mined by a swarm of salvage drones",
     # station or structure
-    "swinging a cargo cradle out over open space",
+    "swinging a long cargo boom out over open space",
     "extending a new module on assembly arms",
     "berthing rows of small spacecraft along its central truss",
-    "lowering a cargo cradle onto a waiting hull",
+    "passing a cargo container along a long boom to a docked starship",
     "carrying a cage of refit scaffolding",
     # creature or being
     "flexing a freshly moulted outer skin",
@@ -8711,7 +8711,7 @@ _add_traits(SITUATION_FIELD, {
     for value in (
         "venting white vapour from a torn flank",
         "splitting open to bathe a kneeling xenoarchaeologist in light",
-        "collapsing into a trailing field of wreckage",
+        "breaking apart as whole modules tear away from its spine",
         "giving way under a salvage drone's cutting beam",
         "tearing open along a frost-welded seam",
         "shedding its outer crust in a spreading debris ring",
@@ -9636,6 +9636,9 @@ _add_traits(ENVIRONMENT_FIELD, {
 # was drawn as a ball standing on the ground; an open landscape has nothing to hold
 # it level.
 _add_traits("form", {"sphere-and-spar hull": ("spherical-hull",)})
+# 1003 render test: a "vertical spire lander hull" in a star cluster was drawn as
+# a tangled spire; it is a shape that stands on the ground.
+VALUE_NEEDS["form"]["vertical spire lander hull"] = frozenset({"ground"})
 
 # 1003 render test: a warship towing a shuttle in a tractor beam, with a
 # wrecked starship in the background, was drawn beaming the distant wreck. An act

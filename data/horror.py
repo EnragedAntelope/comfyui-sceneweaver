@@ -848,7 +848,9 @@ EMITTER_POOLS: dict[str, tuple[str, ...]] = {
     "undead": ("reflective eye", "sunken pinprick eye"),
     # "luminous shimmer" drew a second, glowing ghost beside the first (#1270),
     # the luminous-outline trap of round XXIII again.
-    "spirit": ("inner light in its chest", "drifting will-o'-wisp light beside it", "light behind its eyes",
+    # A ghostly lantern drew a second, solid figure to hold it (#1003); a
+    # will-o'-wisp in its place drew a stray floating flame.
+    "spirit": ("inner light in its chest", "light behind its eyes",
                "hollow burning eye"),
     "cryptid": ("reflective eye", "burning eye"),
     # Glowing pustules were drawn as a second row of red eyes (#1302).
@@ -858,7 +860,8 @@ EMITTER_POOLS: dict[str, tuple[str, ...]] = {
     "mortal": ("hooded lantern", "guttering candle", "handheld torch beam", "headlamp"),
     "afflicted": ("guttering candle",),
     # The warden's lantern is in the name; a second light was held awkwardly.
-    "lantern-bearing warden": ("headlamp",),
+    # Named for the lantern it carries: a headlamp as well drew three lights (#1003).
+    "lantern-bearing warden": (),
     "village priest": ("hooded lantern", "guttering candle"),
     "cult": ("guttering candle", "hooded lantern"),
     "occultist": ("guttering candle", "hooded lantern"),
@@ -1127,7 +1130,6 @@ CARDINALITY: dict[str, dict[str, str]] = {
     ),
     "emitters": _cardinality(
         ("a lone part", ("spectral flame in its chest", "inner light in its chest",
-                         "drifting will-o'-wisp light beside it",
                          "guttering candle behind a broken pane", "rusted grave lantern at its gate",
                          "faint lamp high in its lamp room", "lamp in a high broken window",
                          "blinking red warning lamp", "lamp in a top-floor ward window",
