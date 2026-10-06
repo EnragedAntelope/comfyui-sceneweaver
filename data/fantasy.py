@@ -783,7 +783,8 @@ _FORM_FOLK = (
 )
 _FORM_ELEMENTAL = (
     "towering humanoid shape", "swirling vortex shape", "crouching bestial shape",
-    "tall serpentine shape",
+    "tall serpentine shape", "billowing cloak-like shape", "coiling ribbon-like shape",
+    "hunched many-limbed shape",
 )
 _FORM_WALKING_DEAD = (
     "gaunt skeletal frame", "hunched emaciated frame", "tall armoured frame",
@@ -1193,12 +1194,13 @@ MARKINGS_POOLS: dict[str, tuple[str, ...]] = {
     "giant scorpion": ("pale banded leg rings", "jagged back patterning"),
     "woolly mammoth": ("dark saddle patch", "grey-streaked flanks"),
     "sea beast": ("mottled shell patterning", "pale ridge banding"),
-    "giant-kin": ("ochre war paint", "blue woad swirls", "tribal bone charms"),
+    "giant-kin": ("ochre war paint", "blue woad swirls", "tribal knotted-twine charms"),
     "small folk": ("smeared war paint", "stolen heraldic badges", "bead-and-feather charms"),
     "hybrid folk": ("painted spiral tattoos", "gold arm bands", "braided hair beads"),
     "folk": ("embroidered heraldry", "stitched heraldic badge", "woven clan tartan",
              "tooled leather patterning", "silver clan jewellery"),
-    "spirit or elemental": ("slowly shifting spiral patterning", "rippling bands of colour"),
+    "spirit or elemental": ("slowly shifting spiral patterning", "rippling bands of colour",
+                            "veins of colour running through the body", "faint drifting motes"),
     "undead": ("faded heraldry", "tarnished funeral jewellery", "grave-dirt streaking"),
     "construct": ("carved spiral patterning", "inlaid gold lines", "chiselled geometric banding"),
     "structure": ("hanging heraldic banners", "carved relief friezes", "painted crests above the gate"),
@@ -1413,10 +1415,11 @@ EMITTER_POOLS: dict[str, tuple[str, ...]] = {
     "dwarf runesmith": ("enchanted gem amulet", "luminous rune tracery", "crackling spell orb"),
     "potion-brewer": ("enchanted gem amulet", "luminous rune tracery", "crackling spell orb"),
     "wandering scholar": ("enchanted gem amulet", "luminous rune tracery", "crackling spell orb"),
-    "spirit or elemental": ("luminous heart in its chest",),
+    "spirit or elemental": ("core of pale light in its chest", "pulsing orb of light in its chest",
+                            "knot of swirling light at its centre"),
     "will-o'-wisp": ("floating light orb",),
     # A floating orb on an earth elemental was drawn as one molten eye.
-    "earth elemental": ("luminous crystal", "luminous heart in its chest"),
+    "earth elemental": ("luminous crystal", "core of pale light in its chest"),
     "fire elemental": ("white-hot core", "crackling spark"),
     "magma elemental": ("white-hot core", "molten crack"),
     "undead": ("ember eye socket", "cold luminous eye", "spectral flame"),
@@ -1800,7 +1803,8 @@ CARDINALITY: dict[str, dict[str, str]] = {
     "emitters": _cardinality(
         ("a lone part", (
             "ember-hot throat", "luminous horn", "star-flecked mane",
-            "crackling spell orb", "luminous heart in its chest", "white-hot core", "spectral flame",
+            "crackling spell orb", "core of pale light in its chest", "pulsing orb of light in its chest", "knot of swirling light at its centre",
+            "white-hot core", "spectral flame",
             "enchanted gem amulet",
             "enchanted gem core", "enchanted beacon", "smouldering brand", "luminous furnace grate",
         )),
@@ -2122,7 +2126,7 @@ _S_SPIRIT_EV = (
     "seeping through a narrow crack", "bursting apart and reforming", "flaring up in a sudden surge",
 )
 _S_SPIRIT_EV_WAR = (
-    "lashing out at an intruder", "crashing down in a spray of fragments",
+    "lashing out at an intruder", "crashing down onto the rocks below",
     "gathering itself before a strike", "raging in a tight whirl",
 )
 _S_SPIRIT_ACT = (
@@ -2195,7 +2199,7 @@ _S_CONSTRUCT_EV = (
     # "rock chips" off a clay or iron golem (#1308); "grinding to a halt" drew an
     # angle grinder in round XXV and had survived here.
     "marching forward in heavy steps", "raising both fists high",
-    "shedding a spray of fragments from a fresh crack in its body",
+    "splitting along a fresh crack in its body",
     "lurching to a stop mid-stride", "reassembling from scattered pieces",
 )
 _S_CONSTRUCT_ACT = (
@@ -2216,7 +2220,7 @@ _S_CONSTRUCT_DORMANT_LIFE = ("covered in climbing ivy",)
 
 # --- structure ---
 _S_STRUCTURE_EV = (
-    "weathering a lashing storm", "being struck by a fork of lightning", "standing firm in a driving rainstorm",
+    "weathering a lashing storm", "being struck by a bolt of lightning", "standing firm in a driving rainstorm",
 )
 _S_STRUCTURE_ACT = (
     "being repaired under wooden scaffolding", "being decked out with festival garlands",
@@ -4403,7 +4407,7 @@ _add_traits(SITUATION_FIELD, {v: ("fluid-act",) for v in (
 _add_traits(SITUATION_FIELD, {v: ("violent-act",) for v in (
     "erupting in a sudden flare", "flaring up in a sudden surge", "swelling to twice its size",
     "bursting apart and reforming", "spinning into a howling vortex", "raging in a tight whirl",
-    "crashing down in a spray of fragments", "shattering a toppled statue with a crack of force",
+    "crashing down onto the rocks below", "shattering a toppled statue with a crack of force",
     "lashing a nearby banner to shreds",
 )})
 # #621 moss on a watchtower in a red sandstone canyon.
@@ -4413,11 +4417,19 @@ _add_traits(ENVIRONMENT_FIELD, {v: ("arid-place",) for v in (
     "petrified forest",
 )})
 
+# #27 #30 a water or ice elemental trailing sparks: only fire, magma, storm and fey spirits spark.
+_add_traits("subkind", {v: ("sparkless",) for v in (
+    "water elemental", "ice elemental", "earth elemental", "air elemental",
+)})
+_add_traits(SITUATION_FIELD, {"trailing a stream of sparks": ("spark-trail",)})
+_add_traits("surface_detail", {"trailing sparks of light": ("spark-trail",)})
+
 TRAIT_CONFLICTS = TRAIT_CONFLICTS + (
     ("fine-handwork", "long-weapon"),
     ("non-caster", "spellbook"),
     ("limbless-body", "claw-act"),
     ("solid-body", "fluid-act"),
+    ("sparkless", "spark-trail"),
     ("arid-place", "plant-growth"),
     ("aqueous", "floating-debris"),
     ("aqueous", "plant-growth"),
@@ -4428,6 +4440,7 @@ TRAIT_REASONS.update({
     "non-caster|spellbook": "a spellbook is a caster's",
     "limbless-body|claw-act": "a body with no limbs has no claws",
     "solid-body|fluid-act": "a body of stone does not seep or swirl",
+    "sparkless|spark-trail": "only fire, magma, storm and fey spirits throw sparks",
     "arid-place|plant-growth": "moss does not grow in a desert",
     "aqueous|floating-debris": "stones do not float in water",
     "aqueous|plant-growth": "moss does not grow under the sea",
@@ -4441,8 +4454,14 @@ TRAIT_REASONS.update({
 
 # #744 #824 "rusted banners" drew a field of rust-red flags; a battlefield is
 # its blades.
-_SPOKEN_ENVIRONMENT = {"old battlefield of rusted banners": "old grassy battlefield strewn with rusted blades"}
+_SPOKEN_ENVIRONMENT = {
+    "old battlefield of rusted banners": "old grassy battlefield strewn with rusted blades",
+    # A "fairy ring" reads as tiny: a ruined keep there was drawn a dollhouse among fairies.
+    "fairy ring glade": "wide forest glade ringed by pale mushrooms",
+}
 SPOKEN["environment"] = _SPOKEN_ENVIRONMENT
+# A subject that fell back to its kind said the label, "a flickering spirit or elemental".
+SPOKEN["kind"] = {"spirit or elemental": "spirit"}
 # #706 a marsh hydra on a snowbound peak.
 # A marsh is a shore, not a coral reef.
 VALUE_NEEDS["subkind"]["marsh hydra"] = frozenset({"shoreline"})
@@ -4774,6 +4793,28 @@ CONSTRAINTS = CONSTRAINTS + (
 # battlefield "strewn with rusted blades" drew a forest of swords.
 _SPOKEN_SUBKIND["clockwork guardian"] = "gear-driven brass guardian"
 _SPOKEN_ENVIRONMENT["old battlefield of rusted banners"] = "old grassy battlefield of faded banners"
+
+# Round XXVIII -- hands again: a priest kneeling in prayer held a hunting horn, a
+# lantern or a rolled map, and a bearer shouldering a pack kept a battle axe in
+# hand. An act that fills both hands leaves none for held gear or a great weapon;
+# an act that names the weapon itself ("hefting a heavy weapon") keeps it.
+_HANDS_FULL = tuple(v for v in _HANDS_BUSY if not any(w in v for w in ("weapon", "hammering")))
+_add_traits(SITUATION_FIELD, {v: ("hands-full",) for v in _HANDS_FULL})
+TRAIT_CONFLICTS = TRAIT_CONFLICTS + (
+    ("hands-together", "hand-occupying"),
+    ("hands-full", "two-handed-weapon"),
+)
+# A "hulking" troll with a "towering gaunt body": the gaunt form conflicts with the
+# heavy condition the same way the gaunt condition does with a heavy form.
+_add_traits("form", {
+    v: ("wasted-state",) for pool in FORM_POOLS.values() for v in pool
+    if any(w in v.split() for w in ("gaunt", "emaciated"))
+})
+_add_traits("condition", {"hulking": ("heavy-build",)})
+TRAIT_REASONS.update({
+    "hands-together|hand-occupying": "both hands are busy with the act, so nothing else is held",
+    "hands-full|two-handed-weapon": "both hands are busy with the act, so the great weapon is put away",
+})
 
 FANTASY_PACK = GenrePack(
     slug="fantasy",

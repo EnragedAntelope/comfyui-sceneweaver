@@ -199,7 +199,7 @@ class SciFiContentTests(unittest.TestCase):
         for place in self.PLACES:
             spoken = G.spoken_value(SCIFI_PACK, "environment", place)
             self.assertTrue(
-                any(word in spoken for word in ("moons", "sun", "giant")), spoken
+                any(word in spoken for word in ("moon", "sun", "giant")), spoken
             )
 
     def test_the_pad_and_the_belt_are_drawn(self) -> None:
@@ -349,7 +349,7 @@ class RenderTest1003bTests(unittest.TestCase):
     def test_a_plague_victim_is_not_a_mummy(self) -> None:
         self.assertNotIn("stained bandage wrappings", self._all(HORROR_PACK))
         self.assertNotIn(
-            "sewn-on bone charms",
+            "sewn-on knotted-twine charms",
             G.pool_for(HORROR_PACK, "markings", {"subkind": "pox-ridden wanderer", "kind": "mortal"}),
         )
 

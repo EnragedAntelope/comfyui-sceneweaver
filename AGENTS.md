@@ -8,7 +8,7 @@ genre is a data module and two registration lines.
 
 ## Current state
 
-_Last verified: 2026-10-03_
+_Last verified: 2026-10-05_
 
 - **Status:** v0.6.0 on `main`, released on GitHub and published to the ComfyUI
   Registry by `publish.yml`; all three genres on one coherence engine. 0.6.0
@@ -25,8 +25,9 @@ _Last verified: 2026-10-03_
   compatibility surface: `tests/test_widget_order_frozen.py` freezes the shipped
   order and validates both example workflows. Every gate under "Build and test"
   is green. The mechanisms and every round's decisions and measurements are in
-  `docs/architecture.md` ("Round XV" to "Round XXVII" are the render-test rounds).
-- **In progress:** nothing on a branch. The maintainer keeps render-testing;
+  `docs/architecture.md` ("Round XV" to "Round XXVIII" are the render-test rounds).
+- **In progress:** Round XXVIII (the 103 render batch) is on the `round-xxviii`
+  branch, uncommitted until the maintainer reviews it. The maintainer keeps render-testing;
   each reported image becomes a fix plus a regression row. Head cropping on tall
   subjects was seen and deliberately not addressed yet (no forced "full figure"
   framing until it recurs). Not built: a headless horseman, carrion crows, an
@@ -54,9 +55,9 @@ _Last verified: 2026-10-03_
     so `celestial body` is excluded from the `planetary surface` kind pool and is
     no longer the subject in `orbit`. A decision, recorded in
     `docs/architecture.md`, not an omission.
-  - The substance-adjective render-trap class ("forked tongue" draws a fork) is
-    checked only for colours (`COLOURWORD`); in other fields an author catches it
-    by eye.
+  - The render-trap class ("forked tongue" draws a fork) is checked for colours
+    (`COLOURWORD`) and for the words already seen (`TRAP_PHRASES` in
+    `tests/validate_data.py`); a new trap word is caught by eye until it is added there.
   - Not built, and not committed to: the fantasy Tone filter (needs named
     content-tag axes) and `time_of_day` for fantasy and horror. Both are designed
     in `docs/genre-roadmap.md`; if `time_of_day` is built it defaults to unspoken.

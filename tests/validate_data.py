@@ -246,7 +246,20 @@ SUBSTANCE_COLOUR_HOMES: dict[str, tuple[str, ...]] = {
     "flame": ("fire",), "blood": ("magma", "hellhound"), "honey": (), "sea": ("water", "undine"),
     "frost": ("ice", "water", "undine"), "ice": ("ice",), "moss": (), "mud": (), "smoke": (),
     "coal": ("magma",), "soot": ("haunted",), "hellfire": ("fire", "hellhound"),
+    # A glass bottle on a masked stalker's head (round XXVIII).
+    "bottle": (),
 }
+
+
+#: Phrases a model draws as the Earth object, not the thing meant (round XXVIII):
+#: "fork of lightning" drew a dinner fork, "heart in its chest" a heart symbol,
+#: "iris" an eyeball, "rolling body" wheels, "winding key" a clock, "bone charms"
+#: cartoon dog bones, "bottle" a glass bottle. A bare "torch" drew a flaming brand
+#: in sci-fi and horror; fantasy's torch is a real one, so it is not listed.
+TRAP_PHRASES = re.compile(
+    r"\b(fork of|heart in its|iris of|iris valve|rolling body|winding key|bone charms?|bottle|"
+    r"handheld torch|with a torch)\b"
+)
 
 
 def substance_colour_words(value: str, pool_key: str) -> list[str]:
@@ -270,6 +283,8 @@ def check_values(pack: G.GenrePack, report: Report) -> None:
                     report.fail("RENDERING", f"{where}: {value!r} contains {finding}")
                 for finding in negation_findings(value):
                     report.fail("NEGATION", f"{where}: {value!r} contains {finding}")
+                for hit in TRAP_PHRASES.findall(value):
+                    report.fail("TRAP", f"{where}: {value!r} contains {hit!r}, which a model draws literally")
                 if name.endswith("color"):
                     for word in substance_colour_words(value, kind):
                         report.fail(
