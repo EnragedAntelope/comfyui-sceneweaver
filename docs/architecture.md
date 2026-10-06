@@ -1950,7 +1950,7 @@ that could let a fix in one cost the other.
 * **XIX6 A new cross-field trait: a hand can hold one thing.** "Someone
   with a lantern stuck to their wrist while firing a bow," "holding too
   much": a hand-held light (horror's `"hooded lantern"`/`"guttering
-  candle"`/`"handheld torch beam"`, fantasy's `"hooded lantern"`) is drawn
+  candle"`/`"flashlight beam"`, fantasy's `"hooded lantern"`) is drawn
   independently of armament, so it could land beside a bow at full draw or
   a shotgun - both already occupying both hands. Declared `hand-occupying`
   on the light values and a new `two-handed-weapon` trait on horror's
@@ -2071,7 +2071,7 @@ prior rounds of the same check.
   bleeding arm"`, `"barricading a door"`) produced a hunting-rifle-handling
   pose alongside an independently-drawn hand-held emitter (a lantern, a
   torch beam) - confirmed in render, "loading shells into a shotgun" next
-  to "a single cold-white handheld torch beam" already somehow in the same
+  to "a single cold-white flashlight beam" already somehow in the same
   two hands. Tagged all five `two-handed-weapon`, reusing round XIX's
   conflict with `hand-occupying` rather than inventing a new trait pair.
   Re-swept after: 0 problems in 5000 seeds, fantasy and horror both.
@@ -2751,3 +2751,25 @@ here, and each carries a regression row in `tests/test_content_additions.py`
   figure to hold it, and a will-o'-wisp in its place drew a stray flame.
 - A singing harp has its own situation pool, built around its own acts; it
   shared the generic artifact pool and was mostly drawn standing on a stone.
+
+## Round XXVIII: the 103 render batch
+
+Sixty-one flagged Krea renders; pure model misses (four arms not drawn, a fused
+light and weapon, arrows lined up) were left alone. Each fix carries a row in
+`tests/test_concern_regressions.py`.
+
+- **Render traps**: a fork of lightning, a heart in the chest, an iris, a rolling
+  body, a winding key, bone charms, bottle green, a handheld torch and a bare
+  torch in a scifi act each drew the literal object. They are reworded, and
+  `TRAP_PHRASES` in `tests/validate_data.py` now fails the gate on the words.
+- **Hand budget**: pairwise conflicts cannot count hands, so
+  `HandBudgetTests` sweeps seeds and asserts at most two hands are used; the
+  `one-hand-act`, `hands-full` and `two-handed-weapon` pairs close the holes.
+- **Place and act coherence**: ramp acts need air and a ramped hull (`rampless`),
+  a gully and a bootprint need ground, bandaging needs air, civilian hulls carry
+  no turrets, a sparkless elemental throws no sparks, moss and mould conflict with
+  a desert, and falling or lifting acts are phrased so nothing hangs in mid-air.
+- **Spoken remaps**: `SPOKEN["kind"]` keeps a disjunctive kind label out of prose.
+  The widget key is unchanged, so saved workflows still load.
+- **Variety**: more elemental forms, markings and emitters; more haunted-place
+  events and chair witnesses, each with a cause in frame.

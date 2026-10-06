@@ -1289,6 +1289,74 @@ def _has_trait(pack: GenrePack, name: str, value: "str | None", trait: str) -> b
     return bool(value) and trait in pack.value_traits.get(name, {}).get(value, ())
 
 
+#: Round XXVIII (103 batch): words the model drew as the literal object.
+_TRAPS_103 = re.compile(
+    r"(fork of|heart in its|iris of|iris valve|rolling body|winding key|bone charms?|bottle green|"
+    r"handheld torch|with a torch|biconvex disc|spore burst|helmet stripes|five-armed radial|"
+    r"twin pale moons|survey mast toward|trail of torn clothing)"
+)
+
+CONCERNS = CONCERNS + (
+    *(
+        Concern(
+            f"a {pack.slug} render trap from the 103 batch comes back",
+            lambda r, d, t: bool(_TRAPS_103.search(t.lower())),
+            pack=pack,
+        )
+        for pack in (SCIFI_PACK, FANTASY_PACK, HORROR_PACK)
+    ),
+    # 103 #5 a submersible waits with its ramp down and cabin open on the seabed.
+    Concern(
+        "a ramp is lowered where there is no air",
+        lambda r, d, t: "ramp" in (r.get("situation") or "")
+        and "air" not in affordances_of(SCIFI_PACK, d["environment"]),
+        widgets={"entity1_kind": "surface vehicle"},
+    ),
+    # 103 #21 a crawler reverses out of a gully on a floating cloud platform.
+    Concern(
+        "a gully is entered where there is no ground",
+        lambda r, d, t: "gully" in (r.get("situation") or "")
+        and "ground" not in affordances_of(SCIFI_PACK, d["environment"]),
+        widgets={"entity1_kind": "surface vehicle"},
+    ),
+    # 103 #12 a spacefarer bandages, tapes or chalks under water.
+    Concern(
+        "a spacefarer bandages, tapes or chalks without air",
+        lambda r, d, t: bool(re.search(r"bandage|tape|chalk", r.get("situation") or ""))
+        and "air" not in affordances_of(SCIFI_PACK, d["environment"]),
+        widgets={"entity1_kind": "spacefarer"},
+    ),
+    # 103 #27 #30 a water or ice elemental trails sparks.
+    Concern(
+        "a water or ice elemental trails sparks",
+        lambda r, d, t: r.get("subkind") in ("water elemental", "ice elemental")
+        and "spark" in t,
+        widgets={"entity1_kind": "spirit or elemental"},
+        pack=FANTASY_PACK,
+    ),
+    # 103 #33 the kind label leaks into the prose.
+    Concern(
+        "the disjunctive kind label is spoken",
+        lambda r, d, t: "spirit or elemental" in t or "robot or mech" in t,
+        widgets={"entity1_kind": "spirit or elemental"},
+        pack=FANTASY_PACK,
+    ),
+    # 103 #48 moss or mould in a desert town.
+    Concern(
+        "moss or mould in a desert mining town",
+        lambda r, d, t: d["environment"] == "abandoned desert mining town"
+        and bool(re.search(r"moss|mould", t)),
+        pack=HORROR_PACK,
+    ),
+    # 103 #24 a gaunt hulking troll.
+    Concern(
+        "a hulking body is also gaunt",
+        lambda r, d, t: "hulking" in t and bool(re.search(r"gaunt|emaciated", t)),
+        pack=FANTASY_PACK,
+    ),
+)
+
+
 class ConcernRegressionTests(unittest.TestCase):
     def test_no_reported_concern_comes_back(self) -> None:
         for concern in CONCERNS:
@@ -1296,6 +1364,38 @@ class ConcernRegressionTests(unittest.TestCase):
                     if concern.forbidden(record, document, text)]
             with self.subTest(concern=concern.name):
                 self.assertEqual(hits, [], f"{concern.name}: seeds {hits[:5]}")
+
+
+#: What a drawn value asks of a person's two hands (round XXVIII). A sweep, not a pair
+#: table: no conflict list can count, so this proves the pairs together leave room.
+_TWO_HANDS = {"two-handed-weapon", "both-hands-act", "hands-busy", "bow-weapon", "hands-together"}
+_ONE_HAND = {"one-hand-act", "carried-weapon", "held-item", "hand-occupying", "hand-held", "lantern-hand"}
+_HAND_FIELDS = ("armament", "extras", "emitters", "sensors", "situation")
+
+
+def hands_used(pack: GenrePack, record: dict) -> int:
+    total = 0
+    for name in _HAND_FIELDS:
+        value = record.get(name)
+        if not value or (name == "situation" and re.search(r"weapon|rifle|shotgun", value)):
+            continue  # an act that names the weapon is the weapon's own use
+        traits = set(pack.value_traits.get(name, {}).get(value, ()))
+        total += 2 if traits & _TWO_HANDS else 1 if traits & _ONE_HAND else 0
+    return total
+
+
+class HandBudgetTests(unittest.TestCase):
+    def test_a_person_never_holds_more_than_two_hands_can(self) -> None:
+        for pack in (SCIFI_PACK, FANTASY_PACK, HORROR_PACK):
+            over: dict[tuple, int] = {}
+            for seed in range(1500):
+                _text, document = generate_scene(seed, pack, widgets={}, wired_entities={}, entity_count=1)
+                for record in document["entities"]:
+                    if hands_used(pack, record) > 2:
+                        key = tuple((n, record.get(n)) for n in _HAND_FIELDS if record.get(n))
+                        over.setdefault(key, seed)
+            with self.subTest(pack=pack.slug):
+                self.assertEqual(over, {}, f"{pack.slug}: more than two hands of items {list(over)[:3]}")
 
 
 if __name__ == "__main__":

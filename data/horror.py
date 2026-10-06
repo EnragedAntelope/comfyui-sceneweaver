@@ -371,7 +371,7 @@ CONTEXT_POOLS: dict[str, tuple[str, ...]] = {
     "wilds": (
         "abandoned car rusting in the weeds", "ring of stacked stones",
         "scarecrow on a leaning post", "hunting cabin with a sagging roof",
-        "trail of torn clothing through the brush", "rusted barbed-wire fence",
+        "single torn coat snagged on a fence post", "rusted barbed-wire fence",
     ),
     "graveyard": (
         "row of leaning headstones", "open grave with a spade beside it",
@@ -578,7 +578,7 @@ FORM_POOLS: dict[str, tuple[str, ...]] = {
     "possessed villager": ("rigid contorted build", "stooped twitching build"),
     # cursed object
     "porcelain doll": ("seated figure with a cracked face", "standing figure in a lace dress"),
-    "music box": ("carved casket with a tiny dancer", "lacquered case with a winding key"),
+    "music box": ("carved casket with a tiny dancer", "lacquered chest with a hinged lid"),
     "spirit board": ("lettered panel with a heart-shaped planchette",
                      "carved plaque with a brass planchette"),
     "puzzle box": ("ornate lacquered cube", "black cube with brass corners"),
@@ -688,7 +688,7 @@ MATERIAL_POOLS: dict[str, tuple[str, ...]] = {
 _COLOR_SKIN = ("grey-green", "corpse grey", "bruised purple", "jaundiced yellow", "waxen white",
                "mottled brown")
 _COLOR_GARB = ("black", "funeral grey", "faded crimson", "yellowed ivory", "drab brown",
-               "bottle green", "oxblood")
+               "deep green", "oxblood")
 #: "bone white" drew bones: a bone knife in a survivor's hand (#1293), a bone
 #: skull-face on a wraith.
 _COLOR_SPIRIT = ("pale grey", "sickly green", "stark white", "cold blue", "ash grey")
@@ -749,7 +749,7 @@ MARKINGS_POOLS: dict[str, tuple[str, ...]] = {
     # A pattern on a swarm is drawn on every body: striped, tabby rats (#1287).
     "swarm": (),
     "eldritch horror": ("pulsing vein patterning", "clustered warty growths"),
-    "mortal": ("painted ritual sigils", "sewn-on bone charms", "mud-spattered hems"),
+    "mortal": ("painted ritual sigils", "sewn-on knotted-twine charms", "mud-spattered hems"),
     "afflicted": ("mud-spattered hems", "patched elbows"),
     "cursed object": ("scratched sigils", "faded painted flowers", "tiny bite marks"),
     "furnishing": ("scratched sigils", "scorch marks", "crazed gilding"),
@@ -813,9 +813,9 @@ APPENDAGE_POOLS: dict[str, tuple[str, ...]] = {
     "survivor": ("battered backpack", "knitted scarf", "wide-brimmed hat"),
     "cult": ("deep hood", "ritual stole"),
     # cursed object
-    # A pendulum is a clock's, a winding key a music box's, a finial not a box's.
+    # A pendulum is a clock's, a crank handle a music box's, a finial not a box's.
     "cursed object": ("tarnished brass clasp", "inlaid bone panel"),
-    "music box": ("brass winding key", "tiny dancing figure"),
+    "music box": ("brass crank handle", "tiny dancing figure"),
     "porcelain doll": ("lace bonnet", "ribbon sash"),
     "ventriloquist dummy": ("tiny bow tie", "painted wooden hand"),
     "furnishing": ("carved finial", "gilded crest"),
@@ -857,7 +857,7 @@ EMITTER_POOLS: dict[str, tuple[str, ...]] = {
     "eldritch horror": ("luminous vein along its flank", "phosphorescent streak along its flank"),
     # A hands-free light: with only hand-held ones a two-handed shotgun or
     # fire axe could never be drawn beside them.
-    "mortal": ("hooded lantern", "guttering candle", "handheld torch beam", "headlamp"),
+    "mortal": ("hooded lantern", "guttering candle", "flashlight beam", "headlamp"),
     "afflicted": ("guttering candle",),
     # The warden's lantern is in the name; a second light was held awkwardly.
     # Named for the lantern it carries: a headlamp as well drew three lights (#1003).
@@ -1106,7 +1106,7 @@ CARDINALITY: dict[str, dict[str, str]] = {
             "trailing strip of cloth", "dangling jaw", "dragging foot", "high cape collar",
             "rusted helm", "trailing strand of weed", "long trailing veil", "bristling tail",
             "whip-thin tail", "dripping fin crest", "tattered hat", "hooded mantle",
-            "wide-brimmed hat", "deep hood", "ritual stole", "carved finial", "brass winding key",
+            "wide-brimmed hat", "deep hood", "ritual stole", "carved finial", "brass crank handle",
             "tarnished brass clasp", "inlaid bone panel", "tiny dancing figure", "lace bonnet",
             "ribbon sash", "tiny bow tie", "gilded crest", "cracked plaster clown statue",
             "brass pendulum", "sagging porch", "crooked chimney", "weathervane",
@@ -1134,7 +1134,7 @@ CARDINALITY: dict[str, dict[str, str]] = {
                          "faint lamp high in its lamp room", "lamp in a high broken window",
                          "blinking red warning lamp", "lamp in a top-floor ward window",
                          "luminous vein along its flank",
-                         "hooded lantern", "guttering candle", "handheld torch beam",
+                         "hooded lantern", "guttering candle", "flashlight beam",
                          "faint inner light", "lamp in an upstairs window", "flickering porch lamp",
                          "string of bare bulbs", "flickering marquee light", "headlamp")),
         ("a matched pair", ("pinprick eye", "reflective eye", "sunken pinprick eye",
@@ -1416,7 +1416,7 @@ _S_SWARM_EV = (
     "surging toward the viewer in a glistening wave", "swarming over a screaming man",
     "crawling all over a terrified woman clawing at her face",
     "engulfing a shrieking victim from head to toe", "streaming up the legs of a man frozen in terror",
-    "fanning out to surround the viewer", "boiling out of a pried-open crate over the man who opened it",
+    "fanning out to surround the viewer", "pouring out of a pried-open crate toward a man scrambling backwards",
     "spilling from a torn sack over a sleeping man's legs",
     "dragging a shrieking woman down under its weight", "surging over a fallen man trying to crawl away",
 )
@@ -1461,7 +1461,7 @@ _S_SURVIVOR_WALLS = (
 _S_OBJECT_EV = (
     "cracking straight down the middle as a terrified woman screams at it",
     "shuddering violently as a terrified man backs away from it", "toppling toward a screaming woman",
-    "swivelling slowly round to face the viewer", "cracking open to show a pair of watching eyes inside",
+    "swivelling slowly round to face the viewer", "shifting slightly on its own",
 )
 _S_OBJECT_ACT = (
     "splitting open as something pushes out from inside", "seeping black ichor from every seam",
@@ -1537,8 +1537,12 @@ _S_MIRROR_EV = ("showing a pale figure pressed against the glass from inside",
                 "reflecting a pale figure behind the viewer")
 _S_MIRROR_WITNESS = ("showing a grinning figure behind a horrified woman staring into it",)
 _S_CHAIR_EV = ("rocking violently with nobody in it",
-               "creaking under a half-seen shape sitting in it", "rocking faster and faster by itself")
-_S_CHAIR_WITNESS = ("rocking as a terrified man stumbles back from it",)
+               "rocking with a child's doll slumped in the seat", "rocking faster and faster by itself")
+_S_CHAIR_WITNESS = (
+    "rocking as a terrified man stumbles back from it",
+    "rocking as a woman with a lantern backs slowly away from it",
+    "rocking as a boy freezes a few steps away, staring at it",
+)
 _S_CHAIR_ROOM = ("rocking beside an old cradle in a dark nursery",)
 _S_MANNEQUIN_EV = ("standing a step closer to a frozen seamstress than it was a moment ago",
                    "turning its faceless head toward a terrified seamstress")
@@ -1546,7 +1550,8 @@ _S_MANNEQUIN_ROOM = ("standing in the corner of a dark bedroom over a sleeping w
 
 # --- haunted places ---
 _S_PLACE_EV = (
-    "banging its shutters in a gust", "shedding a shower of broken glass",
+    "banging its shutters in a gust", "going black in every pane after a single flash",
+    "spilling a cloud of moths from a broken pane", "pouring black smoke from its chimney",
     "groaning as its frame sags", "losing a chunk of its roof", "belching dust from within",
     "shuddering as something moves inside", "collapsing at one corner",
 )
@@ -2262,16 +2267,15 @@ _add_traits("subkind", {"village priest": ("pacifist-role",)})
 _add_traits(ENVIRONMENT_FIELD, {v: ("funerary-place",) for v in _ENV_GRAVES})
 _add_traits("subkind", {"rotting windmill": ("rural-landmark",)})
 # A figure already carrying a two-handed weapon has no hand left for a
-# lantern, a candle or a torch -- "backing away with a flashlight raised"
+# lantern, a candle or a flashlight -- "backing away with a flashlight raised"
 # while also carrying a shotgun rendered a lantern strapped to a wrist.
 _add_traits("emitters", {v: ("hand-occupying",)
-                         for v in ("hooded lantern", "guttering candle", "handheld torch beam")})
+                         for v in ("hooded lantern", "guttering candle", "flashlight beam")})
 _add_traits("armament", {v: ("two-handed-weapon",) for v in ("shotgun", "long-handled felling axe")})
-_add_traits("extras", {"bolt-action hunting rifle": ("two-handed-weapon",)})
 # A situation that already occupies both hands (working a rifle bolt,
 # loading a gun, holding something two-armed to the chest) conflicts with a
 # separately-drawn hand-occupying emitter the same way a two-handed weapon
-# does -- "loading shells into a shotgun" rendered with a handheld torch
+# does -- "loading shells into a shotgun" rendered with a flashlight
 # beam also somehow in the same two hands.
 _add_traits(SITUATION_FIELD, {v: ("two-handed-weapon",) for v in (
     "checking a bolt-action rifle with shaking hands", "loading shells into a shotgun",
@@ -2812,6 +2816,7 @@ _SPOKEN_SUBKIND: dict[str, str] = {
 SPOKEN: dict[str, dict[str, str]] = {
     "subkind": _SPOKEN_SUBKIND,
     "environment": _SPOKEN_ENVIRONMENT,
+    "extras": {"bolt-action hunting rifle": "bolt-action hunting rifle slung across the back"},
     "primary_color": _hyphenated(PRIMARY_COLOR_POOL),
     "accent_color": _hyphenated(ACCENT_COLOR_POOL),
     "emitter_color": _hyphenated(EMITTER_COLOR_POOL),
@@ -3109,10 +3114,41 @@ TRAIT_REASONS.update({
 })
 
 # 1003 render test (sceneweaver103): a skeleton dragging entrails drew a chain; a
-# plague victim with bone charms drew a mummy hung with bones.
+# plague victim with charms drew a mummy hung with bones.
 _add_traits(SITUATION_FIELD, {v: ("flesh-intact",) for v in (
     "dragging a trail of spilled entrails behind it", "clawing open its own stitched-shut abdomen",
 )})
+
+# Round XXVIII (sceneweaver103): a survivor held a crucifix up with a crowbar in
+# one hand and a rifle in both; a plague doctor set down a candle with a lantern
+# in one hand and a cane in the other. A person has two hands: an act that holds
+# one thing up takes one, so it leaves no room for a two-handed weapon, a lantern
+# or a held item, and a carried weapon leaves no room for a second, firearm.
+_add_traits(SITUATION_FIELD, {v: ("one-hand-act",) for v in (
+    "holding up a crucifix", "backing away with a crucifix raised",
+    "raising a crucifix toward something in the dark", "setting down a single candle",
+    "sprinkling holy water from a small flask", "clutching a rosary with white knuckles",
+    "holding a lantern high to search the dark", "dragging a heavy sack", "dragging a bloodied sack",
+)})
+_add_traits(SITUATION_FIELD, {"dragging a disembowelled body by its ankles": ("two-handed-weapon",)})
+TRAIT_CONFLICTS = TRAIT_CONFLICTS + (
+    ("one-hand-act", "two-handed-weapon"),
+    ("one-hand-act", "hand-occupying"),
+    ("one-hand-act", "held-item"),
+)
+TRAIT_REASONS.update({
+    "one-hand-act|two-handed-weapon": "one hand is busy with the act, a two-handed weapon needs both",
+    "one-hand-act|hand-occupying": "one hand is busy with the act, the other holds the light",
+    "one-hand-act|held-item": "one hand is busy with the act, the other holds a weapon or an item",
+})
+
+# #48 moss-streaked stone and black mould in an abandoned desert mining town.
+_add_traits(ENVIRONMENT_FIELD, {"abandoned desert mining town": ("arid-place",)})
+_add_traits("material", {"moss-streaked stone": ("damp-surface",)})
+_add_traits("surface_detail", {"creeping black mould": ("damp-surface",)})
+_add_traits("condition", {"damp-blotched": ("damp-surface",)})
+TRAIT_CONFLICTS = TRAIT_CONFLICTS + (("arid-place", "damp-surface"),)
+TRAIT_REASONS.update({"arid-place|damp-surface": "moss and mould do not grow in a desert"})
 
 HORROR_PACK = GenrePack(
     slug="horror",
