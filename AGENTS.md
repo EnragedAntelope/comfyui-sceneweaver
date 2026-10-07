@@ -10,11 +10,13 @@ genre is a data module and two registration lines.
 
 _Last verified: 2026-10-07_
 
-- **Status:** v0.6.0 on `main`, released on GitHub and published to the ComfyUI
+- **Status:** v0.7.0 on `main`, released on GitHub and published to the ComfyUI
   Registry by `publish.yml`; all three genres on one coherence engine. 0.6.0
   added user_options keys that follow the scope chain, a working recreate, the
   speedup and gates, a content round in all three packs, and two render-test
-  rounds of fixes. The repo is public at `EnragedAntelope/comfyui-sceneweaver`;
+  rounds of fixes. 0.7.0 adds Round XXVIII's fixes and Round XXIX's subgenre
+  content (post-collapse horror places, grown sci-fi places and void-order rites,
+  fantasy brass beasts and weather). The repo is public at `EnragedAntelope/comfyui-sceneweaver`;
   the full pre-release history stays local (a git bundle outside the repo, and
   the `coherence-round-*` branches).
 - **Works:** both node classes per genre register through the V3
@@ -27,11 +29,8 @@ _Last verified: 2026-10-07_
   is green. The mechanisms and every round's decisions and measurements are in
   `docs/architecture.md` ("Round XV" to "Round XXVIII" are the render-test rounds;
   "Round XXIX" is the subgenre content round).
-- **In progress:** Round XXVIII (the 103 render batch) is on `main`. Round XXIX
-  (subgenre flavour as content: post-collapse horror places, grown sci-fi places
-  and void-order rites, fantasy brass beasts and weather) is on the
-  `round-xxix-content` branch, unmerged and unversioned until the maintainer
-  render-tests it. The maintainer keeps render-testing;
+- **In progress:** nothing is open. Rounds XXVIII and XXIX are released in 0.7.0
+  but not yet render-tested by the maintainer, who keeps render-testing;
   each reported image becomes a fix plus a regression row. Head cropping on tall
   subjects was seen and deliberately not addressed yet (no forced "full figure"
   framing until it recurs). Not built: a headless horseman, carrion crows, an
@@ -48,7 +47,8 @@ _Last verified: 2026-10-07_
     `--pack`. `concern_audit.py`, `coherence_sweep.py` and `coherence_audit.py`
     measure sci-fi only, and the frozen `concern_flags*` are sci-fi's.
   - Renaming or removing a dropdown value makes a saved workflow that locked it
-    report "value not in list". Release notes live in commit messages, never in
+    report "value not in list" (0.7.0 renamed the sci-fi situation "writhing in a
+    tight coil" to "thrashing violently in place"). Release notes live in commit messages, never in
     the README (maintainer's rule).
   - Cross-genre trait conflicts fail open: a wired foreign entity carries no
     traits into the host scene (`docs/genre-roadmap.md` proposes carrying them). A
