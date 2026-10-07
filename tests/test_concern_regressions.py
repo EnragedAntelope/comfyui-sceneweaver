@@ -1354,6 +1354,16 @@ CONCERNS = CONCERNS + (
         lambda r, d, t: "hulking" in t and bool(re.search(r"gaunt|emaciated", t)),
         pack=FANTASY_PACK,
     ),
+    # Round XXIX: the word "clock" drew a clock face on a construct; a brass beast never says it.
+    *(
+        Concern(
+            f"a {subkind} says clock",
+            lambda r, d, t: "clock" in t.lower(),
+            widgets={"entity1_kind": "construct", "entity1_subkind": subkind},
+            pack=FANTASY_PACK,
+        )
+        for subkind in FANTASY.SUBKIND_POOLS["construct"]
+    ),
 )
 
 

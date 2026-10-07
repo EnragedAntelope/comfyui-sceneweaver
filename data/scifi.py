@@ -600,6 +600,9 @@ _ENVIRONMENT_INTERIOR = (
     "maintenance crawlway",
     "crew quarters",
     "cargo airlock",
+    "genetics laboratory",
+    "living bioship corridor",
+    "terraced arboretum dome",
 )
 
 ENVIRONMENT_POOL: tuple[str, ...] = (
@@ -722,6 +725,19 @@ CONTEXT_POOLS: dict[str, tuple[str, ...]] = {
         "line of parked maintenance frames",
         "hatch standing open at the far end",
     ),
+    # Round XXIX -- grown and growing places.
+    "genetics laboratory": (
+        "row of tall glass specimen tanks", "specimen suspended in a tank of green fluid",
+        "robotic arm poised over a dissection table", "rack of sealed sample tubes",
+    ),
+    "living bioship corridor": (
+        "membrane hatch puckered shut", "tangle of fleshy conduits overhead",
+        "cluster of translucent spawn sacs", "pool of clear fluid on the deck",
+    ),
+    "terraced arboretum dome": (
+        "stepped terrace of flowering plants", "waterfall tumbling over a terrace edge",
+        "footbridge over an irrigation channel", "curving lattice of glass panes overhead",
+    ),
 }
 
 
@@ -799,6 +815,9 @@ KIND_POOLS: dict[str, tuple[str, ...]] = {
     "airlock chamber": ("spacefarer", "alien creature", "robot or mech", "alien artifact"),
     "cryogenic stasis bay": ("spacefarer", "alien creature", "robot or mech", "alien artifact"),
     "hydroponics bay": ("spacefarer", "alien creature", "robot or mech", "alien artifact"),
+    "genetics laboratory": ("spacefarer", "alien creature", "robot or mech", "alien artifact"),
+    "living bioship corridor": ("spacefarer", "alien creature", "robot or mech", "alien artifact"),
+    "terraced arboretum dome": ("spacefarer", "alien creature", "robot or mech", "alien artifact"),
     "medical bay": ("spacefarer", "alien creature", "robot or mech", "alien artifact"),
     "observation cupola": ("spacefarer", "alien creature", "robot or mech", "alien artifact"),
     "alien hive resin chamber": ("spacefarer", "alien creature", "robot or mech", "alien artifact"),
@@ -3170,6 +3189,7 @@ _CREATURE_BODILY = (
 #: What a body does by moving through a place. A rooted or diffuse body cannot.
 _CREATURE_MOBILE = (
     "breaking out of a containment field with a single lunge",
+    "smashing out of a cracked specimen tank in a flood of green fluid",
     "stalking prey through the corridors",
     "dropping down out of an open ceiling vent",
     "striking at a fleeing courier starship",
@@ -3359,6 +3379,7 @@ _SITUATION_SPACEFARER = (
     "grabbing a handhold as the deck lurches",
     "fighting a flooding compartment",
     "straining to seal a hatch against a howling decompression",
+    "clamping a cracked specimen tank shut as green fluid sprays out",
     # Round XXI: the interior acts above now need a built place, so the open
     # surface and the deep water each get acts of their own.
     "stumbling as the ground gives way underfoot",
@@ -3665,7 +3686,7 @@ _CREATURE_COILED = (
 #: jawless creature groups, which cannot take the jawed actions.
 _CREATURE_ENGULFING = (
     "swelling to twice its size",
-    "writhing in a tight coil",
+    "thrashing violently in place",
     "surging over a barricade in one wave",
     "spreading its membranes wide in a flat fan",
     "spreading across a landing platform",
@@ -3919,6 +3940,16 @@ _STARSHIP_SURFACE_ACTS = (
     "swinging its nose round to face a rising storm front",
 )
 
+#: Round XXIX: a void-order priest had a chapel and a monastery but no rite. Each
+#: rite names who it is for, so the priest is never just standing in a chapel.
+_SITUATION_VOID_RITES = (
+    "sliding a shrouded body into an open airlock as mourners kneel",
+    "swinging a smoking censer over a kneeling crew",
+    "anointing a kneeling marine's helmet with oil",
+    "blessing a docked starship with both arms raised",
+    "kneeling to give last rites to a wounded crewman",
+)
+
 SITUATION_POOLS: dict[str, tuple[str, ...]] = {
     POOL_DEFAULT_KEY: _SITUATION_DEFAULT,
     "starship": _SITUATION_STARSHIP + _STARSHIP_ACTS + _STARSHIP_SURFACE_ACTS,
@@ -3926,6 +3957,7 @@ SITUATION_POOLS: dict[str, tuple[str, ...]] = {
     "space station": _SITUATION_STATION + _STATION_ACTS,
     "alien creature": _CREATURE_ANY + _CREATURE_BODILY + _CREATURE_MOBILE + _CREATURE_LIMBED + _CREATURE_JAWED,
     "spacefarer": _SITUATION_SPACEFARER + _SITUATION_EVA,
+    "void order priest": _SITUATION_SPACEFARER + _SITUATION_EVA + _SITUATION_VOID_RITES,
     "robot or mech": _SITUATION_ROBOT + _SITUATION_ROBOT_TRENCH + _ROBOT_ACTS,
     "humanoid unit": _SITUATION_ROBOT + _SITUATION_ROBOT_LIMBED + _SITUATION_ROBOT_TRENCH + _ROBOT_ACTS,
     "alien artifact": _SITUATION_ARTIFACT,
@@ -4931,6 +4963,10 @@ PLACE_AFFORDANCES: dict[str, frozenset[str]] = {
     "spacecraft hangar deck": frozenset({"floor", "structure", "dock"}),
     "station docking ring interior": frozenset({"floor", "structure", "dock"}),
     "hydroponics bay": frozenset({"floor", "structure", "life"}),
+    # ``lab``: specimen tanks to break out of and to seal.
+    "genetics laboratory": frozenset({"floor", "structure", "lab"}),
+    "living bioship corridor": frozenset({"floor", "structure", "life"}),
+    "terraced arboretum dome": frozenset({"floor", "structure", "life", "sunlight"}),
     "alien hive resin chamber": frozenset({"floor", "structure", "life"}),
     "cryogenic stasis bay": frozenset({"floor", "structure", "cold"}),
     "cargo airlock": frozenset({"floor", "structure", "dock"}),
@@ -5087,6 +5123,9 @@ _CONTEXT_NEEDS: dict[str, frozenset[str]] = {
        for value in CONTEXT_POOLS["hydrothermal vent field of a water world"]},
     **{value: frozenset({"floor", "structure"}) for value in CONTEXT_POOLS["domed colony concourse"]},
     **{value: frozenset({"ground"}) for value in CONTEXT_POOLS["frontier spaceport landing pad"]},
+    **{value: frozenset({"floor", "structure"}) for value in CONTEXT_POOLS["genetics laboratory"]},
+    **{value: frozenset({"floor", "structure"}) for value in CONTEXT_POOLS["living bioship corridor"]},
+    **{value: frozenset({"floor", "structure"}) for value in CONTEXT_POOLS["terraced arboretum dome"]},
 }
 VALUE_NEEDS: dict[str, dict[str, frozenset[str]]] = {
     CONTEXT_FIELD: _CONTEXT_NEEDS,
@@ -8157,12 +8196,12 @@ VALUE_NEEDS[CONTEXT_FIELD].update({
 
 SITUATION_TIERS.update({
     "swelling to twice its size": "event",
-    "writhing in a tight coil": "event",
+    "thrashing violently in place": "event",
     "surging over a barricade in one wave": "event",
 })
 VALUE_NEEDS["situation"].update({
     "swelling to twice its size": frozenset(),
-    "writhing in a tight coil": frozenset(),
+    "thrashing violently in place": frozenset(),
     "surging over a barricade in one wave": frozenset(),
 })
 VALUE_NEEDS["appendages"] = {
@@ -9807,6 +9846,39 @@ _TRAIT_REASONS.update({
     "beak-part|beak-part": "one beak: a creature with a beaked mouth carries no hooked beak as well",
     "rampless|ramp-act": "a walker, glider, pod or boat has no cargo ramp",
 })
+
+# Round XXIX -- grown places, a lab to break out of, and rites for the void order.
+# An interior says whose interior it is, or it is drawn as a room on Earth.
+_SPOKEN_ENVIRONMENT.update({
+    "genetics laboratory": "genetics laboratory aboard a research station",
+    "living bioship corridor": "organic corridor inside a living alien bioship",
+    "terraced arboretum dome": "terraced arboretum dome of an orbital habitat",
+})
+_add_traits(ENVIRONMENT_FIELD, {v: ("cramped-room",) for v in ("genetics laboratory", "living bioship corridor")})
+_add_needs(SITUATION_FIELD, {
+    "smashing out of a cracked specimen tank in a flood of green fluid": frozenset({"lab"}),
+    "clamping a cracked specimen tank shut as green fluid sprays out": frozenset({"lab"}),
+    "sliding a shrouded body into an open airlock as mourners kneel": frozenset({"structure", "floor"}),
+    "swinging a smoking censer over a kneeling crew": frozenset({"floor", "air"}),
+    "anointing a kneeling marine's helmet with oil": frozenset({"floor"}),
+    "blessing a docked starship with both arms raised": frozenset({"dock"}),
+    "kneeling to give last rites to a wounded crewman": frozenset({"floor"}),
+})
+SITUATION_TIERS.update({
+    "smashing out of a cracked specimen tank in a flood of green fluid": "event",
+    "clamping a cracked specimen tank shut as green fluid sprays out": "event",
+    "sliding a shrouded body into an open airlock as mourners kneel": "event",
+    "swinging a smoking censer over a kneeling crew": "activity",
+    "anointing a kneeling marine's helmet with oil": "activity",
+    "blessing a docked starship with both arms raised": "activity",
+    "kneeling to give last rites to a wounded crewman": "event",
+})
+_add_traits(SITUATION_FIELD, {v: ("hands-busy",) for v in (
+    "clamping a cracked specimen tank shut as green fluid sprays out",
+    "sliding a shrouded body into an open airlock as mourners kneel",
+    "anointing a kneeling marine's helmet with oil",
+    "blessing a docked starship with both arms raised",
+)})
 
 SCIFI_PACK = GenrePack(
     slug="scifi",

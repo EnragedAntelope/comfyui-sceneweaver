@@ -291,6 +291,7 @@ _ENV_WILDS = (
     "windswept moor of standing stones",
     "rocky ravine",
     "hedge maze",
+    "barricaded farmyard",
 )
 _ENV_GRAVES = (
     "overgrown cemetery",
@@ -320,6 +321,8 @@ _ENV_TOWN = (
     "boarded-up village square",
     "flooded suburban street",
     "abandoned desert mining town",
+    "highway jammed with abandoned cars",
+    "military roadblock on an empty highway",
 )
 _ENV_INTERIOR = (
     "hospital corridor after closing",
@@ -336,6 +339,7 @@ _ENV_INTERIOR = (
     "overgrown greenhouse",
     "wax museum gallery",
     "lighthouse lamp room",
+    "looted supermarket aisle",
 )
 _ENV_UNDERGROUND = (
     "catacomb ossuary",
@@ -343,6 +347,7 @@ _ENV_UNDERGROUND = (
     "collapsed mine shaft",
     "crypt beneath a chapel",
     "cave strewn with bones",
+    "concrete fallout shelter",
 )
 _ENV_OTHERWORLD = (
     "endless crimson hallway",
@@ -428,6 +433,27 @@ CONTEXT_POOLS: dict[str, tuple[str, ...]] = {
         "rusted mine cart on a broken track", "swinging saloon doors", "dry well with a rotted cover",
         "wind-scoured wooden storefronts",
     ),
+    # Round XXIX -- after the collapse. No sign and no lettering: a sign draws text.
+    "highway jammed with abandoned cars": (
+        "overturned ambulance", "jackknifed tanker truck", "burnt-out station wagon",
+        "suitcase burst open across the asphalt",
+    ),
+    "military roadblock on an empty highway": (
+        "row of concrete barriers", "wall of stacked sandbags", "abandoned army truck",
+        "chain-link fence hung with torn plastic sheeting",
+    ),
+    "barricaded farmyard": (
+        "row of sharpened wooden stakes", "pickup truck parked across the gate",
+        "hay wagon tipped on its side", "rusted water tank on stilts",
+    ),
+    "looted supermarket aisle": (
+        "overturned shopping cart", "row of stripped bare shelves", "toppled freezer cabinet",
+        "drift of torn packaging across the floor",
+    ),
+    "concrete fallout shelter": (
+        "row of steel bunk beds", "shelf stacked with canned food", "heavy steel blast door",
+        "hand-cranked radio on a folding table",
+    ),
     "underground": (
         "heap of stacked skulls", "rusted grate in the floor", "row of stone coffins",
         "trickle of black seepage",
@@ -469,6 +495,11 @@ KIND_POOLS: dict[str, tuple[str, ...]] = {
     "underground": ("undead", "spirit", "cryptid", "eldritch horror", "mortal", "cursed object", "swarm"),
     "otherworld": ("spirit", "eldritch horror", "mortal", "cursed object", "swarm"),
     "rotting fishing pier": ("undead", "spirit", "cryptid", "eldritch horror", "mortal", "swarm"),
+    # A house beside a highway is a stranger's; the open road gives room for something huge.
+    "highway jammed with abandoned cars": ("undead", "spirit", "cryptid", "eldritch horror", "mortal", "swarm"),
+    "military roadblock on an empty highway": ("undead", "spirit", "cryptid", "mortal", "swarm"),
+    # A haunted hospital or chapel drawn into the yard sat in a farm.
+    "barricaded farmyard": ("undead", "spirit", "cryptid", "eldritch horror", "mortal", "swarm"),
 }
 
 SUBKIND_GROUPS: dict[str, tuple[str, ...]] = {
@@ -1577,6 +1608,15 @@ _S_LIGHTHOUSE_ACT = ("sweeping a beam across the black water",)
 _S_INSTITUTION_EV = ("showing a pale face at every dark pane",)
 _S_INSTITUTION_GROUND = ("letting an empty wheelchair roll slowly out onto its overgrown drive",)
 
+# --- Round XXIX: a highway of abandoned cars (``wreck``) ---
+_S_DEAD_EV_WRECK = ("dragging itself out through the shattered windshield of a wrecked car",
+                    "clawing at the glass of a car with a terrified woman trapped inside")
+_S_SPIRIT_EV_WRECK = ("sitting in the back seat of an abandoned car as a man peers in through the glass",)
+_S_ELDRITCH_EV_WRECK = ("tossing abandoned cars aside as it surges forward",)
+_S_BEAST_EV_WRECK = ("bounding across the roofs of abandoned cars toward the viewer",)
+_S_SURVIVOR_EV_WRECK = ("scrambling across the roof of an abandoned car toward the viewer",)
+_S_SWARM_EV_WRECK = ("pouring out of the open windows of an abandoned car toward a fleeing man",)
+
 
 _A = frozenset()
 _GROUND = frozenset({"ground"})
@@ -1742,23 +1782,29 @@ _BUCKETS = (
     (_S_PLACE_DORMANT, "idle", "n", _GROUND, _A, "d"),
     (_S_RIDE_ACT, "activity", "n", _GROUND, _A, ""),
     (_S_LIGHTHOUSE_ACT, "activity", "n", _SHORE, _A, ""),
+    (_S_DEAD_EV_WRECK, "event", "n", frozenset({"wreck"}), _A, ""),
+    (_S_SPIRIT_EV_WRECK, "event", "n", frozenset({"wreck"}), _A, ""),
+    (_S_ELDRITCH_EV_WRECK, "event", "n", frozenset({"wreck"}), _A, ""),
+    (_S_BEAST_EV_WRECK, "event", "n", frozenset({"wreck"}), _WALK, ""),
+    (_S_SURVIVOR_EV_WRECK, "event", "n", frozenset({"wreck"}), _WALK, ""),
+    (_S_SWARM_EV_WRECK, "event", "n", frozenset({"wreck"}), _A, ""),
 )
 
 _S_DEAD_CORE = (
     _S_DEAD_EV + _S_DEAD_EV_WALK + _S_DEAD_EV_GORE + _S_DEAD_ACT + _S_DEAD_ACT_GORE + _S_DEAD_IDLE
     + _S_DEAD_ACT_WALLS + _S_DEAD_EV_GROUND + _S_DEAD_EV_GRAVE + _S_DEAD_ACT_WATER
-    + _S_DEAD_DORMANT_GROUND + _S_DEAD_DORMANT + _S_DEAD_DORMANT_WALLS
+    + _S_DEAD_DORMANT_GROUND + _S_DEAD_DORMANT + _S_DEAD_DORMANT_WALLS + _S_DEAD_EV_WRECK
 )
 _S_SPIRIT_CORE = (
     _S_SPIRIT_EV + _S_SPIRIT_ACT + _S_SPIRIT_HOVER + _S_SPIRIT_IDLE + _S_SPIRIT_WALLS + _S_SPIRIT_EV_WALLS
-    + _S_SPIRIT_ACT_WATER + _S_SPIRIT_ACT_GRAVE + _S_SPIRIT_ACT_DEEP
+    + _S_SPIRIT_ACT_WATER + _S_SPIRIT_ACT_GRAVE + _S_SPIRIT_ACT_DEEP + _S_SPIRIT_EV_WRECK
 )
 _S_CRYPTID_CORE = (
     _S_CRYPTID_EV + _S_CRYPTID_EV_WAR + _S_CRYPTID_ACT + _S_CRYPTID_IDLE + _S_CRYPTID_LIFE
 )
 _S_ELDRITCH_CORE = (
     _S_ELDRITCH_EV + _S_ELDRITCH_EV_GORE + _S_ELDRITCH_ACT + _S_ELDRITCH_IDLE + _S_ELDRITCH_GROUND
-    + _S_ELDRITCH_DEEP + _S_ELDRITCH_DORMANT + _S_ELDRITCH_SLEEP
+    + _S_ELDRITCH_DEEP + _S_ELDRITCH_DORMANT + _S_ELDRITCH_SLEEP + _S_ELDRITCH_EV_WRECK
 )
 _S_MORTAL_CORE = (
     _S_MORTAL_EV + _S_MORTAL_EV_GORE + _S_MORTAL_ACT + _S_MORTAL_IDLE + _S_MORTAL_WALLS
@@ -1776,7 +1822,7 @@ _S_PLACE_CORE = (
 _S_SWARM_CORE = (
     _S_SWARM_EV + _S_SWARM_EV_GORE + _S_SWARM_EV_AIR + _S_SWARM_ACT + _S_SWARM_ACT_AIR + _S_SWARM_IDLE
     + _S_SWARM_EV_WALLS + _S_SWARM_ACT_WALLS + _S_SWARM_CLIMB + _S_SWARM_EV_GROUND + _S_SWARM_LIFE
-    + _S_SWARM_GRAVE + _S_SWARM_SHORE
+    + _S_SWARM_GRAVE + _S_SWARM_SHORE + _S_SWARM_EV_WRECK
 )
 
 SITUATION_POOLS: dict[str, tuple[str, ...]] = {
@@ -1796,7 +1842,7 @@ SITUATION_POOLS: dict[str, tuple[str, ...]] = {
     "drowned dead": _S_DEAD_CORE + _S_DROWNED_DEEP,
     "spirit": _S_SPIRIT_CORE,
     "poltergeist": _S_SPIRIT_CORE + _S_POLTERGEIST_EV,
-    "cryptid": _S_CRYPTID_CORE + _S_BEAST_EV + _S_BEAST_EV_GORE + _S_BEAST_ACT,
+    "cryptid": _S_CRYPTID_CORE + _S_BEAST_EV + _S_BEAST_EV_GORE + _S_BEAST_ACT + _S_BEAST_EV_WRECK,
     "watcher": _S_CRYPTID_CORE,
     "moth-winged watcher": _S_CRYPTID_CORE + _S_WATCHER_ACT_SKY,
     "crawler": _S_CRYPTID_CORE + _S_CRAWLER_ACT + _S_CRAWLER_EV,
@@ -1807,7 +1853,7 @@ SITUATION_POOLS: dict[str, tuple[str, ...]] = {
     "occultist": _S_MORTAL_CORE + _S_OCCULT_ACT,
     "survivor": (
         _S_SURVIVOR_EV + _S_SURVIVOR_EV_GEAR + _S_SURVIVOR_ACT + _S_SURVIVOR_IDLE + _S_SURVIVOR_PEACE
-        + _S_SURVIVOR_WALLS + _S_SURVIVOR_SWARM
+        + _S_SURVIVOR_WALLS + _S_SURVIVOR_SWARM + _S_SURVIVOR_EV_WRECK
     ),
     "village priest": (
         _S_SURVIVOR_EV + _S_PRIEST_EV + _S_PRIEST_ACT + _S_PRIEST_GRAVE + _S_PRIEST_WALLS
@@ -2042,6 +2088,11 @@ PLACE_AFFORDANCES: dict[str, frozenset[str]] = {
     "abandoned theatre stage": frozenset({"floor", "structure", "dark", "room"}),
     "overgrown greenhouse": frozenset({"floor", "structure", "room", "life"}),
     "lighthouse lamp room": frozenset({"floor", "structure", "room"}),
+    # Round XXIX. A jammed highway has no walls but is full of ``wreck``s -- cars to
+    # climb over and crawl out of; a farmyard is fenced, not wild; a shelter is a room.
+    "highway jammed with abandoned cars": frozenset({"ground", "floor", "sky", "road", "vast", "wreck"}),
+    "barricaded farmyard": frozenset({"ground", "floor", "sky", "life", "structure"}),
+    "concrete fallout shelter": frozenset({"floor", "structure", "dark", "room"}),
 }
 _AIR_EXCLUDED = frozenset({"submerged"})
 _WATER_SOURCES = frozenset({"shoreline", "submerged"})
@@ -2217,6 +2268,9 @@ DEFAULT_NEEDS: dict[str, dict[str, frozenset[str]]] = {
         "wax museum gallery": _WALLS, "lighthouse lamp room": _WALLS,
         "hedge maze": _GROUND, "abandoned desert mining town": _WALLS,
         "underground": _FLOOR, "brick sewer tunnel": _WALLS, "otherworld": _WALLS,
+        "highway jammed with abandoned cars": _FLOOR, "military roadblock on an empty highway": _WALLS,
+        "barricaded farmyard": _WALLS, "looted supermarket aisle": _WALLS,
+        "concrete fallout shelter": _WALLS,
     },
 }
 
@@ -3149,6 +3203,9 @@ _add_traits("surface_detail", {"creeping black mould": ("damp-surface",)})
 _add_traits("condition", {"damp-blotched": ("damp-surface",)})
 TRAIT_CONFLICTS = TRAIT_CONFLICTS + (("arid-place", "damp-surface"),)
 TRAIT_REASONS.update({"arid-place|damp-surface": "moss and mould do not grow in a desert"})
+
+# Round XXIX -- a fallout shelter is a room under the ground, too small for something huge.
+_add_traits(ENVIRONMENT_FIELD, {"concrete fallout shelter": ("interior-place",)})
 
 HORROR_PACK = GenrePack(
     slug="horror",

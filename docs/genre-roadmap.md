@@ -337,3 +337,30 @@ A cheaper partial step exists if wanted: ship only the acts that need a time,
 drawn by a hidden scene-level draw that is not a widget, and decide later whether
 the user should be able to pin it. That avoids the widget-order and style-clash
 costs but gives the user no control, which is most of the point.
+
+## 10. An outside report on "more randomness" (decisions, 2026-10-07)
+
+The maintainer asked for more variety, never at the cost of coherence, and had an
+outside LLM suggest ways. Each suggestion was checked against this repo and the
+Stylebook companion pack so the next report need not be re-argued.
+
+**Rejected.**
+
+* **New genre nodes** (steampunk, post-apocalyptic, biopunk, solarpunk). Each is a
+  flavour of a world a pack already has, not a world of its own; a node pair per
+  flavour would split the shared pools and multiply the gates. The flavours went
+  in as content instead (Round XXIX in `docs/architecture.md`).
+* **Anime as a genre.** It is a style, and Stylebook ships it.
+* **Lighting, camera and negative-prompt controls.** They cross the no-rendering
+  line that `tests/boundary.py` enforces; how a scene is lit or framed is the
+  style pack's job.
+* **A tech-level dial.** It only narrows what a pack already draws.
+* **"Surprise me".** Every widget already defaults to Random.
+* **A hybrid-genre dropdown.** A node's widgets are fixed at registration (decision
+  3); a wired Scene Entity from another genre is the hybrid that already works.
+
+**Deferred by the maintainer.**
+
+* **A random guest-genre slot.** Waits until a wired entity carries its traits into
+  the host scene (section 5); today a guest's trait conflicts fail open.
+* **`time_of_day`.** Stays an assessment (section 9), not scheduled.
