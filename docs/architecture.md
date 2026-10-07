@@ -2773,3 +2773,66 @@ light and weapon, arrows lined up) were left alone. Each fix carries a row in
   The widget key is unchanged, so saved workflows still load.
 - **Variety**: more elemental forms, markings and emitters; more haunted-place
   events and chair witnesses, each with a cause in frame.
+
+## Round XXIX: subgenre flavour as content, not as genres
+
+An outside report proposed steampunk, post-apocalyptic, biopunk and solarpunk
+genres. Each is a flavour of a world a pack already has, so it went in as content
+inside that pack (the rejected and deferred ideas are in `docs/genre-roadmap.md`
+section 10). Every addition is an event or an activity, never a new idle value:
+the report's failure pattern is a subject that sits in frame doing nothing.
+
+- **Horror, after the collapse**: a highway jammed with abandoned cars, a
+  military roadblock, a barricaded farmyard, a looted supermarket aisle and a
+  concrete fallout shelter, each with its own contexts and kinds. A `wreck`
+  affordance carries acts that need a car (a corpse dragging itself through a
+  windshield, a swarm pouring out of a car window). The outdoor places take no
+  haunted place: one drew a condemned hospital standing in a farmyard. No sign
+  appears anywhere, because a sign draws text.
+- **Sci-fi, grown places and rites**: a genetics laboratory, a living bioship
+  corridor and a terraced arboretum dome. Each is spoken aboard, inside or of an
+  orbital habitat, so it is never drawn as an Earth lab or garden. A `lab`
+  affordance carries the specimen-tank acts. The void order priest keeps the
+  whole spacefarer core and gains rites: an airlock burial, a censer, an
+  anointing, a blessing of a docked ship and last rites.
+- **Fantasy, brass beasts**: a `brass beast` group under `construct` (hound,
+  stag, spider, falcon, bull) takes the creature archetype, so its plating is
+  covered in and its fangs are featured, never carried. No token says "clock",
+  because the word drew a clock face. The spoken forms carry a mechanical cue
+  ("gear-driven", "cog-jointed", "rivet-plated") because a bare "brass hound" drew
+  a statue. Acts never use sound words or "grinding", which drew literal gears.
+  They reuse the construct's dormant acts and nothing else of its core:
+  `_S_CONSTRUCT_CORE` is humanoid (fists, prayer). A fantasy form pool needs a
+  stance under its own key; a group-key stance raises in `_form_stances`.
+- **Fantasy, weather**: weather is something in the frame, never the light.
+  Contexts (a snow squall, an avalanche, a sandstorm, a dust devil, a waterspout,
+  a bolt of lightning, a line of wildfire) carry explicit needs, so a drawn one
+  never appears where that weather cannot happen. A locked one is kept with a
+  warning, as every locked value is. The lightning and the wildfire sit on the
+  `sky` and `wilds` band keys, not on new place keys: a place key wins over its
+  band, so it would stop a user's own `sky` or `wilds` contexts reaching that
+  place (`user_options.py` appends to the key it is given). Folk and beasts
+  get acts that need `cold` or `dust` (pressing on through driving snow,
+  shielding their eyes against blowing sand).
+- **Pre-existing defect fixed**: the sci-fi jawless event floor said "writhing in
+  a tight coil" for jellyfish-like and colonial bodies that cannot coil. It is
+  now "thrashing violently in place". The new places shifted the seed stream
+  enough to bring one of those scenes inside `concern_audit`'s 600 seeds.
+- **Traps**: "fork of" (`_TRAPS_103`) caught a "fork of lightning" context
+  before it shipped. A context's trailing noun sets the verb's number, so
+  "waterfall spilling down the terraces catch the light" became "waterfall
+  tumbling over a terrace edge". The validator reads "kneel" as needing a
+  floor and "void" as needing open space.
+- **Measured** (`variety.py`-style sweep, 3000 scenes, unwired, entropy in bits,
+  main to branch). Horror environment rose from 5.564 to 5.707 and context from
+  5.737 to 6.020. Sci-fi environment rose from 6.761 to 6.798 and context from
+  5.844 to 5.913. Fantasy situation rose from 8.290 to 8.338 and form from 7.469
+  to 7.525. Most per-entity dips are inside main's own seed-to-seed swing. The
+  exception is horror: subkind, form and sensors fall 0.02 to 0.05 bits on two
+  seeds, because the new outdoor places hold no haunted place and lean toward
+  undead, mortals and swarms. Every value is still drawn (`reach_audit --gate`).
+  Coherence won over that dip on purpose.
+- **Regression rows**: `RoundXXIXTests` in `tests/test_content_additions.py`
+  pins each card. A "says clock" row in `tests/test_concern_regressions.py`
+  locks each construct subkind in turn; a planted "clockwork brass hound" proved
+  it fails.

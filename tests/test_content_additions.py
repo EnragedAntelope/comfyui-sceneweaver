@@ -13,6 +13,7 @@ from typing import Iterable
 import data.genre as G
 from data import fantasy as F
 from data import horror as H
+from data import scifi as S
 from data.fantasy import FANTASY_PACK
 from data.horror import HORROR_PACK
 from data.scifi import SCIFI_PACK
@@ -352,6 +353,93 @@ class RenderTest1003bTests(unittest.TestCase):
             "sewn-on knotted-twine charms",
             G.pool_for(HORROR_PACK, "markings", {"subkind": "pox-ridden wanderer", "kind": "mortal"}),
         )
+
+
+class RoundXXIXTests(unittest.TestCase):
+    """Subgenre flavour as content: post-collapse places, grown places and rites, brass beasts, weather."""
+
+    HORROR_PLACES = {
+        "barricaded farmyard": "wilds",
+        "highway jammed with abandoned cars": "town",
+        "military roadblock on an empty highway": "town",
+        "looted supermarket aisle": "interior",
+        "concrete fallout shelter": "underground",
+    }
+    SCIFI_PLACES = ("genetics laboratory", "living bioship corridor", "terraced arboretum dome")
+    NEW_SITUATIONS = (
+        (HORROR_PACK, H._S_DEAD_EV_WRECK + H._S_SPIRIT_EV_WRECK + H._S_ELDRITCH_EV_WRECK
+         + H._S_BEAST_EV_WRECK + H._S_SURVIVOR_EV_WRECK + H._S_SWARM_EV_WRECK),
+        (SCIFI_PACK, S._SITUATION_VOID_RITES + (
+            "smashing out of a cracked specimen tank in a flood of green fluid",
+            "clamping a cracked specimen tank shut as green fluid sprays out",
+        )),
+        (FANTASY_PACK, F.SITUATION_POOLS["brass beast"] + F.SITUATION_POOLS["brass falcon"]
+         + F._S_FOLK_ACT_COLD + F._S_FOLK_ACT_DUST + F._S_BEAST_ACT_COLD + F._S_BEAST_ACT_DUST),
+    )
+
+    def test_each_place_is_banded_and_drawn(self) -> None:
+        for pack, places in ((HORROR_PACK, self.HORROR_PLACES),
+                             (SCIFI_PACK, dict.fromkeys(self.SCIFI_PLACES, "interior"))):
+            for place, band in places.items():
+                with self.subTest(place=place):
+                    self.assertIn(place, pack.environment_bands[band])
+                    self.assertTrue(pack.pools["context"].get(place), "a place keeps its own context")
+                    for _text, doc in _scenes(pack, {"environment": place}, range(15)):
+                        self.assertEqual(doc["environment"], place)
+
+    def test_wrecks_are_where_the_cars_are_and_a_farm_holds_no_haunted_hospital(self) -> None:
+        self.assertIn("wreck", G.affordances_of(HORROR_PACK, "highway jammed with abandoned cars"))
+        self.assertNotIn("wreck", G.affordances_of(HORROR_PACK, "barricaded farmyard"))
+        self.assertNotIn("haunted place", H.KIND_POOLS["barricaded farmyard"])
+
+    def test_a_grown_place_is_spoken_off_world(self) -> None:
+        for place in self.SCIFI_PLACES:
+            spoken = G.spoken_value(SCIFI_PACK, "environment", place)
+            self.assertRegex(spoken, r"aboard|inside|of an orbital habitat", place)
+        self.assertIn("lab", G.affordances_of(SCIFI_PACK, "genetics laboratory"))
+
+    def test_the_priest_keeps_the_whole_spacefarer_core_and_gains_rites(self) -> None:
+        pool = set(S.SITUATION_POOLS["void order priest"])
+        self.assertLessEqual(set(S._SITUATION_SPACEFARER), pool)
+        self.assertLessEqual(set(S._SITUATION_VOID_RITES), pool)
+
+    def test_a_brass_beast_is_a_made_animal_with_its_own_acts(self) -> None:
+        beasts = F.SUBKIND_GROUPS["brass beast"]
+        self.assertLessEqual(set(beasts), set(F.SUBKIND_POOLS["construct"]))
+        for beast in beasts:
+            with self.subTest(beast=beast):
+                self.assertNotIn("clock", beast)
+                self.assertEqual(F.ARCHETYPE_OF_SUBKIND[beast], "creature")
+                spoken = G.spoken_value(FANTASY_PACK, "subkind", beast)
+                self.assertRegex(spoken, r"gear-driven|cog-jointed|rivet-plated")
+
+    def test_every_new_act_is_an_event_or_an_activity(self) -> None:
+        for pack, values in self.NEW_SITUATIONS:
+            tiers = pack.value_tiers["situation"]
+            for value in values:
+                if value in F._S_CONSTRUCT_DORMANT + F._S_CONSTRUCT_DORMANT_LIFE:
+                    continue  # the dormant state reuses the construct's existing acts
+                with self.subTest(value=value):
+                    self.assertIn(tiers[value], ("event", "activity"))
+
+    def test_weather_is_only_where_the_place_has_that_weather(self) -> None:
+        needs = lambda field, value: G.resolved_needs(FANTASY_PACK, field, value)  # noqa: E731
+        for value in F._CTX_SNOW + F._S_FOLK_ACT_COLD + F._S_BEAST_ACT_COLD:
+            field = "context" if value in F._CTX_SNOW else "situation"
+            self.assertIn("cold", needs(field, value), value)
+        for value in F._CTX_SAND + F._S_FOLK_ACT_DUST + F._S_BEAST_ACT_DUST:
+            field = "context" if value in F._CTX_SAND else "situation"
+            self.assertIn("dust", needs(field, value), value)
+
+    def test_band_weather_leaves_a_users_band_contexts_reaching_every_place(self) -> None:
+        # A place key wins over its band; keying the storm or the hills would drop these.
+        from data.user_options import merge_user_options
+        merged = merge_user_options(
+            FANTASY_PACK, {"pools": {"context": {"sky": ["test zeppelin"], "wilds": ["test cairn"]}}}
+        )
+        for place, value in (("stormy sky above a mountain range", "test zeppelin"),
+                             ("rolling highland hills", "test cairn")):
+            self.assertIn(value, G.pool_for(merged, "context", {"environment": place}), place)
 
 
 if __name__ == "__main__":

@@ -451,18 +451,23 @@ _CTX_FRESH = (
     "willow trees trailing into the water", "ruined watermill on the far bank",
     "stepping stones across the water",
 )
+#: Round XXIX: weather as something happening in the frame, never as the light.
+_CTX_SNOW = ("squall of snow sweeping across the far slope", "avalanche pouring down a distant mountainside")
+_CTX_SAND = ("sandstorm rolling in from the horizon", "tall dust devil whirling past")
 CONTEXT_POOLS: dict[str, tuple[str, ...]] = {
-    "wilds": _CTX_OPEN,
+    # Weather stays on the band key: a place key would stop a user's own "wilds"
+    # or "sky" contexts reaching that place. Its needs keep it where it fits.
+    "wilds": _CTX_OPEN + ("line of wildfire creeping along a far ridge",),
     "ancient oak forest": _CTX_FOREST,
     "enchanted forest glade": _CTX_FOREST,
     "forest of giant mushrooms": _CTX_FOREST,
     "bramble-choked valley": _CTX_FOREST + _CTX_OPEN,
-    "high mountain pass": _CTX_PEAKS,
-    "snowbound mountain peak": _CTX_PEAKS + ("frozen waterfall on a cliff face",),
-    "glacier valley": _CTX_PEAKS + ("frozen waterfall on a cliff face",),
-    "red sandstone canyon": _CTX_BARRENS,
-    "desert of shifting dunes": _CTX_BARRENS,
-    "salt-crusted wasteland": _CTX_BARRENS,
+    "high mountain pass": _CTX_PEAKS + _CTX_SNOW,
+    "snowbound mountain peak": _CTX_PEAKS + _CTX_SNOW + ("frozen waterfall on a cliff face",),
+    "glacier valley": _CTX_PEAKS + _CTX_SNOW + ("frozen waterfall on a cliff face",),
+    "red sandstone canyon": _CTX_BARRENS + ("tall dust devil whirling past",),
+    "desert of shifting dunes": _CTX_BARRENS + _CTX_SAND,
+    "salt-crusted wasteland": _CTX_BARRENS + _CTX_SAND,
     "petrified forest": _CTX_BARRENS,
     "volcanic ashlands": _CTX_BARRENS + ("distant volcano trailing a plume of ash",),
     "jungle temple ruins": (
@@ -478,9 +483,9 @@ CONTEXT_POOLS: dict[str, tuple[str, ...]] = {
         "rotting jetty of salvaged planks", "stack of weathered barrels",
     ),
     "waterside": _CTX_FRESH,
-    "storm-lashed sea cliffs": _CTX_SEA,
+    "storm-lashed sea cliffs": _CTX_SEA + ("waterspout twisting offshore",),
     "black sand beach": _CTX_SEA,
-    "rocky coast of a stormy sea": _CTX_SEA,
+    "rocky coast of a stormy sea": _CTX_SEA + ("waterspout twisting offshore",),
     "underwater": (
         "cluster of toppled marble columns", "shoal of silver fish", "swaying forest of kelp",
         "barnacle-crusted anchor", "sunken statue of a sea god", "scatter of old coins in the sand",
@@ -488,6 +493,7 @@ CONTEXT_POOLS: dict[str, tuple[str, ...]] = {
     "sky": (
         "floating island trailing waterfalls", "distant airship under full sail",
         "towering cloud bank", "scatter of drifting rock islets", "distant floating castle",
+        "bolt of lightning lancing down from a storm cloud",
     ),
     "underground": (
         "cluster of pale cave crystals", "flight of stone steps descending into the deep",
@@ -701,6 +707,8 @@ SUBKIND_GROUPS: dict[str, tuple[str, ...]] = {
     # construct
     "golem": ("stone golem", "clay golem", "iron golem", "bronze colossus", "crystal golem"),
     "animated": ("animated armour", "clockwork guardian", "living statue", "gargoyle"),
+    # Round XXIX: a made animal. No token says "clock" -- the word drew a clock face.
+    "brass beast": ("brass hound", "brass stag", "brass spider", "brass falcon", "brass bull"),
     # structure
     "fortification": ("castle", "watchtower", "ruined keep", "city gate", "fortified bridge"),
     "sacred site": ("shrine", "temple", "standing stone circle", "mountain monastery",
@@ -739,7 +747,7 @@ SUBKIND_POOLS: dict[str, tuple[str, ...]] = {
     + SUBKIND_GROUPS["orc"] + SUBKIND_GROUPS["halfling"],
     "spirit or elemental": SUBKIND_GROUPS["elemental"] + SUBKIND_GROUPS["fey spirit"],
     "undead": SUBKIND_GROUPS["walking dead"] + SUBKIND_GROUPS["restless spirit"],
-    "construct": SUBKIND_GROUPS["golem"] + SUBKIND_GROUPS["animated"],
+    "construct": SUBKIND_GROUPS["golem"] + SUBKIND_GROUPS["animated"] + SUBKIND_GROUPS["brass beast"],
     "structure": SUBKIND_GROUPS["fortification"] + SUBKIND_GROUPS["sacred site"]
     + SUBKIND_GROUPS["arcane tower"] + SUBKIND_GROUPS["dwelling"],
     "vessel": SUBKIND_GROUPS["sailing ship"] + SUBKIND_GROUPS["flying ship"]
@@ -898,6 +906,11 @@ FORM_POOLS: dict[str, tuple[str, ...]] = {
     "clockwork guardian": ("gear-driven humanoid body", "lion-headed gear-driven humanoid body"),
     "living statue": ("statuesque humanoid body", "robed statuesque body"),
     "gargoyle": ("winged crouching stone body", "horned winged stone body"),
+    "brass hound": ("lean long-legged hound body", "broad-chested hound body on piston legs"),
+    "brass stag": ("tall stag body on piston legs", "slender long-necked stag body"),
+    "brass spider": ("eight-legged spider body", "squat spider body on jointed piston legs"),
+    "brass falcon": ("sleek falcon body", "broad-winged falcon body"),
+    "brass bull": ("massive humped bull body", "thick-necked bull body on piston legs"),
     # structure
     "castle": ("high-walled keep with round towers", "square stone keep with corner turrets",
                "sprawling hilltop fortress"),
@@ -1067,6 +1080,8 @@ MATERIAL_POOLS: dict[str, tuple[str, ...]] = {
     "clockwork guardian": ("brass gears and plating", "copper plating and cogs"),
     "living statue": ("polished marble", "weathered limestone"),
     "gargoyle": ("weathered stone", "lichen-spotted stone"),
+    "brass beast": ("riveted plating over turning gears", "overlapping plates and exposed cogs",
+                    "hammered plating", "polished riveted plating"),
     # structure
     "fortification": ("rough fieldstone", "dressed limestone blocks", "basalt blocks"),
     "sacred site": ("white marble", "dressed limestone blocks", "moss-covered stone"),
@@ -1146,6 +1161,7 @@ PRIMARY_COLOR_POOLS: dict[str, tuple[str, ...]] = {
     "storm elemental": ("storm grey", "violet", "silver-white"),
     "undead": ("stark white", "ashen", "grave-soil brown", "black", "pale grey"),
     "construct": _COLOR_STONE,
+    "brass beast": ("gold", "bronze", "copper", "weathered bronze"),
     "structure": _COLOR_STONE,
     "vessel": ("black", "earth brown", "crimson", "cobalt blue", "gold", "weathered grey"),
     "artifact": ("gold", "silver", "black", "deep scarlet", "deep violet", "stark white"),
@@ -1203,6 +1219,7 @@ MARKINGS_POOLS: dict[str, tuple[str, ...]] = {
                             "veins of colour running through the body", "faint drifting motes"),
     "undead": ("faded heraldry", "tarnished funeral jewellery", "grave-dirt streaking"),
     "construct": ("carved spiral patterning", "inlaid gold lines", "chiselled geometric banding"),
+    "brass beast": ("etched scrollwork along its flanks", "inlaid copper banding", "engraved vine banding"),
     "structure": ("hanging heraldic banners", "carved relief friezes", "painted crests above the gate"),
     "arcane tower": ("carved relief friezes", "inlaid silver bands"),
     # A hut with crests and banners read as a manor house.
@@ -1239,6 +1256,7 @@ SURFACE_DETAIL_POOLS: dict[str, tuple[str, ...]] = {
     "undead": ("exposed ribs", "peeling grave-worn skin", "rusted buckles", "cobwebbed joints"),
     "restless spirit": ("frayed translucent edges", "slowly rippling folds"),
     "construct": ("cracks sealed with gold", "moss in the seams", "chipped carving", "rust streaks"),
+    "brass beast": ("tarnished seams", "soot-stained joints", "scuffed plating", "oil-stained joints"),
     "structure": ("ivy climbing the walls", "crumbling battlements", "weathered stonework",
                   "fresh whitewash", "arrow-scarred walls"),
     "witch's hut": ("moss in the seams", "weathered wear", "smoke-blackened eaves"),
@@ -1354,6 +1372,11 @@ APPENDAGE_POOLS: dict[str, tuple[str, ...]] = {
     # A "crest of spinning brass cogs" drew a great gear haloed behind the head
     # (#1248), the gear-crest trap of round XXIII again.
     "clockwork guardian": ("set of exposed brass gears along each arm", "piston arm"),
+    "brass hound": ("armoured tail", "exposed gear train along its flank"),
+    "brass stag": ("branching antler", "short tail"),
+    "brass spider": ("hooked pedipalp", "plated abdomen"),
+    "brass falcon": ("plated wing", "exposed gear train along its flank"),
+    "brass bull": ("curved horn", "armoured tail", "exposed gear train along its flank"),
     "living statue": ("carved laurel crown", "draped stone cloak"),
     "gargoyle": ("stone wing", "curled horn"),
     # structure
@@ -1425,6 +1448,7 @@ EMITTER_POOLS: dict[str, tuple[str, ...]] = {
     "undead": ("ember eye socket", "cold luminous eye", "spectral flame"),
     "construct": ("luminous rune seam", "enchanted gem core", "ember eye"),
     "clockwork guardian": ("luminous furnace grate", "enchanted gem core"),
+    "brass beast": ("luminous furnace grate", "enchanted gem core"),
     "structure": ("lantern-hung window", "enchanted beacon", "luminous crystal"),
     "sailing ship": ("stern lantern", "enchanted gem", "luminous rune tracery"),
     "flying ship": ("stern lantern", "enchanted gem", "luminous rune tracery"),
@@ -1491,6 +1515,12 @@ ARMAMENT_POOLS: dict[str, tuple[str, ...]] = {
     "gnome-kin": ("Y-shaped wooden slingshot", "tinker's hammer"),
     # A halberd drew as a sword grown onto an axe (#1234, #1308).
     "construct": ("rune-etched greatsword", "long war spear", "war hammer", "great stone maul"),
+    # A made animal's weapons are its own body, never carried.
+    "brass hound": ("curved fang", "raking claw"),
+    "brass stag": ("iron-shod hoof",),
+    "brass spider": ("curved fang",),
+    "brass falcon": ("hooked talon",),
+    "brass bull": ("iron-shod hoof",),
     "crystal golem": ("jagged crystal club", "crystal-tipped spear"),
     "mummy": ("bronze sickle-sword", "gilded crook staff"),
     "clockwork guardian": ("brass war hammer", "brass-bladed spear"),
@@ -1523,6 +1553,7 @@ SENSOR_POOLS: dict[str, tuple[str, ...]] = {
     "folk": ("keen eye", "scarred eye", "squinting eye"),
     "undead": ("dark eye socket", "pinpoint luminous eye"),
     "construct": ("gem-set eye", "carved stone eye"),
+    "brass beast": ("gem-set eye", "polished crystal eye", "faceted crystal eye"),
     "crystal golem": ("faceted crystal eye", "gem-set eye"),
     "clockwork guardian": ("polished crystal eye", "gem-set eye"),
     "animated armour": ("gem-set eye",),
@@ -1560,6 +1591,11 @@ APERTURE_POOLS: dict[str, tuple[str, ...]] = {
     "lich": ("grinning skull jaw", "gaping jaw"),
     "mummy": ("linen-wrapped face", "gaping wrapped jaw"),
     "construct": ("carved grille mouth", "open visor slit"),
+    "brass hound": ("hinged steel-toothed jaw",),
+    "brass stag": ("steam-venting muzzle",),
+    "brass spider": ("pincer-like mandibles",),
+    "brass falcon": ("hooked metal beak",),
+    "brass bull": ("steam-venting muzzle",),
     "structure": ("arched gateway", "portcullis gate", "great oak door", "round stained-glass window"),
     "witch's hut": ("low crooked door", "small round window"),
     "sailing ship": ("stern cabin window", "open cargo hatch", "boarding gangway"),
@@ -1676,6 +1712,8 @@ SCALE_POOLS: dict[str, tuple[str, ...]] = {
     "spirit or elemental": ("tiny", "small", "large", "huge", "colossal"),
     "undead": ("small", "large", "huge"),
     "construct": ("small", "large", "huge", "colossal", "titanic"),
+    "brass beast": ("small", "large", "huge"),
+    "brass falcon": ("tiny", "small", "large"),
     "structure": ("small", "large", "huge", "colossal"),
     # A huge or colossal hut is a manor.
     "witch's hut": ("small", "tiny"),
@@ -1768,7 +1806,7 @@ CARDINALITY: dict[str, dict[str, str]] = {
             "bird-shaped handle", "hair woven with living leaves", "moss-grown shoulder", "crenellated parapet",
             "arrow-slit window",
             "bony shoulder hump", "stubby tail", "bushy tail", "flower-petal cap",
-            "thistle-tuft hair",
+            "thistle-tuft hair", "exposed gear train along its flank", "plated abdomen",
         )),
         ("a matched pair", (
             "jewelled arm band",
@@ -1781,7 +1819,7 @@ CARDINALITY: dict[str, dict[str, str]] = {
             "fin-edged ear", "webbed hand", "twig antler", "fur-trimmed pauldron", "steel gauntlet",
             "leather bracer", "leaf-shaped pauldron", "bone pauldron", "rusted pauldron",
             "boulder fist", "jagged stone shoulder", "carved shoulder plate", "piston arm",
-            "stone wing", "curled horn", "canvas wing", "taloned foot", "feathered fetlock",
+            "stone wing", "curled horn", "canvas wing", "taloned foot", "feathered fetlock", "plated wing",
             # "four spectral chains" hung from the ceiling (#1313); a chain on each wrist does not.
             "manacle chain trailing from its wrists",
         )),
@@ -2103,6 +2141,11 @@ _S_FOLK_EV_FIRE_CAMP = ("stamping out a campfire",)
 _S_FOLK_ACT_GROUND = ("tracking footprints in the mud", "planting a banner in the earth")
 _S_FOLK_ACT_WALLS = ("vaulting over a low wall", "sitting on a stone stair")
 _S_FOLK_IDLE_LIFE = ("resting against a tree",)
+#: Round XXIX: weather the subject is caught in, so it fills the frame.
+_S_FOLK_ACT_COLD = ("pressing on through driving snow",)
+_S_FOLK_ACT_DUST = ("shielding their eyes against blowing sand",)
+_S_BEAST_ACT_COLD = ("pushing head-down through driving snow",)
+_S_BEAST_ACT_DUST = ("hunkering low against blowing sand",)
 _S_DWARF_ACT = ("hefting a heavy weapon onto one shoulder",)
 #: "Interior" (an apothecary's workshop, a tavern) has no rock face to hammer.
 _S_DWARF_ACT_GROUND = ("hammering at a rock face",)
@@ -2217,6 +2260,50 @@ _S_CONSTRUCT_ACT_WALLS = ("patrolling a long corridor",)
 _S_GARGOYLE_EV_SKY = ("launching from a rooftop",)
 _S_CONSTRUCT_DORMANT = ("standing motionless under a coat of dust", "half-buried in rubble")
 _S_CONSTRUCT_DORMANT_LIFE = ("covered in climbing ivy",)
+# --- brass beasts (Round XXIX) ---
+# A made animal that only stands there is a statue; every act moves it or a witness.
+# No sound word, no "grinding" (it drew an angle grinder), nothing wound up by a key.
+_S_BRASS_EV = (
+    "snapping a heavy chain in a burst of sparks",
+    "shaking off a weighted net thrown by a band of hunters",
+    "bursting out of a crate in a spray of splintered planks",
+    "springing off its pedestal at a startled tomb robber",
+)
+_S_BRASS_EV_WAR = (
+    "staggering as a crossbow bolt sparks off its plating",
+    "venting a scalding blast of steam at a cowering thief",
+)
+_S_BRASS_ACT = (
+    "having a loose plate hammered back into place by a tinker",
+    "being led on a chain by a gnome artificer",
+)
+_S_BRASS_EV_WALK = (
+    "lunging forward with steam blasting from every joint",
+    "charging headlong with its pistons pumping",
+    "rounding on a fleeing squire with steam jetting from its vents",
+    "bounding after a fleeing goblin",
+)
+_S_BRASS_EV_WALK_WAR = ("pinning a fallen knight beneath one plated foot",)
+_S_BRASS_ACT_WALK = (
+    "following at the heels of an armoured knight", "dragging a loaded sledge on a heavy chain",
+    "pacing in slow circles with steam curling from its vents",
+    "limping forward with sparks spraying from a jammed knee joint",
+    "keeping pace beside a mounted knight",
+    "sniffing at a trail of footprints with its plated head low",
+)
+_S_BRASS_FALCON_EV = (
+    "unfolding its plated wings in a burst of steam", "launching into the air in a puff of steam",
+    "swooping low over the heads of a startled crowd",
+)
+_S_BRASS_FALCON_EV_WAR = ("raking a fleeing poacher with its talons",)
+_S_BRASS_FALCON_EV_ANY = ("flaring its plated wings wide at an approaching stranger",)
+_S_BRASS_FALCON_ACT_AIR = ("flying ahead of a lost traveller to show the way",)
+_S_BRASS_FALCON_ACT_SKY = ("circling overhead trailing a thin plume of steam",)
+_S_BRASS_FALCON_ACT = (
+    "perching on a falconer's gauntlet as gears turn in its wings",
+    "folding its plated wings with a shiver of turning gears",
+    "tilting its head at a curious child", "carrying a sealed scroll case in its talons",
+)
 
 # --- structure ---
 _S_STRUCTURE_EV = (
@@ -2421,6 +2508,7 @@ _DEEP = frozenset({"submerged"})
 _WALLS = frozenset({"structure"})
 _LIFE = frozenset({"life"})
 _COLD = frozenset({"cold"})
+_DUST = frozenset({"dust"})
 _DOCK = frozenset({"dock"})
 _FLY = frozenset({"flies"})
 _SWIM = frozenset({"swims"})
@@ -2551,6 +2639,10 @@ _BUCKETS = (
     (_S_FOLK_ACT_GROUND, "activity", "n", _GROUND, _A, ""),
     (_S_FOLK_ACT_WALLS, "activity", "n", _WALLS, _A, ""),
     (_S_FOLK_IDLE_LIFE, "idle", "n", _LIFE, _A, ""),
+    (_S_FOLK_ACT_COLD, "activity", "n", _GROUND | _COLD, _A, ""),
+    (_S_FOLK_ACT_DUST, "activity", "n", _GROUND | _DUST, _A, ""),
+    (_S_BEAST_ACT_COLD, "activity", "n", _GROUND | _COLD, _WALK, ""),
+    (_S_BEAST_ACT_DUST, "activity", "n", _GROUND | _DUST, _A, ""),
     (_S_DWARF_ACT, "activity", "n", _A, _A, ""),
     (_S_DWARF_ACT_GROUND, "activity", "n", _GROUND, _A, ""),
     (_S_ELF_ACT_LIFE, "activity", "c", _LIFE, _A, ""),
@@ -2604,6 +2696,18 @@ _BUCKETS = (
     (_S_GARGOYLE_EV_SKY, "event", "n", _SKY | _WALLS, _FLY, ""),
     (_S_CONSTRUCT_DORMANT, "idle", "n", _A, _A, "d"),
     (_S_CONSTRUCT_DORMANT_LIFE, "idle", "n", _LIFE, _A, "d"),
+    (_S_BRASS_EV, "event", "n", _A, _A, ""),
+    (_S_BRASS_EV_WAR, "event", "c", _A, _A, ""),
+    (_S_BRASS_ACT, "activity", "n", _A, _A, ""),
+    (_S_BRASS_EV_WALK, "event", "n", _A, _WALK, ""),
+    (_S_BRASS_EV_WALK_WAR, "event", "c", _A, _WALK, ""),
+    (_S_BRASS_ACT_WALK, "activity", "n", _A, _WALK, ""),
+    (_S_BRASS_FALCON_EV, "event", "n", _AIR, _FLY, ""),
+    (_S_BRASS_FALCON_EV_WAR, "event", "c", _AIR, _FLY, ""),
+    (_S_BRASS_FALCON_EV_ANY, "event", "n", _A, _A, ""),
+    (_S_BRASS_FALCON_ACT_AIR, "activity", "n", _AIR, _FLY, ""),
+    (_S_BRASS_FALCON_ACT_SKY, "activity", "n", _SKY, _FLY, ""),
+    (_S_BRASS_FALCON_ACT, "activity", "n", _A, _A, ""),
     (_S_STRUCTURE_EV, "event", "n", _AIR, _A, ""),
     (_S_STRUCTURE_ACT, "activity", "p", _AIR, _A, ""),
     (_S_FORT_EV, "event", "n", _AIR, _A, ""),
@@ -2696,7 +2800,7 @@ _S_DRAGON_CORE = (
 _S_BEAST_CORE = (
     _S_BEAST_EV_WAR + _S_BEAST_EV_WAR_LIFE + _S_BEAST_EV_AIR_WAR + _S_BEAST_EV + _S_BEAST_EV_AIR + _S_BEAST_ACT
     + _S_BEAST_IDLE + _S_BEAST_CALM_LIFE + _S_BEAST_CALM_SHORE + _S_STONE_DORMANT
-    + _S_STONE_DORMANT_LIFE + _S_SLEEP + _S_SLEEP_LIFE
+    + _S_STONE_DORMANT_LIFE + _S_SLEEP + _S_SLEEP_LIFE + _S_BEAST_ACT_COLD + _S_BEAST_ACT_DUST
 )
 _S_GIANT_CORE = (
     _S_GIANT_EV_WAR + _S_GIANT_EV_AIR_WAR + _S_GIANT_EV + _S_GIANT_ACT + _S_GIANT_IDLE
@@ -2714,6 +2818,7 @@ _S_HYBRID_CORE = (
 _S_FOLK_CORE = (
     _S_FOLK_EV_WAR + _S_FOLK_EV_FIRE + _S_FOLK_EV + _S_FOLK_ACT + _S_FOLK_CALM + _S_FOLK_IDLE
     + _S_FOLK_EV_FIRE_CAMP + _S_FOLK_ACT_GROUND + _S_FOLK_ACT_WALLS + _S_FOLK_IDLE_LIFE
+    + _S_FOLK_ACT_COLD + _S_FOLK_ACT_DUST
 )
 _S_UNDEAD_CORE = (
     _S_UNDEAD_EV_WAR + _S_UNDEAD_EV_WAR_WALLS + _S_UNDEAD_EV + _S_UNDEAD_ACT + _S_UNDEAD_CANDLE_WALLS + _S_UNDEAD_EV_GROUND + _S_UNDEAD_EV_WALLS
@@ -2817,6 +2922,16 @@ SITUATION_POOLS: dict[str, tuple[str, ...]] = {
     "restless spirit": _S_UNDEAD_CORE + _S_RESTLESS_EV + _S_RESTLESS_ACT_WALLS + _S_UNDEAD_DEEP,
     "construct": _S_CONSTRUCT_CORE,
     "gargoyle": _S_CONSTRUCT_CORE + _S_GARGOYLE_EV_SKY,
+    # A made animal has no fists or fingers: the construct core is a humanoid's.
+    "brass beast": (
+        _S_BRASS_EV + _S_BRASS_EV_WAR + _S_BRASS_ACT + _S_BRASS_EV_WALK + _S_BRASS_EV_WALK_WAR
+        + _S_BRASS_ACT_WALK + _S_CONSTRUCT_DORMANT + _S_CONSTRUCT_DORMANT_LIFE
+    ),
+    "brass falcon": (
+        _S_BRASS_EV + _S_BRASS_EV_WAR + _S_BRASS_ACT + _S_BRASS_FALCON_EV + _S_BRASS_FALCON_EV_WAR
+        + _S_BRASS_FALCON_EV_ANY + _S_BRASS_FALCON_ACT_AIR + _S_BRASS_FALCON_ACT_SKY
+        + _S_BRASS_FALCON_ACT + _S_CONSTRUCT_DORMANT + _S_CONSTRUCT_DORMANT_LIFE
+    ),
     "structure": _S_STRUCTURE_CORE,
     "fortification": _S_STRUCTURE_CORE + _S_FORT_EV + _S_FORT_EV_WAR + _S_FORT_ACT + _S_FORT_IDLE,
     "sacred site": _S_STRUCTURE_CORE + _S_SACRED_EV + _S_SACRED_ACT,
@@ -3248,6 +3363,8 @@ _FORM_KEY_STANCES: dict[str, frozenset[str]] = {
     "restless spirit": frozenset({"floats", "hovers"}),
     "golem": _WALK, "bronze colossus": _WALK, "animated armour": _WALK, "clockwork guardian": _WALK,
     "living statue": frozenset({"walks", "rests"}), "gargoyle": frozenset({"walks", "flies", "rests"}),
+    "brass hound": _WALK, "brass stag": _WALK, "brass spider": _WALK, "brass bull": _WALK,
+    "brass falcon": frozenset({"walks", "flies", "rests"}),
     "floating citadel": frozenset({"floats", "hovers"}),
     "galleon": _SAIL, "longship": _SAIL, "war galley": _SAIL, "river barge": _SAIL, "pirate sloop": _SAIL,
     "airship": frozenset({"flies", "hovers"}), "sky galleon": frozenset({"flies", "hovers"}),
@@ -3394,6 +3511,10 @@ VALUE_NEEDS: dict[str, dict[str, frozenset[str]]] = {
         "moored fishing boat at the quay": _WALLS | _SHORE | _DOCK,
         "weathered statue of a forgotten king": _GROUND,
         "lone ancient oak on a rise": _GROUND | _LIFE,
+        "line of wildfire creeping along a far ridge": _GROUND | _LIFE | frozenset({"open-ground"}),
+        "sandstorm rolling in from the horizon": _GROUND | _DUST | frozenset({"open-ground"}),
+        "tall dust devil whirling past": _GROUND | _DUST,
+        "bolt of lightning lancing down from a storm cloud": _SKY,
     },
 }
 
@@ -3815,6 +3936,11 @@ BODY_FEATURES: dict[str, frozenset[str]] = {
     "restless spirit": frozenset({"hands", "jaws"}),
     "construct": frozenset({"hands"}),
     "gargoyle": frozenset({"hands", "wings"}),
+    "brass hound": frozenset({"jaws", "tail"}),
+    "brass stag": frozenset({"hooves", "tail"}),
+    "brass spider": frozenset({"jaws"}),
+    "brass falcon": frozenset({"wings", "tail"}),
+    "brass bull": frozenset({"horns", "hooves", "tail", "jaws"}),
     "structure": frozenset(),
     "vessel": frozenset(),
     "sailing ship": frozenset({"keel", "stern", "sails"}),
@@ -4159,6 +4285,8 @@ ARCHETYPE_OF_SUBKIND: dict[str, str] = {
     **{v: "brute" for v in SUBKIND_GROUPS["troll"] + SUBKIND_GROUPS["ogre-kin"]},
     **{v: "spirit" for v in SUBKIND_GROUPS["restless spirit"]},
     **{v: "monument" for v in SUBKIND_GROUPS["monument"]},
+    # A made animal is spoken as an animal: "covered in" its plating, its fangs featured, not carried.
+    **{v: "creature" for v in SUBKIND_GROUPS["brass beast"]},
 }
 
 
@@ -4792,6 +4920,12 @@ CONSTRAINTS = CONSTRAINTS + (
 # 1003 render test (sceneweaver103): "clockwork" drew a clock face on the chest; a
 # battlefield "strewn with rusted blades" drew a forest of swords.
 _SPOKEN_SUBKIND["clockwork guardian"] = "gear-driven brass guardian"
+# Round XXIX: a bare "brass hound" is a statue or a gold-tinted dog; each says what moves it.
+_SPOKEN_SUBKIND.update({
+    "brass hound": "gear-driven brass hound", "brass stag": "cog-jointed brass stag",
+    "brass spider": "rivet-plated brass spider", "brass falcon": "gear-driven brass falcon",
+    "brass bull": "cog-jointed brass bull",
+})
 _SPOKEN_ENVIRONMENT["old battlefield of rusted banners"] = "old grassy battlefield of faded banners"
 
 # Round XXVIII -- hands again: a priest kneeling in prayer held a hunting horn, a

@@ -93,8 +93,8 @@ kelpies, krakens, basilisks and treants. **Giant-kin** from cave trolls to frost
 giants and ettins; **small folk** from goblin shamans to pixies; **hybrid folk**
 like centaurs, gorgons, naga, minotaurs, merfolk and dryads. **People** with a
 calling - knights, rangers, necromancers, bards, dwarf runesmiths, wood elf
-archers, orc warchiefs. **Elementals and spirits**, **the undead**, **golems and
-gargoyles**, **castles and wizard towers**, **galleons and airships**, and
+archers, orc warchiefs. **Elementals and spirits**, **the undead**, **golems,
+gargoyles and brass beasts**, **castles and wizard towers**, **galleons and airships**, and
 **enchanted relics**.
 
 The same coherence rules hold: a sleeping dragon is asleep, a petrified troll

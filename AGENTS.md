@@ -8,7 +8,7 @@ genre is a data module and two registration lines.
 
 ## Current state
 
-_Last verified: 2026-10-05_
+_Last verified: 2026-10-07_
 
 - **Status:** v0.6.0 on `main`, released on GitHub and published to the ComfyUI
   Registry by `publish.yml`; all three genres on one coherence engine. 0.6.0
@@ -25,9 +25,13 @@ _Last verified: 2026-10-05_
   compatibility surface: `tests/test_widget_order_frozen.py` freezes the shipped
   order and validates both example workflows. Every gate under "Build and test"
   is green. The mechanisms and every round's decisions and measurements are in
-  `docs/architecture.md` ("Round XV" to "Round XXVIII" are the render-test rounds).
-- **In progress:** Round XXVIII (the 103 render batch) is on the `round-xxviii`
-  branch, uncommitted until the maintainer reviews it. The maintainer keeps render-testing;
+  `docs/architecture.md` ("Round XV" to "Round XXVIII" are the render-test rounds;
+  "Round XXIX" is the subgenre content round).
+- **In progress:** Round XXVIII (the 103 render batch) is on `main`. Round XXIX
+  (subgenre flavour as content: post-collapse horror places, grown sci-fi places
+  and void-order rites, fantasy brass beasts and weather) is on the
+  `round-xxix-content` branch, unmerged and unversioned until the maintainer
+  render-tests it. The maintainer keeps render-testing;
   each reported image becomes a fix plus a regression row. Head cropping on tall
   subjects was seen and deliberately not addressed yet (no forced "full figure"
   framing until it recurs). Not built: a headless horseman, carrion crows, an
