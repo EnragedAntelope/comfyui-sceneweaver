@@ -41,6 +41,7 @@ from data.genre import (
     pool_options,
     relation_pairs,
     widget_choices,
+    widget_fields,
     widget_order,
 )
 from data.scifi import SCIFI_PACK
@@ -52,9 +53,9 @@ from tests._loader import REPO_ROOT
 #: which is not a field -- see genre.py -- + environment + slot 1's 21
 #: morphology fields and its situation + three brief slots of five + six
 #: relations + six positions.
-EXPECTED_SCENE_KEYS = 54
+EXPECTED_SCENE_KEYS = 56
 EXPECTED_ENTITY_KEYS = 22
-EXPECTED_ENTITY_FIELDS = 21
+EXPECTED_ENTITY_FIELDS = 22
 
 #: Directories that must never name a genre.
 GENRE_FREE_DIRS = ("nodes", "engine")
@@ -230,11 +231,11 @@ class BuildFieldDefinitionsTests(unittest.TestCase):
         )
 
     def test_entity_node_is_a_seed_plus_the_morphology(self) -> None:
-        self.assertEqual(list(self.entity), ["seed", *SCIFI_PACK.entity_fields])
+        self.assertEqual(list(self.entity), ["seed", *widget_fields(SCIFI_PACK)])
 
     def test_slot_one_is_full_depth_and_the_rest_are_brief(self) -> None:
         slot_one = [d.base for d in self.scene.values() if d.slot == 1]
-        self.assertEqual(slot_one, [*SCIFI_PACK.entity_fields, "situation"])
+        self.assertEqual(slot_one, [*widget_fields(SCIFI_PACK), "situation"])
         brief = [name for name, s in SCIFI_PACK.entity_fields.items() if s.brief]
         for slot in (2, 3, 4):
             with self.subTest(slot=slot):
@@ -362,7 +363,8 @@ class PackStructureTests(unittest.TestCase):
     def test_scene_fields_are_declared(self) -> None:
         self.assertEqual(
             list(SCIFI_PACK.scene_fields),
-            ["environment", "situation", "relation", "relation_position", "context"],
+            ["environment", "situation", "relation", "relation_position", "context",
+             "staging", "aspect"],
         )
 
     #: Pool fields no todo has authored yet, and the todo that owns each. Todo 3

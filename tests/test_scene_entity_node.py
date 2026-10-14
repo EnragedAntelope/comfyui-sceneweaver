@@ -36,7 +36,7 @@ class SchemaShapeTests(unittest.TestCase):
     def test_input_count_is_the_seed_plus_the_whole_morphology(self) -> None:
         """22 = one seed + the pack's entity fields. Derived from the pack, not
         typed in, so a genre with a different field count still passes."""
-        self.assertEqual(len(self.schema.inputs), 1 + len(SCIFI_PACK.entity_fields))
+        self.assertEqual(len(self.schema.inputs), 1 + len(genre.widget_fields(SCIFI_PACK)))
         self.assertEqual(len(self.schema.inputs), 22)
 
     def test_widget_order_matches_the_contract_exactly(self) -> None:
@@ -62,7 +62,7 @@ class SchemaShapeTests(unittest.TestCase):
         self.assertEqual((seed.min, seed.max), (genre.SEED_MIN, genre.SEED_MAX))
 
     def test_every_field_offers_random_then_options_then_none(self) -> None:
-        for name in SCIFI_PACK.entity_fields:
+        for name in genre.widget_fields(SCIFI_PACK):
             with self.subTest(field=name):
                 options = self.by_id[name].options
                 self.assertEqual(options[0], RANDOM)
@@ -73,12 +73,12 @@ class SchemaShapeTests(unittest.TestCase):
 
     def test_every_field_defaults_to_random(self) -> None:
         """Full random with no configuration is the pack's headline behaviour."""
-        for name in SCIFI_PACK.entity_fields:
+        for name in genre.widget_fields(SCIFI_PACK):
             with self.subTest(field=name):
                 self.assertEqual(self.by_id[name].default, RANDOM)
 
     def test_every_field_tooltip_states_the_three_choices(self) -> None:
-        for name in SCIFI_PACK.entity_fields:
+        for name in genre.widget_fields(SCIFI_PACK):
             with self.subTest(field=name):
                 # Help sentence first, then one shared mechanic line last, so
                 # the three choices always read in the same place on every
@@ -94,7 +94,8 @@ class SchemaShapeTests(unittest.TestCase):
         """Per-kind labels are the frontend's job: a widget's label is fixed at
         registration and the kind is not, so the schema carries the generic
         name and ``js/sceneweaver.js`` rewrites it."""
-        for name, spec in SCIFI_PACK.entity_fields.items():
+        for name in genre.widget_fields(SCIFI_PACK):
+            spec = SCIFI_PACK.entity_fields[name]
             with self.subTest(field=name):
                 self.assertEqual(self.by_id[name].display_name, spec.label)
 
@@ -213,11 +214,10 @@ class ExecuteTests(unittest.TestCase):
         for seed in range(6):
             with self.subTest(seed=seed):
                 _, payload = NODE.execute(seed=seed, kind="alien creature").args
-                form = payload["fields"]["form"]
-                if form is not None:
-                    self.assertIn(
-                        form, genre.pool_for(SCIFI_PACK, "form", "alien creature")
-                    )
+                fields = payload["fields"]
+                if fields["form"] is not None:
+                    scope = genre.subject_scope(SCIFI_PACK, "alien creature", fields["subkind"])
+                    self.assertIn(fields["form"], genre.pool_for(SCIFI_PACK, "form", scope))
 
     def test_a_count_never_survives_the_noun_it_counts(self) -> None:
         """A quantity of nothing in the payload would be believed by every

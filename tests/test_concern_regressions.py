@@ -12,7 +12,8 @@ from dataclasses import dataclass, field
 from typing import Callable, Mapping
 
 from data import fantasy as FANTASY
-from data.genre import GenrePack, affordances_of, group_of, pool_for, resolved_needs
+from data import horror as HORROR
+from data.genre import POSTURE_VERBS, GenrePack, archetype_for, subjects, type_field, affordances_of, group_of, pool_for, resolved_needs
 from data.fantasy import FANTASY_PACK
 from data.horror import HORROR_PACK
 from data.scifi import SCIFI_PACK
@@ -49,6 +50,21 @@ def scenes(concern: Concern):
         )
         if document["entities"]:
             yield seed, document["entities"][0], document, text
+
+
+_FORM_WORDS = {"stand": {"standing", "upright"}, "sit": {"seated", "slumped"}}
+
+
+def _posture(text: str, table: Mapping) -> "str | None":
+    """The posture a form's or an act's first word names, if any."""
+    first = text.split(" ")[0] if text else ""
+    return next((p for p, words in table.items() if first in words), None)
+
+
+def _posture_clash(record: dict) -> bool:
+    form = _posture(said(record, "form"), _FORM_WORDS)
+    act = _posture(said(record, "situation"), POSTURE_VERBS)
+    return None not in (form, act) and form != act
 
 
 def said(record: dict, name: str) -> str:
@@ -540,7 +556,9 @@ CONCERNS: tuple[Concern, ...] = (
     ),
     Concern(
         "a sealed helmet is drawn with an open face",
-        lambda r, d, t: "helmet" in t.lower() and said(r, "aperture") in (
+        # A helmet the act names belongs to someone else ("anointing a kneeling
+        # marine's helmet"), not to this subject's face.
+        lambda r, d, t: "helmet" in t.lower().replace(said(r, "situation"), "") and said(r, "aperture") in (
             "open visor", "hood opening", "respirator grille", "breathing mask vent"
         ),
         widgets={"entity1_kind": "spacefarer"},
@@ -1364,6 +1382,65 @@ CONCERNS = CONCERNS + (
         )
         for subkind in FANTASY.SUBKIND_POOLS["construct"]
     ),
+    # 0.8.0 render test: shared placement and place-state pools reached the wrong place.
+    Concern(
+        "long grass in snowbound woods",
+        lambda r, d, t: "long grass" in t,
+        widgets={"environment": "snowbound pine woods"},
+        pack=HORROR_PACK,
+    ),
+    Concern(
+        "an attic is flooded",
+        lambda r, d, t: "flood" in t,
+        widgets={"environment": "attic crawlspace"},
+        pack=HORROR_PACK,
+    ),
+    # 0.8.0 render test, second look: a merfolk "brandishing a weapon high" with a
+    # bone spear held two weapons; a resting revenant's axe floated beside it.
+    Concern("an act names a second weapon", lambda r, d, t: bool(r.get("armament")) and bool(
+        re.search(r"\ba (raised |lowered |massive |heavy )?weapon\b", said(r, "situation"))),
+        widgets={"entity1_subkind": "merfolk"}, pack=FANTASY_PACK),
+    Concern("a resting revenant carries a weapon",
+            lambda r, d, t: bool(r.get("armament")) and r.get("situation") in FANTASY.DORMANT_ACTS,
+            widgets={"entity1_subkind": "drowned revenant"}, pack=FANTASY_PACK),
+    Concern("the resting dead carry a weapon",
+            lambda r, d, t: bool(r.get("armament")) and r.get("situation") in HORROR.DORMANT_ACTS,
+            widgets={"entity1_kind": "undead"}, pack=HORROR_PACK),
+    Concern("a standing doll is sitting", lambda r, d, t: _posture_clash(r),
+        widgets={"entity1_subkind": "porcelain doll"}, pack=HORROR_PACK),
+    Concern("a drowned revenant wears netting", lambda r, d, t: "net" in said(r, "material").split("-"),
+            widgets={"entity1_subkind": "drowned revenant"}, pack=FANTASY_PACK),
+    Concern("a fire-damaged look renders as live fire", lambda r, d, t: "fire-" in " ".join(
+            str(v) for k, v in r.items() if k in ("variant", "material", "condition", "form", "surface_detail")),
+            widgets={"entity1_subkind": "boarded-up church"}, pack=HORROR_PACK),
+    Concern("a roadblock fence hung with sheeting", lambda r, d, t: "sheeting" in t,
+            widgets={"environment": "military roadblock on an empty highway"}, pack=HORROR_PACK),
+    Concern("a wreck reads as a sailing ship or trails a giant tube",
+            lambda r, d, t: bool(re.search(r"bow section|snapped spar|ducting|by salvage drones", t)),
+            widgets={"entity1_kind": "wreck"}, pack=SCIFI_PACK),
+    # 0.8.0 per-kind render batch.
+    Concern("coin-sized spiders render as coins", lambda r, d, t: "coin" in t,
+            widgets={"entity1_subkind": "swarm of spiders"}, pack=HORROR_PACK),
+    Concern("a hall clock in a supermarket", lambda r, d, t: r.get("subkind") in (
+        "grandfather clock", "haunted family picture"),
+        widgets={"environment": "looted supermarket aisle", "entity1_kind": "cursed object"}, pack=HORROR_PACK),
+    Concern("the dead claw with both hands and hold a sword", lambda r, d, t: bool(r.get("armament")) and said(
+        r, "situation").startswith(("clawing", "scratching", "cracking open", "dragging a bloodied", "pushing aside")),
+        widgets={"environment": "dusty manor ballroom", "entity1_subkind": "bone revenant"}, pack=HORROR_PACK),
+    Concern("a skeleton eats", lambda r, d, t: bool(re.search(r"raw meat|fresh kill|strip of flesh", t)),
+            widgets={"entity1_subkind": "walking skeleton"}, pack=HORROR_PACK),
+    Concern("a chariot grows a scythe", lambda r, d, t: "scythe" in t,
+            widgets={"entity1_subkind": "war chariot"}, pack=FANTASY_PACK),
+    Concern("a spectral flame floats free", lambda r, d, t: bool(re.search(r"spectral flame(?! burning)", t)),
+            widgets={"entity1_kind": "undead"}, pack=FANTASY_PACK),
+    Concern("a survey glider pushes a scoop", lambda r, d, t: "scoop through" in t,
+            widgets={"entity1_subkind": "survey glider"}, pack=SCIFI_PACK),
+    # A faun "lowering their horned head in challenge" rendered as a whole goat,
+    # its spear floating beside it: a beast's act makes a half-person a beast.
+    Concern("a faun acts like a goat", lambda r, d, t: bool(re.search(r"head in challenge|with a snort", t)),
+            widgets={"entity1_subkind": "faun"}, pack=FANTASY_PACK),
+    Concern("a centaur turns into a horse", lambda r, d, t: bool(re.search(r"small (?:[\w-]+ )*centaur|war harness|pony|horse tail", t)),
+            widgets={"entity1_subkind": "centaur"}, pack=FANTASY_PACK),
 )
 
 
@@ -1392,6 +1469,27 @@ def hands_used(pack: GenrePack, record: dict) -> int:
         traits = set(pack.value_traits.get(name, {}).get(value, ()))
         total += 2 if traits & _TWO_HANDS else 1 if traits & _ONE_HAND else 0
     return total
+
+
+#: An act whose "its" or "their" names something other than the subject.
+_PRONOUN_FREE = {"unfurling its wings to their full span", "dragging a disembowelled body by its ankles"}
+
+
+class PronounTests(unittest.TestCase):
+    def test_an_act_speaks_its_subjects_pronoun(self) -> None:
+        """A faun "lowering its head" rendered as a goat: "its" makes a person a beast."""
+        for pack in (SCIFI_PACK, FANTASY_PACK, HORROR_PACK):
+            name = type_field(pack)
+            wrong: dict[str, str] = {}
+            for kind, sub in subjects(pack):
+                scope = {"kind": kind, **({name: sub} if name and sub else {})}
+                pronoun = archetype_for(pack, scope).pronoun or pack.prose.pronoun
+                other = r"\b(their|themselves)\b" if pronoun == "it" else r"\b(its|itself)\b"
+                for act in pool_for(pack, "situation", scope):
+                    if act not in _PRONOUN_FREE and re.search(other, act):
+                        wrong.setdefault(act, sub or kind)
+            with self.subTest(pack=pack.slug):
+                self.assertEqual(wrong, {}, f"{pack.slug}: an act speaks the wrong pronoun")
 
 
 class HandBudgetTests(unittest.TestCase):

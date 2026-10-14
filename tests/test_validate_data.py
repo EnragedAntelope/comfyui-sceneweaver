@@ -149,6 +149,18 @@ class EveryCheckFiresTests(unittest.TestCase):
     def test_an_untagged_value_in_a_tagged_pool_is_caught(self) -> None:
         self.assertCode(_plus("armament", "improvised spar", "starship"), "TAG")
 
+    def test_a_variant_that_owns_nothing_is_caught(self) -> None:
+        self.assertCode(_plus("variant", "rust-eaten", "small drone"), "VARIANT")
+
+    def test_a_variant_echoing_the_head_noun_is_caught(self) -> None:
+        """A segmented alien's head noun is its form, "squat dome-backed frame"."""
+        self.assertCode(_plus("variant", "dome-backed", "segmented"), "ECHO")
+
+    def test_a_pool_with_no_neutral_look_is_caught(self) -> None:
+        owned = tuple(SCIFI_PACK.value_variants["material"])
+        drone = tuple(v for v in SCIFI_PACK.pools["material"]["small drone"] if v in owned)
+        self.assertCode(_with_pools(material=("small drone", drone)), "NEUTRAL")
+
     def test_a_rule_naming_a_fifth_slot_is_caught(self) -> None:
         rule = ConstraintRule(
             type="exclude",
@@ -209,6 +221,13 @@ class EveryCheckFiresTests(unittest.TestCase):
     def test_a_kind_below_the_situation_floor_is_caught(self) -> None:
         short = SCIFI_PACK.pools["situation"]["starship"][: MIN_SITUATIONS_PER_KIND - 1]
         self.assertCode(_with_pools(situation=("starship", short)), "SITUATION")
+
+    def test_a_place_below_the_context_floor_is_caught(self) -> None:
+        place = G.pool_options(SCIFI_PACK, G.ENVIRONMENT_FIELD)[0]
+        spec = SCIFI_PACK.scene_fields[G.CONTEXT_FIELD]
+        pools = SCIFI_PACK.pools[G.CONTEXT_FIELD]
+        key = next(k for k in G.scope_keys(SCIFI_PACK, spec, {G.ENVIRONMENT_FIELD: place}) if k in pools)
+        self.assertCode(_with_pools(context=(key, pools[key][:1])), "CONTEXTFLOOR")
 
     def test_an_unclassified_tiered_value_is_caught(self) -> None:
         """A value with no tier would silently draw at neutral weight."""

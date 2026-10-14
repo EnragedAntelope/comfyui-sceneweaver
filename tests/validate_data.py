@@ -777,40 +777,6 @@ def check_empty_defaults(pack: G.GenrePack, report: Report) -> None:
                 )
 
 
-def _subjects(pack: G.GenrePack):
-    """Every ``(kind, type)`` a scene can hold; ``(kind, None)`` for a kind with no types."""
-    name = G.type_field(pack)
-    for kind in pack.kinds:
-        values = G.pool_for(pack, name, {G.KIND_FIELD: kind}) if name else ()
-        for value in values or (None,):
-            yield kind, value
-
-
-def _reach(
-    pack: G.GenrePack, field_name: str, honour_omits: bool = False
-) -> "dict[str, list[tuple[str, str | None]]]":
-    """``{value: [(kind, type), ...]}`` -- every subject whose resolved pool holds the value.
-
-    With ``honour_omits``, a subject whose archetype omits the field reaches
-    nothing there: it never draws the field, so a part it would fall through to
-    cannot misfit its body. A wreck's archetype omits ``emitters``, and the
-    default emitter pool is not its vocabulary. The shadowed-value check keeps
-    the plain reach, because an omitted pool is still authored vocabulary."""
-    name = G.type_field(pack)
-    reach: dict[str, list[tuple[str, str | None]]] = {}
-    for kind, value in _subjects(pack):
-        scope = {G.KIND_FIELD: kind}
-        if name and value is not None:
-            scope[name] = value
-        if honour_omits:
-            archetype = G.archetype_for(pack, scope)
-            if archetype is not None and field_name in archetype.omits:
-                continue
-        for option in G.pool_for(pack, field_name, scope):
-            reach.setdefault(option, []).append((kind, value))
-    return reach
-
-
 def _named(words_by_key, text: str) -> set[str]:
     low = text.lower()
     return {
@@ -837,7 +803,7 @@ def check_body_keywords(pack: G.GenrePack, report: Report) -> None:
     if not pack.body_keywords:
         return
     for field_name in pack.body_lint_fields:
-        for option, subjects in sorted(_reach(pack, field_name, honour_omits=True).items()):
+        for option, subjects in sorted(G.value_reach(pack, field_name, honour_omits=True).items()):
             named = _named(pack.body_keywords, option)
             if not named:
                 continue
@@ -858,7 +824,7 @@ def check_body_coverage(pack: G.GenrePack, report: Report) -> None:
     """27. Every subject resolves to a declared body, even an empty one."""
     if not pack.body_keywords:
         return
-    for kind, value in _subjects(pack):
+    for kind, value in G.subjects(pack):
         if not G.has_body_declaration(pack, kind, value):
             report.fail("BODYCOVER", f"{value or kind!r} ({kind}) declares no body at any level")
 
@@ -868,7 +834,7 @@ def check_part_keywords(pack: G.GenrePack, report: Report) -> None:
     if not pack.part_keywords:
         return
     for field_name in pack.part_lint_fields:
-        for option, subjects in sorted(_reach(pack, field_name, honour_omits=True).items()):
+        for option, subjects in sorted(G.value_reach(pack, field_name, honour_omits=True).items()):
             named = _named(pack.part_keywords, option)
             if not named:
                 continue
@@ -951,7 +917,7 @@ def check_shadowed_values(pack: G.GenrePack, report: Report) -> None:
     if G.SITUATION_FIELD not in fields:
         fields.append(G.SITUATION_FIELD)
     for field_name in fields:
-        reach = _reach(pack, field_name)
+        reach = G.value_reach(pack, field_name)
         for value in G.pool_options(pack, field_name):
             if value in reach:
                 continue
@@ -989,7 +955,7 @@ def check_stranger_fallthrough(pack: G.GenrePack, report: Report) -> None:
             continue
         fallen: list[str] = []
         subjects = 0
-        for kind, value in _subjects(pack):
+        for kind, value in G.subjects(pack):
             scope = {G.KIND_FIELD: kind}
             if type_name and value is not None:
                 scope[type_name] = value
@@ -1030,7 +996,7 @@ def check_carried_body_parts(pack: G.GenrePack, report: Report) -> None:
     """
     type_name = G.type_field(pack)
     seen: set[tuple[str, str]] = set()
-    for kind, value in _subjects(pack):
+    for kind, value in G.subjects(pack):
         scope = {G.KIND_FIELD: kind}
         if type_name and value is not None:
             scope[type_name] = value
@@ -1095,6 +1061,192 @@ def check_tier_coverage(pack: G.GenrePack, report: Report) -> None:
             )
 
 
+def _words(value: str) -> set[str]:
+    """Content words, hyphenated parts counted apart -- the engine's echo guard's split."""
+    return set(value.replace("-", " ").split()) - {"a", "an", "the", "of", "and", "in", "on", "with"}
+
+
+def _variant_subjects(pack: G.GenrePack):
+    """``(kind, type, scope, offered variants)`` for every subject offered a variant."""
+    if G.VARIANT_FIELD not in pack.entity_fields:
+        return
+    for kind, value in G.subjects(pack):
+        scope = G.subject_scope(pack, kind, value)
+        offered = G.pool_for(pack, G.VARIANT_FIELD, scope)
+        if offered:
+            yield kind, value, scope, offered
+
+
+def check_variants(pack: G.GenrePack, report: Report) -> None:
+    """34. A variant owns a look its subject can draw, and never echoes the head noun.
+
+    A variant that owns nothing in its subject's pools is a bare word with no look
+    behind it. One that shares a word with the head noun ("jewel-backed" on a
+    "dome-backed frame") is silenced by the engine's echo guard after its owned
+    look was drawn, so the look is spoken without the word that explains it. And a
+    masked field whose every value is owned leaves a variant-less draw nothing
+    neutral, so it falls back to some variant's look."""
+    from engine.prose import head_phrase_spec
+    from engine.scene import _normalized_head, _share_vocabulary
+
+    heads_in_order = [
+        n for n, s in pack.entity_fields.items() if n != G.KIND_FIELD and s.renders_with is None
+    ]
+    for kind, value, scope, offered in _variant_subjects(pack):
+        who = value or kind
+        pools = {field_name: G.pool_for(pack, field_name, scope) for field_name in pack.value_variants}
+        # The head-noun repeat guard re-draws a later field whose head word an
+        # earlier field already said, so an owned look ending in "hull" beside a
+        # "...hull" form is silenced as often as the form is drawn.
+        for field_name, pool in pools.items():
+            earlier = heads_in_order[: heads_in_order.index(field_name)]
+            taken = {
+                _normalized_head(v): other
+                for other in earlier if not _share_vocabulary(pack, field_name, other)
+                for v in G.pool_for(pack, other, scope)
+            }
+            for owned in pool:
+                if pack.value_variants[field_name].get(owned, frozenset()) & set(offered):
+                    other = taken.get(_normalized_head(owned))
+                    if other:
+                        report.fail(
+                            "REPEAT",
+                            f"{who!r}: owned {field_name} {owned!r} ends on a word its {other} can say",
+                        )
+        for variant in offered:
+            if not any(
+                variant in pack.value_variants[f].get(v, frozenset())
+                for f, pool in pools.items() for v in pool
+            ):
+                report.fail("VARIANT", f"{who!r}: variant {variant!r} owns no look this subject can draw")
+        for field_name, pool in pools.items():
+            owners = pack.value_variants[field_name]
+            claimed = [v for v in pool if owners.get(v, frozenset()) & set(offered)]
+            if claimed and len(claimed) == len(pool):
+                report.fail(
+                    "NEUTRAL", f"{who!r}: every {field_name} is owned by a variant, so none is neutral"
+                )
+        values = {G.KIND_FIELD: kind, **({G.type_field(pack): value} if value else {})}
+        head = head_phrase_spec(pack, kind, G.archetype_for(pack, values))
+        if head is None:
+            continue
+        noun = next((n for n in ((head.subject,) if head.subject else ()) + tuple(head.noun)
+                     if n == G.KIND_FIELD or G.pool_for(pack, n, scope) or (n == G.type_field(pack) and value)),
+                    None)
+        if noun == G.KIND_FIELD:
+            heads = [kind]
+        elif noun == G.type_field(pack):
+            heads = [value] if value else []
+        else:
+            heads = list(G.pool_for(pack, noun, scope)) if noun else []
+        for variant in offered:
+            for spoken in heads:
+                shared = _words(variant) & _words(spoken)
+                if shared:
+                    report.fail(
+                        "ECHO",
+                        f"{who!r}: variant {variant!r} shares {sorted(shared)} with head noun {spoken!r}",
+                    )
+
+
+#: Report-only until the content rounds meet them; each then becomes a failure.
+FORM_FLOOR = 4
+VARIANT_FLOOR = 3
+ACT_FLOOR = 6
+CONTEXT_FLOOR = 4
+STAGE_FLOOR = 4
+ASPECT_FLOOR_OUTDOOR = 6
+ASPECT_FLOOR_INDOOR = 4
+
+
+def check_type_echo(pack: G.GenrePack, report: Report) -> None:
+    """36. No look is dead because it ends on its own type's noun.
+
+    The head-noun repeat guard re-draws a field whose head word the type already
+    said, so "bow-topped wagon" on a "painted travelling wagon" is never spoken. A
+    value whose every holder is such a type is authored and unreachable; the reach
+    audit finds it only after a long sweep, this finds it at once."""
+    from engine.scene import _normalized_head, _share_vocabulary
+
+    name = G.type_field(pack)
+    if name is None:
+        return
+    fields = [
+        n for n, s in pack.entity_fields.items()
+        if n not in (G.KIND_FIELD, name) and s.renders_with is None and not _share_vocabulary(pack, n, name)
+    ]
+    live: dict[tuple[str, str], bool] = {}
+    for kind, value in G.subjects(pack):
+        scope = G.subject_scope(pack, kind, value)
+        own = _normalized_head(value) if value else None
+        for field_name in fields:
+            for option in G.pool_for(pack, field_name, scope) or ():
+                key = (field_name, option)
+                live[key] = live.get(key, False) or _normalized_head(option) != own
+    for (field_name, option), alive in sorted(live.items()):
+        if not alive:
+            report.fail("TYPEECHO", f"{field_name}: {option!r} ends on its every holder's own noun")
+
+
+def check_variety_floors(pack: G.GenrePack, report: Report) -> None:
+    """35. The variety floors (0.8.0): every offender is a failure, by name."""
+    def note(code: str, short: "list[str]") -> None:
+        for name in short:
+            report.fail(code, f"{name!r} is below the floor")
+
+    forms, variants = [], []
+    for kind, value in G.subjects(pack):
+        scope = G.subject_scope(pack, kind, value)
+        pool = G.pool_for(pack, "form", scope)
+        if pool and len(pool) < FORM_FLOOR:
+            forms.append(value or kind)
+        archetype = G.archetype_for(pack, scope)
+        if G.VARIANT_FIELD in pack.entity_fields and not (
+            archetype and G.VARIANT_FIELD in archetype.omits
+        ):
+            offered = G.pool_for(pack, G.VARIANT_FIELD, scope)
+            if len(offered) < VARIANT_FLOOR:
+                variants.append(value or kind)
+    note("FORMFLOOR", forms)
+    note("VARIANTFLOOR", variants)
+
+    own: dict[str, int] = {}
+    group_of = {
+        member: group
+        for group, members in (pack.pool_groups.get(G.type_field(pack)) or {}).items()
+        for member in members
+    }
+    size: dict[str, int] = {}
+    for kind, value in G.subjects(pack):
+        key = group_of.get(value, value) if value else kind
+        size[key] = size.get(key, 0) + 1
+    for owners in G.own_values(pack, G.SITUATION_FIELD).values():
+        for key in owners:
+            own[key] = own.get(key, 0) + 1
+    groups = set(size)
+    note("ACTSPEC", sorted(g for g in groups if own.get(g, 0) < ACT_FLOOR))
+
+    traits = pack.value_traits.get(G.ENVIRONMENT_FIELD, {})
+    contexts, stagings, aspects = [], [], []
+    for place in G.pool_options(pack, G.ENVIRONMENT_FIELD):
+        scope = {G.ENVIRONMENT_FIELD: place}
+        if len(G.filtered_pool(pack, G.CONTEXT_FIELD, scope, "Any")) < CONTEXT_FLOOR:
+            contexts.append(place)
+        if "staging" in pack.scene_fields and len(G.filtered_pool(pack, "staging", scope, "Any")) < STAGE_FLOOR:
+            stagings.append(place)
+        if "aspect" in pack.scene_fields:
+            floor = ASPECT_FLOOR_INDOOR if "interior-place" in traits.get(place, ()) else ASPECT_FLOOR_OUTDOOR
+            if len(G.filtered_pool(pack, "aspect", scope, "Any")) < floor:
+                aspects.append(place)
+    note("CONTEXTFLOOR", contexts)
+    note("STAGEFLOOR", stagings)
+    note("ASPECTFLOOR", aspects)
+    note("VIEWER", [v for v in G.pool_options(pack, G.SITUATION_FIELD) if "viewer" in v])
+    # A framing gated on a trait no context carries is never drawn.
+    carried = set().union(*map(set, pack.value_traits.get(G.CONTEXT_FIELD, {}).values()))
+    note("FRAMING", [s.text for s in pack.prose.context_sentences if not s.traits <= carried])
+
+
 CHECKS = (
     check_tags,
     check_constraints,
@@ -1126,6 +1278,9 @@ CHECKS = (
     check_shadowed_values,
     check_stranger_fallthrough,
     check_carried_body_parts,
+    check_variants,
+    check_type_echo,
+    check_variety_floors,
 )
 
 

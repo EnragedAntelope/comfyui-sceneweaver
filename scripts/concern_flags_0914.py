@@ -110,7 +110,7 @@ def flags_0914(pack, doc, text):
                  " ".join([sit, ctx, field(e, "extras").lower(),
                            field(e, "appendages").lower()])):
         out.append("tether-cable-chain")
-    if (re.search(r"\b(dragg\w*|haul\w*|tow\w*|tugg\w*)\b", sit)
+    if (re.search(r"\b(dragg\w*|haul\w*|tow(?!ards?\b)\w*|tugg\w*)\b", sit)
             and (kind == "wreck"
                  or (kind == "robot or mech" and grp != "humanoid unit")
                  or (kind == "alien creature" and grp in _DRAG_CREATURE_GROUPS))):

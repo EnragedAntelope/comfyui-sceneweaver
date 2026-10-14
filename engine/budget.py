@@ -58,9 +58,13 @@ import re
 from typing import Iterable, Mapping
 
 try:
-    from ..data.genre import KIND_FIELD, POOL_DEFAULT_KEY, Archetype, GenrePack, HeadPhrase
+    from ..data.genre import (
+        KIND_FIELD, POOL_DEFAULT_KEY, VARIANT_FIELD, Archetype, GenrePack, HeadPhrase,
+    )
 except ImportError:  # pragma: no cover -- standalone/test context
-    from data.genre import KIND_FIELD, POOL_DEFAULT_KEY, Archetype, GenrePack, HeadPhrase
+    from data.genre import (
+        KIND_FIELD, POOL_DEFAULT_KEY, VARIANT_FIELD, Archetype, GenrePack, HeadPhrase,
+    )
 
 __all__ = [
     "ALLOWANCE_BY_COUNT",
@@ -293,7 +297,9 @@ def apply_budget(
     # the total clause count where it was.
     head = _head_phrase_for(pack, result.get(KIND_FIELD), archetype)
     modifiers = set(head.modifiers) if head is not None else set()
-    exempted = modifiers - set(omits)
+    # The variant is the one modifier the authored caps never counted: a design
+    # word added on top, so it does not cost a clause.
+    exempted = modifiers - set(omits) - {VARIANT_FIELD}
 
     # An archetype's cap is a floor on the caller's allowance, applied after the
     # orphan pass and before the early exit so that ``budget=None`` still means

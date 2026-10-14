@@ -36,7 +36,7 @@ from engine.budget import (
 HERO = ALLOWANCE_BY_COUNT[1][0]
 #: The head-phrase modifier fields. They are two words in front of the noun,
 #: not clauses, so they never spend the allowance and are always spoken.
-HEAD_MODIFIERS = frozenset({"scale", "condition"})
+HEAD_MODIFIERS = frozenset({"scale", "condition", "variant"})
 from engine.prose import render_entity
 from engine.resolution import ResolvedEntity
 
@@ -45,6 +45,7 @@ FULL = {
     "subkind": "heavy freighter",
     "scale": "large",
     "condition": "battle-scarred",
+    "variant": "military-pattern",
     "form": "needle hull",
     "material": "titanium alloy",
     "primary_color": "gunmetal grey",
@@ -335,7 +336,7 @@ class ArchetypeBudgetTests(unittest.TestCase):
 
     def test_a_cap_lowers_a_callers_allowance(self) -> None:
         values = apply_budget(SCIFI_PACK, FULL, budget=HERO, archetype=self._capped(4))
-        self.assertLessEqual(len(spoken(values) - {"kind"}), 4)
+        self.assertLessEqual(len(spoken(values) - {"kind", "variant"}), 4)
 
     def test_a_cap_never_raises_a_callers_allowance(self) -> None:
         values = apply_budget(SCIFI_PACK, FULL, budget=3, archetype=self._capped(9))
@@ -345,7 +346,7 @@ class ArchetypeBudgetTests(unittest.TestCase):
         """``budget=None`` means \"whatever this kind of thing speaks\", not
         \"everything\" -- which is what keeps the Scene Entity node honest."""
         values = apply_budget(SCIFI_PACK, FULL, budget=None, archetype=self._capped(5))
-        self.assertLessEqual(len(spoken(values) - {"kind"}), 5)
+        self.assertLessEqual(len(spoken(values) - {"kind", "variant"}), 5)
 
     def test_an_archetypes_priority_is_spent_first(self) -> None:
         archetype = Archetype(head_phrase=None, detail_priority=("markings", "extras"))

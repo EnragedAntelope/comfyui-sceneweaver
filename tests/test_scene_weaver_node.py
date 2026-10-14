@@ -45,12 +45,13 @@ class SchemaShapeTests(unittest.TestCase):
         self.by_id = {i.id: i for i in self.schema.inputs}
 
     def test_input_counts(self) -> None:
-        """55 widgets: 4 controls (seed, entity count, scene filter, bulk edit)
+        """57 widgets: 4 controls (seed, entity count, scene filter, bulk edit)
         + environment + slot 1's 21 + 3 brief slots of 5 + 4 situations
-        + 6 relations + 6 positions + context. Plus four optional sockets."""
-        self.assertEqual(len(self.widgets), 55)
+        + 6 relations + 6 positions + context, placement and place state. Plus
+        four optional sockets."""
+        self.assertEqual(len(self.widgets), 57)
         self.assertEqual(len(self.sockets), SCENE_NODE_SLOTS)
-        self.assertEqual(len(self.schema.inputs), 59)
+        self.assertEqual(len(self.schema.inputs), 61)
 
     def test_widget_order_matches_the_contract_exactly(self) -> None:
         self.assertEqual(
@@ -72,7 +73,7 @@ class SchemaShapeTests(unittest.TestCase):
     def test_slot_one_is_full_depth_and_the_others_are_brief(self) -> None:
         """The core node is never a stub, and supporting slots stay brief until
         something is wired into them."""
-        for name in SCIFI_PACK.entity_fields:
+        for name in genre.widget_fields(SCIFI_PACK):
             with self.subTest(field=name):
                 self.assertIn(f"entity1_{name}", self.by_id)
         brief = {"kind", "subkind", "scale", "condition"}
@@ -132,7 +133,8 @@ class PromptJsonSchemaTests(unittest.TestCase):
 
     def test_top_level_keys_exactly(self) -> None:
         self.assertEqual(
-            set(self.document), {"environment", "context", "entities", "relations", "_meta"}
+            set(self.document),
+            {"environment", "context", "staging", "aspect", "entities", "relations", "_meta"},
         )
 
     def test_meta_keys_exactly_and_carries_the_seed(self) -> None:

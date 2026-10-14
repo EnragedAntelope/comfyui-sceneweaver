@@ -77,6 +77,8 @@ try:
         SET_ALL_OPTIONS,
         SITUATION_FIELD,
         STANCE_FIELD,
+        VARIANT_FIELD,
+        MOVE_LEAD,
         Archetype,
         FieldDef,
         GenrePack,
@@ -104,6 +106,8 @@ try:
         resolved_needs,
         type_feasible,
         type_field,
+        scene_globals,
+        variant_mask,
     )
 except ImportError:  # pragma: no cover -- standalone/test context
     from data.genre import (
@@ -125,6 +129,8 @@ except ImportError:  # pragma: no cover -- standalone/test context
         SET_ALL_OPTIONS,
         SITUATION_FIELD,
         STANCE_FIELD,
+        VARIANT_FIELD,
+        MOVE_LEAD,
         Archetype,
         FieldDef,
         GenrePack,
@@ -152,6 +158,8 @@ except ImportError:  # pragma: no cover -- standalone/test context
         resolved_needs,
         type_feasible,
         type_field,
+        scene_globals,
+        variant_mask,
     )
 
 from .budget import allowance_for, apply_budget
@@ -337,6 +345,9 @@ def _draw(
     ]
     if not pool:
         return None
+    # After the bans, so a mask that would leave nothing falls back to what the
+    # rules allow rather than to a value they forbid.
+    pool = variant_mask(pack, definition.base, pool, scope)
     weights = pack.weights_for(definition.base)
     # ``omission_weight`` lets a head-phrase modifier -- a word spoken on every
     # entity -- say nothing at all, because a describing word on every entity is
@@ -421,10 +432,15 @@ def _resolve_entity_fields(
         widget = _widget_value(definition, widgets)
         banned = (
             _control_values_ruled_out_by_locks(pack, name, definitions, widgets, keyer)
-            if name in controls
+            if name in controls and name != VARIANT_FIELD
             else frozenset()
         )
         scope = {**scene_scope, **values}
+        if name == VARIANT_FIELD:
+            banned = _variants_ruled_out_by_locks(pack, definitions, widgets, keyer, scope)
+            if banned:
+                # A locked look its variant owns: the variant must be drawn.
+                definition = dataclasses.replace(definition, omission_weight=0.0)
         values[name] = _resolve_one(
             rng, pack, definition, widget, scope, scene_filter, locked_paths, banned
         )
@@ -505,8 +521,57 @@ def _visible_fields(
 
 
 def _control_fields(pack: GenrePack) -> "frozenset[str]":
-    """Every entity control field -- a field that appears in some field's scope."""
-    return frozenset(control for spec in pack.entity_fields.values() for control in spec.scope)
+    """Every entity control field -- a field that appears in some field's scope.
+
+    The variant counts too: it keys no pool, but a re-drawn variant leaves the
+    looks it owned standing, so they must be re-drawn with it.
+    """
+    controls = {control for spec in pack.entity_fields.values() for control in spec.scope}
+    if pack.value_variants:
+        controls.add(VARIANT_FIELD)
+    return frozenset(controls)
+
+
+def _draw_scope(pack: GenrePack, name: str) -> "tuple[str, ...]":
+    """The controls a field's draw reads: its scope, plus the variant that masks it."""
+    spec = pack.entity_fields.get(name) or pack.scene_fields.get(name)
+    scope = tuple(spec.scope) if spec is not None else ()
+    if name in pack.value_variants:
+        variant_spec = pack.entity_fields[VARIANT_FIELD]
+        scope += (VARIANT_FIELD, *variant_spec.scope)
+    return scope
+
+
+def _variants_ruled_out_by_locks(
+    pack: GenrePack,
+    definitions: Mapping[str, FieldDef],
+    widgets: Mapping[str, Any],
+    keyer: "Callable[[str], str]",
+    scope: "Mapping[str, str | None]",
+) -> "frozenset[str]":
+    """Variants that cannot be drawn because a look one of them owns is locked.
+
+    Lock "war-painted hide" and the entity has to be the war-band that owns it,
+    or the mask would hand every other look to a design line that never wears
+    it. Only narrows, like ``_control_values_ruled_out_by_locks``: a lock no
+    offered variant owns, and contradictory locks, ban nothing.
+    """
+    offered = set(pool_for(pack, VARIANT_FIELD, scope))
+    allowed: "set[str] | None" = None
+    for name, owners in pack.value_variants.items():
+        definition = definitions.get(keyer(name))
+        if definition is None:
+            continue
+        value = _widget_value(definition, widgets)
+        if not _is_locked(value):
+            continue
+        holders = set(owners.get(value, ())) & offered
+        if not holders:
+            continue
+        allowed = holders if allowed is None else (allowed & holders)
+    if not allowed:
+        return frozenset()
+    return frozenset(offered - allowed)
 
 
 def _control_values_ruled_out_by_locks(
@@ -665,6 +730,33 @@ def _locked_widget(
         return None
     value = widgets.get(definition.key, definition.default)
     return value if _is_locked(value) else None
+
+
+def _environments_ruled_out_by_scene_locks(
+    pack: GenrePack, definitions: Mapping[str, FieldDef], widgets: Mapping[str, Any]
+) -> "frozenset[str]":
+    """Places a locked scene global cannot be true of.
+
+    Read from the pools and needs alone: a place holds a locked value when its
+    scoped pool offers it and it affords everything the value needs.
+    """
+    legal = pool_options(pack, ENVIRONMENT_FIELD)
+    allowed = set(legal)
+    for name in scene_globals(pack):
+        definition = definitions.get(name)
+        if definition is None:
+            continue
+        value = _widget_value(definition, widgets)
+        if not _is_locked(value):
+            continue
+        holders = {
+            environment for environment in allowed
+            if value in pool_for(pack, name, {ENVIRONMENT_FIELD: environment})
+            and resolved_needs(pack, name, value) <= affordances_of(pack, environment)
+        }
+        if holders:
+            allowed = holders
+    return frozenset(set(legal) - allowed)
 
 
 def _environments_ruled_out_by_state(
@@ -1090,11 +1182,13 @@ def _rescope_slot(
     """
     changed = set(changed)
     controls = _control_fields(pack)
-    for name, spec in pack.entity_fields.items():
-        if name in changed or not (set(spec.scope) & changed):
+    for name in pack.entity_fields:
+        if name in changed or not (set(_draw_scope(pack, name)) & changed):
             continue
         path = slot_path(slot, name)
-        if path in locked_paths or (state.get(path) is None and path not in revive):
+        if path in locked_paths or (
+            state.get(path) is None and path not in revive and name != VARIANT_FIELD
+        ):
             continue
         definition = address_of.get(path)
         if definition is None:
@@ -1114,7 +1208,7 @@ def _rescope_slot(
         definition is not None
         and situation_path not in locked_paths
         and (state.get(situation_path) is not None or situation_path in revive)
-        and set(pack.scene_fields[SITUATION_FIELD].scope) & changed
+        and set(_draw_scope(pack, SITUATION_FIELD)) & changed
     ):
         state[situation_path] = _draw(
             rng, pack, definition, _scope_for(pack, state, situation_path), scene_filter
@@ -1518,11 +1612,11 @@ def _scope_for(
     entity, dot, name = address.partition(".")
     if not dot:
         name, entity = address, ""
-    spec = pack.entity_fields.get(name) or pack.scene_fields.get(name)
-    if spec is None or not spec.scope:
+    controls = _draw_scope(pack, name)
+    if not controls:
         return {}
     scope: dict[str, str | None] = {}
-    for control in spec.scope:
+    for control in controls:
         if control in pack.scene_fields or not entity:
             scope[control] = state.get(control)
         else:
@@ -1647,15 +1741,22 @@ def generate_scene(
     subject_bans = _environments_ruled_out_by_fixed_subjects(
         pack, definitions, widgets, promoted,
     )
+    # A locked placement or place state narrows the place the same way: snow
+    # on the ground is not a promise a sealed vault can keep.
+    scene_lock_bans = _environments_ruled_out_by_scene_locks(pack, definitions, widgets)
+    if scene_lock_bans and len(subject_bans | scene_lock_bans) < len(
+        pool_options(pack, ENVIRONMENT_FIELD)
+    ):
+        subject_bans = subject_bans | scene_lock_bans
     state[ENVIRONMENT_FIELD] = _resolve_one(
         rng, pack, environment_def, environment_widget, {}, scene_filter, locked_paths,
         banned=subject_bans,
     )
     scene_scope: dict[str, str | None] = {ENVIRONMENT_FIELD: state[ENVIRONMENT_FIELD]}
-    context_def = definitions.get(CONTEXT_FIELD)
-    if context_def is not None:
-        state[CONTEXT_FIELD] = _resolve_one(
-            rng, pack, context_def, _widget_value(context_def, widgets),
+    for name in scene_globals(pack):
+        definition = definitions[name]
+        state[name] = _resolve_one(
+            rng, pack, definition, _widget_value(definition, widgets),
             {ENVIRONMENT_FIELD: state[ENVIRONMENT_FIELD]}, scene_filter, locked_paths,
         )
 
@@ -1884,10 +1985,15 @@ def generate_scene(
     # pack's own list and the document still round-trips.
     context_patterns = pack.prose.context_sentences
     here = affordances_of(pack, state.get(ENVIRONMENT_FIELD) or "")
+    # A foreground framing also needs a context that can sit near: "In the
+    # foreground is a ringed moon" puts the sky in front of the subject.
+    context_traits = pack.value_traits.get(CONTEXT_FIELD, {}).get(
+        state.get(CONTEXT_FIELD) or "", frozenset()
+    )
     eligible = [
         index
         for index, pattern in enumerate(context_patterns)
-        if pattern.needs <= here
+        if pattern.needs <= here and pattern.traits <= context_traits
     ]
     context_index = (
         rng.choice(eligible) if eligible and state.get(CONTEXT_FIELD) else None
@@ -1913,6 +2019,14 @@ def generate_scene(
         entities=tuple(entities),
         relations=tuple(relations),
         meta=meta,
+        # A placement places the hero; with slot 1 empty it places nothing.
+        scene_values={
+            name: state.get(name)
+            if 1 in occupied or pack.prose.scene_field_moves.get(name) != MOVE_LEAD
+            else None
+            for name in scene_globals(pack)
+            if name != CONTEXT_FIELD
+        },
     )
     return render_prose(scene, pack), _to_json(pack, scene)
 
@@ -1942,7 +2056,7 @@ def generate_entity(
     widgets = dict(widgets or {})
     warnings: list[str] = []
 
-    definitions = build_field_definitions(pack, ENTITY_NODE_SLOTS)
+    definitions = build_resolution_definitions(pack, ENTITY_NODE_SLOTS)
     address_of = {d.path: d for d in definitions.values() if not d.control}
     locked_paths: set[str] = set()
 
@@ -2047,6 +2161,7 @@ def _to_json(pack: GenrePack, scene: ResolvedScene) -> dict[str, Any]:
     return {
         ENVIRONMENT_FIELD: scene.environment,
         CONTEXT_FIELD: scene.context,
+        **{name: scene.scene_values.get(name) for name in scene_globals(pack) if name != CONTEXT_FIELD},
         "entities": entities,
         RELATION_FIELD + "s": [
             {

@@ -101,11 +101,15 @@ class ResolvedScene:
     #: is what keeps a constraint's ``reason`` string (the pack's one deliberate
     #: exemption from never-negate) out of the prompt.
     meta: Mapping[str, Any] = field(default_factory=dict)
+    #: Every other scene-wide value -- placement, place state -- keyed by field.
+    #: Spoken where ``ProseSpec.scene_field_moves`` says; ``None`` emits nothing.
+    scene_values: Mapping[str, "str | None"] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "entities", tuple(self.entities))
         object.__setattr__(self, "relations", tuple(self.relations))
         object.__setattr__(self, "meta", MappingProxyType(dict(self.meta)))
+        object.__setattr__(self, "scene_values", MappingProxyType(dict(self.scene_values)))
 
     def entity(self, index: int) -> ResolvedEntity | None:
         """The entity in slot ``index``, or ``None`` if the slot is empty."""

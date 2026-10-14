@@ -37,6 +37,8 @@ try:
         CONTEXT_FIELD,
         ENVIRONMENT_FIELD,
         GRAMMAR_SLOTS,
+        MOVE_ENVIRONMENT,
+        MOVE_LEAD,
         POOL_DEFAULT_KEY,
         RELATION_FIELD,
         RELATION_POSITION_FIELD,
@@ -56,6 +58,8 @@ except ImportError:  # pragma: no cover -- standalone/test context
         CONTEXT_FIELD,
         ENVIRONMENT_FIELD,
         GRAMMAR_SLOTS,
+        MOVE_ENVIRONMENT,
+        MOVE_LEAD,
         POOL_DEFAULT_KEY,
         RELATION_FIELD,
         RELATION_POSITION_FIELD,
@@ -522,14 +526,35 @@ def _entity_parts(
 SKYBORNE_LEAD = "High in the sky above, "
 
 
-def _staged(entity: ResolvedEntity, host: GenrePack, environment: "str | None",
+def _scene_moves(scene: ResolvedScene, pack: GenrePack, move: str) -> "list[str]":
+    """The spoken scene globals that take ``move``, in declaration order."""
+    return [
+        spoken_value(pack, name, value)
+        for name, value in scene.scene_values.items()
+        if value and pack.prose.scene_field_moves.get(name) == move
+    ]
+
+
+def _staged(entity: ResolvedEntity, host: GenrePack, scene: ResolvedScene,
             sentences: "list[str]") -> "list[str]":
-    """Lead a skyborne guest's first sentence with where it hangs."""
+    """Lead the first sentence with where the subject is.
+
+    A skyborne guest leads with where it hangs. The hero (slot 1) otherwise
+    leads with its placement in the place -- "At the far end of the hall, a
+    banshee is ..." -- which says where it stands in the world, never where it
+    sits in the picture.
+    """
+    if not sentences:
+        return sentences
     guest = guest_pack(host, {"genre": entity.genre})
-    if not sentences or guest is None or not skyborne(guest, host, entity.fields, environment):
+    if guest is not None and skyborne(guest, host, entity.fields, scene.environment):
+        lead = SKYBORNE_LEAD
+    elif entity.index == 1 and (leads := _scene_moves(scene, host, MOVE_LEAD)):
+        lead = leads[0][:1].upper() + leads[0][1:] + ", "
+    else:
         return sentences
     first = sentences[0]
-    return [SKYBORNE_LEAD + first[:1].lower() + first[1:], *sentences[1:]]
+    return [lead + first[:1].lower() + first[1:], *sentences[1:]]
 
 
 def _render_entity_sentences(entity: ResolvedEntity, pack: GenrePack) -> "list[str]":
@@ -585,7 +610,9 @@ def _sentence(text: str) -> str:
     return _tidy(body if body.endswith(".") else f"{body}.")
 
 
-def _environment_sentence(pack: GenrePack, environment: str) -> str:
+def _environment_sentence(
+    pack: GenrePack, environment: str, states: "list[str] | tuple[str, ...]" = ()
+) -> str:
     """The setting sentence, staged with the first affordance suffix that applies.
 
     A text-to-image model grounds anything it is not told floats: a station in a
@@ -594,6 +621,11 @@ def _environment_sentence(pack: GenrePack, environment: str) -> str:
     """
     template = pack.prose.environment_sentence or _template(pack, ENVIRONMENT_FIELD)
     text = _format(template, spoken_value(pack, ENVIRONMENT_FIELD, environment))
+    # The place's state -- weather, season, what has happened to it -- is part
+    # of the place, so it is said with it: "set in a village green, under a
+    # fresh fall of snow".
+    for state in states:
+        text += f", {state}"
     afforded = affordances_of(pack, environment)
     for affordance, suffix in pack.prose.environment_staging:
         if affordance in afforded:
@@ -720,14 +752,16 @@ def compose_scene(
     sentences: list[str] = []
     for entity in scene.entities:
         sentences.extend(_staged(
-            entity, pack, scene.environment, _render_entity_sentences(entity, pack)
+            entity, pack, scene, _render_entity_sentences(entity, pack)
         ))
     context = _context_sentence(scene, pack)
     if context:
         sentences.append(context)
 
     if scene.environment:
-        sentences.insert(0, _environment_sentence(pack, scene.environment))
+        sentences.insert(0, _environment_sentence(
+            pack, scene.environment, _scene_moves(scene, pack, MOVE_ENVIRONMENT)
+        ))
     elif pack.prose.scene_frame and sentences:
         # No environment to carry the genre, so it is stated on its own. A
         # prompt that never names its genre gets drawn as whatever its nouns
@@ -766,11 +800,13 @@ def render_prose(scene: ResolvedScene, pack: GenrePack) -> str:
     for section in pack.prose.scene_order:
         if section == ENVIRONMENT_FIELD:
             if scene.environment:
-                sections.append(_environment_sentence(pack, scene.environment))
+                sections.append(_environment_sentence(
+                    pack, scene.environment, _scene_moves(scene, pack, MOVE_ENVIRONMENT)
+                ))
         elif section == _ENTITIES_SECTION:
             for entity in scene.entities:
                 sections.extend(_staged(
-                    entity, pack, scene.environment, _render_entity_sentences(entity, pack)
+                    entity, pack, scene, _render_entity_sentences(entity, pack)
                 ))
             context = _context_sentence(scene, pack)
             if context:
