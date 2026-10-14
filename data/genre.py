@@ -38,7 +38,7 @@ from dataclasses import MISSING, dataclass, field, fields as dataclass_fields, r
 from itertools import combinations
 from string import Formatter
 from types import MappingProxyType
-from typing import Any, Mapping
+from typing import Any, Iterator, Mapping
 
 # ---------------------------------------------------------------------------
 # Widget vocabulary
@@ -105,6 +105,21 @@ ENVIRONMENT_FIELD = "environment"
 #: declares no ``context`` field simply renders no context sentence.
 CONTEXT_FIELD = "context"
 SITUATION_FIELD = "situation"
+#: An act's first word that sets the body's posture. A pack tags its forms that
+#: name a posture, and an act naming another overrules them.
+POSTURE_VERBS: dict[str, frozenset[str]] = {
+    "stand": frozenset({
+        "standing", "walking", "striding", "pacing", "lurching", "shambling", "marching", "stalking",
+        "running", "sprinting", "charging", "stepping", "wandering", "limping", "dancing",
+    }),
+    "sit": frozenset({"sitting", "seated"}),
+    "kneel": frozenset({"kneeling"}),
+    "lie": frozenset({"lying", "sprawling", "sprawled", "reclining"}),
+}
+#: A subject's hidden design line (an orc war-band, a mech lineage). Never a
+#: widget: it is drawn per entity and masks the looks it owns -- see
+#: ``variant_mask``. A pack that declares no such field is unaffected.
+VARIANT_FIELD = "variant"
 RELATION_FIELD = "relation"
 RELATION_POSITION_FIELD = "relation_position"
 
@@ -121,6 +136,11 @@ SECOND_ENDPOINT = "second"
 SCENE_FIELD_NAMES: tuple[str, ...] = (
     ENVIRONMENT_FIELD, SITUATION_FIELD, RELATION_FIELD, RELATION_POSITION_FIELD
 )
+
+#: Where a scene global is spoken -- see ``ProseSpec.scene_field_moves``.
+MOVE_ENVIRONMENT = "environment"
+MOVE_LEAD = "lead"
+SCENE_FIELD_MOVES: frozenset[str] = frozenset({MOVE_ENVIRONMENT, MOVE_LEAD})
 
 #: Pool key used when a field has no per-kind override. Reading through to it is
 #: a *documented fallback*, not an accident -- see ``pool_for``.
@@ -260,16 +280,24 @@ class FieldSpec:
     #: field's clause (a count into its noun, a glow colour into its emitter).
     #: Such fields are absent from ``prose.entity_clause_order`` by construction.
     renders_with: str | None = None
-    #: "combo" or "int". Only ``seed`` is an int, but the contract carries the
-    #: distinction rather than special-casing one field name in the node code.
+    #: "combo", "int" or "hidden". Only ``seed`` is an int, but the contract
+    #: carries the distinction rather than special-casing one field name in the
+    #: node code. A hidden field is resolved and written to ``prompt_json`` but
+    #: has no widget, so it never moves the widget order.
     widget: str = "combo"
     #: Widget default. Descriptive fields default to ``RANDOM`` -- full random
     #: with no configuration is the pack's headline behaviour.
     default: Any = RANDOM
 
     def __post_init__(self) -> None:
-        if self.widget not in ("combo", "int"):
-            raise ValueError(f"FieldSpec.widget must be 'combo' or 'int', got {self.widget!r}")
+        if self.widget not in ("combo", "int", "hidden"):
+            raise ValueError(
+                f"FieldSpec.widget must be 'combo', 'int' or 'hidden', got {self.widget!r}"
+            )
+        if self.widget == "hidden" and (self.brief or self.control):
+            raise ValueError(
+                f"hidden field {self.label!r} cannot be brief or a control: it has no widget"
+            )
         if self.control and self.optional:
             raise ValueError(
                 f"control field {self.label!r} cannot be optional: a control is read "
@@ -684,9 +712,16 @@ class Sentence:
     #: until it has a reason to say otherwise. Genre-blind: the engine only
     #: checks that one set of words contains another.
     needs: frozenset[str] = frozenset()
+    #: Traits the drawn value must carry before this sentence may be drawn.
+    #:
+    #: The context counterpart of ``needs``: "In the foreground is a water
+    #: trough" suits a thing that can sit near, and puts a moon in front of the
+    #: subject. Empty means any value; the engine only tests containment.
+    traits: frozenset[str] = frozenset()
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "needs", frozenset(self.needs))
+        object.__setattr__(self, "traits", frozenset(self.traits))
         object.__setattr__(self, "_segments", _parse_sentence(self.text))
 
 
@@ -834,6 +869,13 @@ class ProseSpec:
     #: text-to-image model grounds anything it is not told floats: a station in a
     #: debris belt is drawn standing on the debris.
     environment_staging: tuple[tuple[str, str], ...] = ()
+    #: ``{scene global field: move}`` -- where a scene-wide value beyond the
+    #: context is spoken. ``"environment"`` appends ", {value}" to the setting
+    #: sentence ("Set in a village green, under a fresh fall of snow");
+    #: ``"lead"`` opens the hero's first sentence with it ("At the far end of the
+    #: hall, a banshee is ..."). A scene global with no move is never voiced,
+    #: which construction refuses.
+    scene_field_moves: Mapping[str, str] = field(default_factory=dict)
     #: The context sentence plan, emitted once per scene after the entities when
     #: the pack declares a ``context`` field. One pattern is drawn at random per
     #: scene; ``{context}`` is the value bare, ``{a_context}`` its articled form,
@@ -906,6 +948,13 @@ class ProseSpec:
             self, "environment_staging",
             tuple((affordance, suffix) for affordance, suffix in self.environment_staging),
         )
+        object.__setattr__(self, "scene_field_moves", _freeze(self.scene_field_moves))
+        for name, move in self.scene_field_moves.items():
+            if move not in SCENE_FIELD_MOVES:
+                raise ValueError(
+                    f"scene_field_moves[{name!r}] is {move!r}; expected one of "
+                    f"{sorted(SCENE_FIELD_MOVES)}"
+                )
         self._validate_templates()
 
     def _check_template(self, name: str, template: str) -> None:
@@ -1103,6 +1152,18 @@ class GenrePack:
     #: class, a state). Expanded with ``trait_conflicts`` into ordinary exclusion
     #: rules by genre-blind code; the engine never learns what a trait means.
     value_traits: Mapping[str, Mapping[str, frozenset[str]]] = field(default_factory=dict)
+    #: ``{field: {value: frozenset(variant)}}`` -- which design lines own a look.
+    #:
+    #: An owned value is drawn only when one of its owners is the entity's
+    #: ``VARIANT_FIELD`` value; an unowned one only when no owner of anything in
+    #: that pool was drawn. So "war-painted hide" comes with its war-band and a
+    #: frost-clan orc gets the frost-clan's furs, without either being a scope
+    #: key the node face would have to narrow by. See ``variant_mask``.
+    value_variants: Mapping[str, Mapping[str, frozenset[str]]] = field(default_factory=dict)
+    #: How strongly an act many subjects share is outweighed by one few do.
+    #: Each situation weight is multiplied by ``reach ** -exponent``, where
+    #: reach is the number of subjects whose pool holds the act. 0 is flat.
+    specificity_exponent: float = 0.0
     #: ``{field: {value: stances}}`` -- how a shape can hold itself up. A torus
     #: cannot stand on the ground; a walker chassis cannot hang in vacuum doing
     #: something that needs footing; a world only orbits. Place affordances
@@ -1285,6 +1346,7 @@ class GenrePack:
         object.__setattr__(self, "value_needs", _freeze_nested_sets(self.value_needs))
         object.__setattr__(self, "default_needs", _freeze_nested_sets(self.default_needs))
         object.__setattr__(self, "value_traits", _freeze_nested_sets(self.value_traits))
+        object.__setattr__(self, "value_variants", _freeze_nested_sets(self.value_variants))
         object.__setattr__(self, "value_stances", _freeze_nested_sets(self.value_stances))
         object.__setattr__(self, "place_stances", _freeze_sets(self.place_stances))
         object.__setattr__(
@@ -1458,6 +1520,8 @@ class GenrePack:
                 raise ValueError(f"{name!r} renders_with {spec.renders_with!r}, which is not a field")
 
         self._validate_declarations()
+        self._validate_variants()
+        self._validate_scene_globals()
         self._validate_tiers()
         self._validate_vocabularies()
         self._validate_prose_addresses()
@@ -1491,6 +1555,80 @@ class GenrePack:
                     raise ValueError(
                         f"shared_vocabulary names {name!r}, which is not an entity field"
                     )
+
+    def _validate_variants(self) -> None:
+        """A variant owns real values of real fields, and is drawn before them.
+
+        The mask reads the entity's variant from the values already resolved,
+        so a masked field declared before ``VARIANT_FIELD`` would be drawn
+        against no variant at all. And the variant is never a scope control:
+        the node face narrows a dropdown by its scope, and a field with no
+        widget has nothing to narrow by.
+        """
+        if self.specificity_exponent < 0:
+            raise ValueError(
+                f"specificity_exponent is {self.specificity_exponent}; a negative "
+                "exponent favours the most widely shared acts"
+            )
+        if not self.value_variants:
+            return
+        if VARIANT_FIELD not in self.entity_fields:
+            raise ValueError(
+                f"value_variants is populated but {VARIANT_FIELD!r} is not an entity "
+                "field, so no variant is ever drawn and every owned value is dead"
+            )
+        for name, other in {**self.entity_fields, **self.scene_fields}.items():
+            if VARIANT_FIELD in other.scope:
+                raise ValueError(
+                    f"{name!r} scopes on {VARIANT_FIELD!r}; a variant masks pools, it "
+                    "never keys them"
+                )
+        variants = set(pool_options(self, VARIANT_FIELD))
+        order = tuple(self.entity_fields)
+        for field_name, owned in self.value_variants.items():
+            if field_name == VARIANT_FIELD:
+                raise ValueError(
+                    f"value_variants names {VARIANT_FIELD!r}; a variant owns no variant"
+                )
+            if field_name not in self.entity_fields and field_name not in self.scene_fields:
+                raise ValueError(f"value_variants names {field_name!r}, which is not a field")
+            if (
+                field_name in self.entity_fields
+                and order.index(field_name) < order.index(VARIANT_FIELD)
+            ):
+                raise ValueError(
+                    f"value_variants names {field_name!r}, which resolves before "
+                    f"{VARIANT_FIELD!r}; the mask would never see the variant"
+                )
+            options = set(pool_options(self, field_name))
+            for value, owners in owned.items():
+                if value not in options:
+                    raise ValueError(
+                        f"value_variants[{field_name!r}] names {value!r}, which is not a "
+                        f"value of {field_name!r}"
+                    )
+                for owner in owners:
+                    if owner not in variants:
+                        raise ValueError(
+                            f"value_variants[{field_name!r}][{value!r}] names {owner!r}, "
+                            f"which is not a value of {VARIANT_FIELD!r}"
+                        )
+
+    def _validate_scene_globals(self) -> None:
+        """Every scene-wide field beyond the context has a place to be spoken."""
+        globals_ = scene_globals(self)
+        for name in globals_:
+            if name != CONTEXT_FIELD and name not in self.prose.scene_field_moves:
+                raise ValueError(
+                    f"scene field {name!r} has no prose.scene_field_moves entry, so it "
+                    "would be drawn every render and never voiced"
+                )
+        for name in self.prose.scene_field_moves:
+            if name not in globals_ or name == CONTEXT_FIELD:
+                raise ValueError(
+                    f"prose.scene_field_moves names {name!r}, which is not a scene "
+                    "global of this pack (the context has its own sentence)"
+                )
 
     def _validate_tiers(self) -> None:
         """Structural checks only -- never pool contents.
@@ -2182,7 +2320,8 @@ class GenrePack:
         knowing about the other. A field with no tiers keeps its plain weights
         and is absent from this map; ``weights_for`` falls through to them.
         """
-        if not self.value_tiers:
+        exponent = self.specificity_exponent
+        if not self.value_tiers and not exponent:
             return _EMPTY_MAP
         derived: dict[str, Mapping[str, float]] = {}
         for field_name, tiers in self.value_tiers.items():
@@ -2193,6 +2332,28 @@ class GenrePack:
                     value: base.get(value, 1.0)
                     * self.tier_weights.get(tiers.get(value, ""), 1.0)
                     for value in pool_options(self, field_name)
+                }
+            )
+        # Specificity: an act a hundred subjects share is the act nobody
+        # remembers, and a flat draw spends most scenes on it. Scaling by reach
+        # lets a type's own acts carry it without the engine knowing which those
+        # are. A type that falls through to a shared pool gets one factor on
+        # every value, so its draw is unchanged.
+        if exponent and SITUATION_FIELD in self.pools:
+            current = derived.get(SITUATION_FIELD)
+            if current is None:
+                spec = self.scene_fields.get(SITUATION_FIELD)
+                current = spec.weights if spec is not None and spec.weights else {}
+            # An owned act -- one type's, or one whole group's -- is not
+            # discounted at all: scaling those by reach too would let a type's
+            # one solo act drown the acts its group owns.
+            reach = value_reach(self, SITUATION_FIELD)
+            owned = own_values(self, SITUATION_FIELD)
+            derived[SITUATION_FIELD] = MappingProxyType(
+                {
+                    value: current.get(value, 1.0)
+                    * (1.0 if value in owned else max(1, len(reach.get(value, ()))) ** -exponent)
+                    for value in pool_options(self, SITUATION_FIELD)
                 }
             )
         return MappingProxyType(derived)
@@ -2332,8 +2493,7 @@ def constraint_address_space(pack: GenrePack, slots: int = SCENE_NODE_SLOTS) -> 
 
     ``entity5.kind`` is outside the space, because ``slots`` is what a scene has.
     """
-    space = {ENVIRONMENT_FIELD}
-    space.add(CONTEXT_FIELD)
+    space = {ENVIRONMENT_FIELD, CONTEXT_FIELD, *scene_globals(pack)}
     for slot in range(1, slots + 1):
         space.add(slot_path(slot, SITUATION_FIELD))
         for name in pack.entity_fields:
@@ -2635,6 +2795,102 @@ def type_field(pack: GenrePack) -> str | None:
     return None
 
 
+def subjects(pack: GenrePack) -> "Iterator[tuple[str, str | None]]":
+    """Every ``(kind, type)`` a scene can hold; ``(kind, None)`` for a kind with no types."""
+    name = type_field(pack)
+    for kind in pack.kinds:
+        values = pool_for(pack, name, {KIND_FIELD: kind}) if name else ()
+        for value in values or (None,):
+            yield kind, value
+
+
+def scene_globals(pack: GenrePack) -> tuple[str, ...]:
+    """The scene-wide fields drawn once per scene: the context, placement and so on.
+
+    Every ``scene_fields`` entry that is not one of the fixed four, in
+    declaration order -- which is also their widget order, after the relations.
+    """
+    return tuple(name for name in pack.scene_fields if name not in SCENE_FIELD_NAMES)
+
+
+def variant_mask(
+    pack: GenrePack, field: str, pool: "list[str]", scope: Mapping[str, str | None]
+) -> "list[str]":
+    """``pool`` narrowed to what the entity's variant allows.
+
+    ``scope`` carries the entity's resolved values, its variant among them.
+    Ownership is judged against the variants *this* subject is offered, so a
+    look owned only by another type's variant is neutral here. With a variant
+    drawn, the values it owns are the pool, else the neutral ones; with none,
+    the neutral ones. A mask that would empty the pool returns it whole --
+    re-drawn, never nulled.
+    """
+    owners = pack.value_variants.get(field)
+    if not owners or VARIANT_FIELD not in pack.entity_fields:
+        return pool
+    offered = set(pool_for(pack, VARIANT_FIELD, scope))
+    if not offered:
+        return pool
+    claimed = {value: owners.get(value, frozenset()) & offered for value in pool}
+    variant = scope.get(VARIANT_FIELD)
+    if variant is not None:
+        owned = [value for value in pool if variant in claimed[value]]
+        if owned:
+            return owned
+    return [value for value in pool if not claimed[value]] or pool
+
+
+def subject_scope(pack: GenrePack, kind: str, value: str | None) -> dict[str, str]:
+    """The scope a ``(kind, type)`` subject resolves its pools under."""
+    scope = {KIND_FIELD: kind}
+    name = type_field(pack)
+    if name and value is not None:
+        scope[name] = value
+    return scope
+
+
+def value_reach(
+    pack: GenrePack, field_name: str, honour_omits: bool = False
+) -> "dict[str, list[tuple[str, str | None]]]":
+    """``{value: [(kind, type), ...]}`` -- every subject whose resolved pool holds the value.
+
+    With ``honour_omits``, a subject whose archetype omits the field reaches
+    nothing there: it never draws the field, so a part it would fall through to
+    cannot misfit its body. A wreck's archetype omits ``emitters``, and the
+    default emitter pool is not its vocabulary. The shadowed-value check keeps
+    the plain reach, because an omitted pool is still authored vocabulary."""
+    reach: dict[str, list[tuple[str, str | None]]] = {}
+    for kind, value in subjects(pack):
+        scope = subject_scope(pack, kind, value)
+        if honour_omits:
+            archetype = archetype_for(pack, scope)
+            if archetype is not None and field_name in archetype.omits:
+                continue
+        for option in pool_for(pack, field_name, scope):
+            reach.setdefault(option, []).append((kind, value))
+    return reach
+
+
+def own_values(pack: GenrePack, field_name: str) -> "dict[str, set[str]]":
+    """``{value: owners}`` for every value some group or type owns.
+
+    An owner is a type's group, or the type (or kind) itself when ungrouped. A
+    value is owned when at most three subjects hold it, or when every holder is
+    in one group: a group of eleven heavy mechs owns the acts all eleven share
+    and nobody else draws."""
+    group_of = {
+        member: group
+        for group, members in (pack.pool_groups.get(type_field(pack) or "") or {}).items()
+        for member in members
+    }
+    owned: dict[str, set[str]] = {}
+    for option, holders in value_reach(pack, field_name).items():
+        keys = {group_of.get(value, value) if value else kind for kind, value in holders}
+        if len(holders) <= 3 or len(keys) == 1:
+            owned[option] = keys
+    return owned
+
+
 def _stance_scope(pack: GenrePack, kind: str, value: str | None) -> dict[str, str]:
     scope = {KIND_FIELD: kind}
     name = type_field(pack)
@@ -2723,17 +2979,18 @@ def _values_with_trait(pack: GenrePack, field: str, trait: str) -> tuple[str, ..
         value for value, traits in pack.value_traits[field].items() if trait in traits
     )
 
-def _trait_address(pack: GenrePack, field_name: str) -> str:
+def _trait_address(pack: GenrePack, field_name: str, hero: bool = False) -> str:
     """Where a trait's field sits in a rule: bare for a scene-global field, per slot otherwise.
 
     ``context`` is drawn once per scene, so ``entity*.context`` is no address at all; the
     situation and the relations are scene fields that still belong to a slot or a pair.
+    ``hero`` binds a per-slot field to slot 1 instead of every slot.
     """
     if field_name in pack.scene_fields and field_name not in (
         SITUATION_FIELD, RELATION_FIELD, RELATION_POSITION_FIELD,
     ):
         return field_name
-    return f"entity*.{field_name}"
+    return slot_path(LONE_ENTITY_SLOT, field_name) if hero else f"entity*.{field_name}"
 
 def _expand_traits(pack: GenrePack) -> tuple[ConstraintRule, ...]:
     """Expand ``trait_conflicts`` into ordinary multi-value exclusion rules.
@@ -2756,12 +3013,18 @@ def _expand_traits(pack: GenrePack) -> tuple[ConstraintRule, ...]:
                 targets = _values_with_trait(pack, target_field, target_trait)
                 if not targets:
                     continue
+                # Placement says where the *hero* stands, so its conflicts bind
+                # to slot 1 rather than to every slot.
+                hero = any(
+                    pack.prose.scene_field_moves.get(name) == MOVE_LEAD
+                    for name in (trigger_field, target_field)
+                )
                 rules.append(
                     ConstraintRule(
                         type=RULE_EXCLUDE,
-                        field=_trait_address(pack, trigger_field),
+                        field=_trait_address(pack, trigger_field, hero),
                         values=triggers,
-                        excludes_field=_trait_address(pack, target_field),
+                        excludes_field=_trait_address(pack, target_field, hero),
                         excludes_values=targets,
                         reason=pack.trait_reasons.get(
                             f"{trigger_trait}|{target_trait}",
@@ -3267,6 +3530,11 @@ def _definition(
     )
 
 
+def widget_fields(pack: GenrePack) -> tuple[str, ...]:
+    """The entity fields a node shows as widgets: every one but the hidden draws."""
+    return tuple(n for n, s in pack.entity_fields.items() if s.widget != "hidden")
+
+
 def _brief_field_names(pack: GenrePack) -> tuple[str, ...]:
     """What a supporting slot carries when nothing is wired into it.
 
@@ -3323,12 +3591,12 @@ def build_field_definitions(pack: GenrePack, slots: int) -> "OrderedDict[str, Fi
         )
 
     if slots == ENTITY_NODE_SLOTS:
-        for name, spec in pack.entity_fields.items():
+        for name in widget_fields(pack):
             definitions[name] = _definition(
                 key=name,
                 path=slot_path(LONE_ENTITY_SLOT, name),
                 base=name,
-                spec=spec,
+                spec=pack.entity_fields[name],
                 options=pool_options(pack, name),
                 slot=LONE_ENTITY_SLOT,
             )
@@ -3348,7 +3616,7 @@ def build_field_definitions(pack: GenrePack, slots: int) -> "OrderedDict[str, Fi
     for slot in range(1, slots + 1):
         # Slot 1 carries the whole morphology so the core node is never a stub;
         # supporting slots stay brief until a Scene Entity is wired into them.
-        names = tuple(pack.entity_fields) if slot == 1 else brief
+        names = widget_fields(pack) if slot == 1 else brief
         for name in names:
             # Every slot's kind defaults to "Random". An untouched node is still
             # one entity, because ``entity_count`` defaults to 1 and slots past
@@ -3401,14 +3669,15 @@ def build_field_definitions(pack: GenrePack, slots: int) -> "OrderedDict[str, Fi
             endpoints=(first, second),
         )
 
-    context_spec = pack.scene_fields.get(CONTEXT_FIELD)
-    if context_spec is not None:
-        definitions[CONTEXT_FIELD] = _definition(
-            key=CONTEXT_FIELD,
-            path=CONTEXT_FIELD,
-            base=CONTEXT_FIELD,
-            spec=context_spec,
-            options=pool_options(pack, CONTEXT_FIELD),
+    # The context, then every later scene global, appended after the relations
+    # so a saved workflow's widget positions never move.
+    for name in scene_globals(pack):
+        definitions[name] = _definition(
+            key=name,
+            path=name,
+            base=name,
+            spec=pack.scene_fields[name],
+            options=pool_options(pack, name),
         )
 
     return definitions
@@ -3441,6 +3710,19 @@ def build_resolution_definitions(
     """
     definitions = build_field_definitions(pack, slots)
     if slots == ENTITY_NODE_SLOTS:
+        # A hidden field has no widget on this node either, and is keyed bare
+        # like the rest so the engine's keyer finds it.
+        for name, spec in pack.entity_fields.items():
+            if name not in definitions:
+                definitions[name] = _definition(
+                    key=name,
+                    path=slot_path(LONE_ENTITY_SLOT, name),
+                    base=name,
+                    spec=spec,
+                    options=pool_options(pack, name),
+                    slot=LONE_ENTITY_SLOT,
+                    default=RANDOM,
+                )
         return definitions
     for slot in range(1, slots + 1):
         for name, spec in pack.entity_fields.items():

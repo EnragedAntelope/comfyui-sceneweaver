@@ -1,6 +1,6 @@
 """Reach audit -- a value nobody draws is dead.
 
-    python scripts/reach_audit.py --seeds 12000 [--path wired|unwired|both] [--gate]
+    python scripts/reach_audit.py --seeds 12000 [--path wired|unwired|locked|both] [--gate]
     python scripts/reach_audit.py --explain "luminous flank slit"
 
 ``check_shadowed_values`` in ``tests/validate_data.py`` proves a value is *reachable*: some
@@ -53,28 +53,6 @@ FIELDS = tuple(sorted(
 ))
 
 
-def _subjects(pack):
-    """Every ``(kind, type)`` a scene can hold; ``(kind, None)`` for a kind with no types."""
-    name = G.type_field(pack)
-    for kind in pack.kinds:
-        values = G.pool_for(pack, name, {G.KIND_FIELD: kind}) if name else ()
-        for value in values or (None,):
-            yield kind, value
-
-
-def _reach(pack, field_name):
-    """``{value: [(kind, type), ...]}`` -- every subject whose resolved pool holds the value."""
-    name = G.type_field(pack)
-    reach: dict[str, list[tuple[str, str | None]]] = {}
-    for kind, value in _subjects(pack):
-        scope = {G.KIND_FIELD: kind}
-        if name and value is not None:
-            scope[name] = value
-        for option in G.pool_for(pack, field_name, scope):
-            reach.setdefault(option, []).append((kind, value))
-    return reach
-
-
 def _exempt(field, value, reach):
     """Whether a never-drawn value is excused rather than dead."""
     if G.pool_keys_for_value(P, field, value) == (G.POOL_DEFAULT_KEY,):
@@ -90,27 +68,90 @@ def _exempt(field, value, reach):
     return True
 
 
-def _sweep(path, seeds):
-    """Count every non-None value of every field over ``seeds`` scenes on ``path``."""
+def _scenes(path, seeds):
+    """Yield ``(text, document)`` for ``seeds`` one-entity scenes on ``path``."""
     rng = random.Random(_SEED)
-    counts = {field: Counter() for field in FIELDS}
+    # 0.8.0: the locked path gives every subject the same share of scenes, so a
+    # one-type value is not left to how often a random scene happens to pick its type.
+    subjects = list(G.subjects(P))
+    type_widget = f"entity1_{G.type_field(P)}"
     for index in range(seeds):
-        if path == "wired":
+        if path == "locked":
+            kind, value = subjects[index % len(subjects)]
+            widgets = {"entity1_kind": kind} | ({type_widget: value} if value else {})
+            yield generate_scene(rng.randrange(2**48), P, widgets=widgets, entity_count=1)
+        elif path == "wired":
             _text, payload = generate_entity(rng.randrange(2**48), P)
-            _text, document = generate_scene(
+            yield generate_scene(
                 rng.randrange(2**48), P, wired_entities={1: payload}, entity_count=1
             )
         else:
-            _text, document = generate_scene(rng.randrange(2**48), P, entity_count=1)
+            yield generate_scene(rng.randrange(2**48), P, entity_count=1)
+        done = index + 1
+        if done % _PROGRESS == 0:
+            print(f"  {path}: {done}/{seeds} scenes", flush=True)
+
+
+def _sweep(path, seeds):
+    """Count every non-None value of every field over ``seeds`` scenes on ``path``."""
+    counts = {field: Counter() for field in FIELDS}
+    for _text, document in _scenes(path, seeds):
         record = document["entities"][0] if document["entities"] else {}
         for field in FIELDS:
             value = document.get(field) if field in _SCENE_FIELDS else record.get(field)
             if value is not None:
                 counts[field][value] += 1
-        done = index + 1
-        if done % _PROGRESS == 0:
-            print(f"  {path}: {done}/{seeds} scenes", flush=True)
     return counts
+
+
+#: The fields that put a face on the subject; their share is reported, not gated.
+_FACE_FIELDS = ("sensors", "aperture")
+
+
+def _variety(path, seeds):
+    """Print the look and act variety a user actually sees, per pack.
+
+    The numbers the 0.8.0 floors are judged by: distinct ``(variant, form)``
+    silhouettes per type, the share of drawn acts that are the subject's own,
+    the most common opening verb, how often the context goes unsaid, and how
+    often a face is named.
+    """
+    name = G.type_field(P)
+    owned = G.own_values(P, G.SITUATION_FIELD)
+    looks: dict[str, set] = {}
+    draws: Counter = Counter()
+    verbs: Counter = Counter()
+    acts = own = no_context = faces = 0
+    for _text, document in _scenes(path, seeds):
+        if document.get(G.CONTEXT_FIELD) is None:
+            no_context += 1
+        if not document["entities"]:
+            continue
+        record = document["entities"][0]
+        subject = record.get(name) or record.get(G.KIND_FIELD)
+        draws[subject] += 1
+        looks.setdefault(subject, set()).add((record.get("variant"), record.get(G.STANCE_FIELD)))
+        if any(record.get(field) for field in _FACE_FIELDS):
+            faces += 1
+        act = record.get(G.SITUATION_FIELD)
+        if act:
+            acts += 1
+            own += act in owned
+            verbs[act.split()[0]] += 1
+    top_verb, top_count = verbs.most_common(1)[0] if verbs else ("-", 0)
+    silhouettes = sorted((len(v), k) for k, v in looks.items())
+    thin = [k for n, k in silhouettes if n < 8 and draws[k] >= 30]
+    print(f"\nvariety -- {path} path, {seeds} scenes")
+    print(f"  own-act share        {own / max(acts, 1):6.1%}   (held by <= 3 types or one group)")
+    print(f"  top first verb       {top_count / max(acts, 1):6.1%}   ({top_verb!r})")
+    print(f"  context absent       {no_context / seeds:6.1%}")
+    print(f"  face named           {faces / seeds:6.1%}")
+    median = silhouettes[len(silhouettes) // 2][0] if silhouettes else 0
+    print(f"  silhouettes / type   median {median}, types drawn {len(silhouettes)}")
+    print(f"  under 8 silhouettes  {len(thin)} types drawn 30+ times")
+    if thin:
+        print("    " + ", ".join(thin[:40]) + (" ..." if len(thin) > 40 else ""))
+    return thin
 
 
 def _report(label, counts):
@@ -123,7 +164,7 @@ def _report(label, counts):
         options = G.pool_options(P, field)
         seen = counts[field]
         never = [value for value in options if value not in seen]
-        reach = _reach(P, field)
+        reach = G.value_reach(P, field)
         exempt = {value for value in never if _exempt(field, value, reach)}
         dead = [value for value in never if value not in exempt]
         dead_by_field[field] = dead
@@ -148,7 +189,7 @@ def _explain(value):
         if value not in G.pool_options(P, field):
             continue
         found = True
-        reach = _reach(P, field)
+        reach = G.value_reach(P, field)
         print(f"{field}: {value!r}")
         print(f"  pool keys: {G.pool_keys_for_value(P, field, value)}")
         print(f"  subjects: {reach.get(value, [])}")
@@ -164,9 +205,11 @@ def _explain(value):
 def main(argv: "list[str] | None" = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--seeds", type=int, default=12000)
-    parser.add_argument("--path", choices=("wired", "unwired", "both"), default="both")
+    parser.add_argument("--path", choices=("wired", "unwired", "locked", "both"), default="both")
     parser.add_argument("--gate", action="store_true")
     parser.add_argument("--explain", default="", metavar="VALUE")
+    parser.add_argument("--variety", action="store_true", help="report look and act variety")
+    parser.add_argument("--seed", type=int, default=4242, help="sweep seed (--variety)")
     parser.add_argument("--pack", choices=("scifi", "fantasy", "horror"), default="scifi")
     args = parser.parse_args(argv)
     if args.pack == "fantasy":
@@ -177,7 +220,12 @@ def main(argv: "list[str] | None" = None) -> int:
     logging.getLogger("sceneweaver").setLevel(logging.ERROR)
     if args.explain:
         return _explain(args.explain)
-    paths = ("wired", "unwired") if args.path == "both" else (args.path,)
+    paths = ("wired", "unwired", "locked") if args.path == "both" else (args.path,)
+    if args.variety:
+        global _SEED
+        _SEED = args.seed
+        thin = [_variety(path, args.seeds) for path in paths if path != "locked"]
+        return 1 if args.gate and any(thin) else 0
     merged = {field: Counter() for field in FIELDS}
     dead_by_field: dict[str, list[str]] = {}
     for path in paths:

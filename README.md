@@ -132,6 +132,15 @@ Every dropdown offers `Random`, then its values, then `None`:
 Locking is the whole workflow: find a creature you like, pin the two or three
 fields that made it work, and generate a hundred variations of *that*.
 
+Two scene dropdowns sit right after **Context**:
+
+* **Placement**: where the subject is in the place, such as "at the far end of
+  the hall" or "half-hidden among the reeds". It never says anything about the
+  camera. Set it to `None` if your own prompt already frames the shot.
+* **Place state**: the weather, the season, or what has happened to the place,
+  such as "under a fresh fall of snow", "freshly ransacked" or "scorched by a
+  recent wildfire".
+
 Coherence is enforced while it draws, not patched afterwards. Pick
 **Type: gas giant** and the **Form** dropdown narrows, live, to sphere shapes -
 you will not get a gas giant shaped like a spiral coil, or a gelatinous mass

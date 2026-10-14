@@ -1022,5 +1022,27 @@ class FeasibilitySeamTests(unittest.TestCase):
                     self.assertNotEqual(record["kind"], BEAST)
 
 
+class SpecificityTests(unittest.TestCase):
+    """An owned act keeps its weight; a shared act is discounted by its reach."""
+
+    def test_owned_acts_are_not_discounted_and_shared_ones_are(self) -> None:
+        from data.genre import SITUATION_FIELD, own_values, value_reach
+        from data.scifi import SCIFI_PACK as pack
+
+        weights = pack.weights_for(SITUATION_FIELD)
+        owned = own_values(pack, SITUATION_FIELD)
+        reach = value_reach(pack, SITUATION_FIELD)
+        tiers = pack.value_tiers.get(SITUATION_FIELD, {})
+        base = lambda v: pack.tier_weights.get(tiers.get(v, ""), 1.0)  # noqa: E731
+        solo = next(v for v in owned if len(reach[v]) == 1)
+        group = next(v for v in owned if len(reach[v]) > 3)
+        shared = max((v for v in reach if v not in owned), key=lambda v: len(reach[v]))
+        self.assertAlmostEqual(weights[solo] / base(solo), 1.0)
+        self.assertAlmostEqual(weights[group] / base(group), 1.0)
+        self.assertAlmostEqual(
+            weights[shared] / base(shared), len(reach[shared]) ** -pack.specificity_exponent
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

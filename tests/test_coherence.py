@@ -47,6 +47,7 @@ from data.genre import (
     is_classified,
     pool_for,
     pool_options,
+    scene_globals,
     spoken_value,
 )
 from data.scifi import SCIFI_PACK, _FLOOR_BOUND
@@ -123,6 +124,7 @@ def _scene(document) -> ResolvedScene:
         environment=document["environment"],
         context=document.get("context"),
         context_sentence_index=document["_meta"].get("context_sentence_index"),
+        scene_values={name: document.get(name) for name in scene_globals(SCIFI_PACK) if name != "context"},
         entities=tuple(_entities(document)),
         relations=tuple(
             ResolvedRelation(endpoints=tuple(record["endpoints"]), value=record["value"], position=record.get("position"))
@@ -742,10 +744,12 @@ class ArchetypeShapeTests(unittest.TestCase):
                 archetype = SCIFI_PACK.archetypes.get(name) if name else None
                 if archetype is None or archetype.detail_cap is None:
                     continue
+                # The variant is a design word on top of the cap, never a
+                # clause the cap counts (engine/budget.py).
                 spoken = [
                     n
                     for n in self._HEADS
-                    if n != KIND_FIELD and record.get(n) is not None
+                    if n not in (KIND_FIELD, "variant") and record.get(n) is not None
                 ]
                 with self.subTest(seed=seed, archetype=name):
                     self.assertLessEqual(len(spoken), archetype.detail_cap)

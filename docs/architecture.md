@@ -2836,3 +2836,139 @@ the report's failure pattern is a subject that sits in frame doing nothing.
   pins each card. A "says clock" row in `tests/test_concern_regressions.py`
   locks each construct subkind in turn; a planted "clockwork brass hound" proved
   it fails.
+
+## Round XXX: variety (0.8.0)
+
+The maintainer's report: output read like a premade scene picked from a list.
+Orcs, mechs and elementals always looked alike, acts and settings repeated,
+and the subject always stood centred and faced the viewer. Every earlier round
+had only removed values, and nothing measured look variety per type. Four
+causes: look pools were shallow and a subkind pool hid its kind pool; acts were
+drawn from shared cores weighted like a type's own acts; a place had no state;
+and nothing placed the subject, while face fields were spoken in most fantasy
+and horror prompts.
+
+### Mechanisms
+
+- **Variant, a hidden draw** (`VARIANT_FIELD`, `FieldSpec.widget="hidden"`). It
+  has no widget, is written to `prompt_json` and is spoken as a head modifier.
+  **A variant is a mask, not a scope.** The values it owns are authored into the
+  type's own pool literals and marked in `GenrePack.value_variants`;
+  `variant_mask` in `data/genre.py` keeps only the drawn variant's values, or
+  only neutral values when none is drawn. "Neutral" is judged against the
+  variants this subject is offered. If the bans empty the masked pool, the draw
+  falls back to the unmasked pool. A locked owned value forces its variant.
+  `variant` is a control field, so a re-drawn variant re-scopes its looks. An
+  archetype that offers variants gets one more detail slot; every other
+  archetype omits the field.
+- **Owned acts outweigh shared ones.** `own_values` names the values held by 3
+  types or fewer, or by one group only. `_derive_weights` leaves owned acts at
+  full weight and multiplies a shared act by `reach ** -specificity_exponent`
+  (0.5 in every pack). An exponent of 1.0 was tried and rejected: one bard act
+  took 63% of the bard's draws.
+- **Scene globals.** `scene_globals(pack)` covers every scene field that is not
+  a core field, in declaration order (context, staging, aspect). It replaces
+  context's six hard-wired paths.
+  - **Placement** (`staging`) is a lead move: "At the far end of the hall, a
+    ...". **Placement is relative to the place, never the camera:** how far off
+    the subject is and what it stands beside, never the frame, an angle or "the
+    viewer". Pose and heading stay the act's job.
+  - **Place state** (`aspect`) is an environment move: "set in a village green,
+    under a fresh fall of snow". It covers weather, season and what has
+    happened to the place, never the time of day or the light. Values need,
+    never grant.
+  - Both are widgets after Context, so the JS order still equals the schema.
+- **Foreground framings.** "In the foreground is {a_context}." is eligible only
+  when its `Sentence.traits` are a subset of the drawn context's traits. Only
+  human-scale context values carry `near-prop`. The framings sit at the end of
+  `context_sentences`, so saved indices keep their meaning.
+
+### Floors (`check_variety_floors`, check 35)
+
+Each fails by name: FORMFLOOR (4 forms per bodied type), VARIANTFLOOR (3
+variants where an archetype speaks them), ACTSPEC (6 owned acts per group or
+ungrouped type), CONTEXTFLOOR (4 contexts per place), STAGEFLOOR (4 placements),
+ASPECTFLOOR (6 outdoor, 4 interior), VIEWER (no act says "the viewer") and
+FRAMING (no framing gated on a trait no context carries). The sweep rates come
+from `scripts/reach_audit.py --variety`.
+
+### Measured
+
+Default node, slot 1. Main is v0.7.0. The branch was measured at 4000 scenes on
+two seeds, wired and unwired.
+
+| Measure | main | branch: sci-fi / fantasy / horror |
+| --- | --- | --- |
+| context absent | 50% / 55% / 62% | 26-28% / 21-22% / 21-22% |
+| own-act share | about 17% | 44% / 40-41% / 49% |
+| (variant, form) silhouettes per type, median | not measured (types with 2 forms or fewer: 45 / 114 / 54) | 14 / 11-12 / 15-16 |
+| top first verb | not measured | 2.6-2.9% / 2.5-2.7% / 3.4-3.9% |
+
+The types under 8 silhouettes are the worlds and phenomena that omit the
+variant (black hole, rogue planet, star, energy beings and drifters). No type's
+most common act exceeds 35% of its draws.
+
+### Render test
+
+A seeded batch, 12 scenes per pack (4 of them through Stylebook), was rendered
+through the Krea2 graph. Prompts came from the branch engine as plain text,
+because the live ComfyUI still ran 0.7.0. Placement, Place state and the
+foreground framings all drew as written. Two shared pools reached the wrong
+place: "half-hidden in the long grass" in snowbound pine woods, and
+"half-flooded" in an attic. The room pools in horror and fantasy now say "with
+rainwater pooled across the floor", and the wilds placement says "beside a
+fallen trunk". A regression row for each is in
+`tests/test_concern_regressions.py`; both were proved to fail on the old data.
+
+The maintainer's review of the same batch found eight more. Each fix covers the
+whole class, not only the drawn value, and has a regression row proved to fail
+on the old data:
+
+| Rendered | Cause | Fix |
+| --- | --- | --- |
+| A merfolk held a spear and a second weapon | "brandishing a weapon high" names a weapon apart from the one carried | Every generic weapon act is possessive: "their weapon", "its massive weapon" |
+| A resting revenant's axe floated beside it | A dormant act with a held weapon | `dormant-act` conflicts with `held-weapon` (fantasy, horror) |
+| A standing doll sat with a knife in its lap | The form names a posture the act contradicts | `POSTURE_VERBS` in `data/genre.py`; a posture form gives way to an act naming another |
+| Netting on a revenant's back | "net-tangled rags" | "kelp-wound rags" |
+| A campfire inside a church | "fire-gutted", "fire-blackened stone" render as live fire | No horror look says "fire-": soot-blackened, heat-scarred, gutted |
+| Cloth on a highway fence | "hung with torn plastic sheeting" | "topped with coiled razor wire" |
+| A giant tube out of a wreck | "trailing a torn length of ducting" | "venting a thin spray of frozen coolant" |
+| A wreck drawn as a sailing ship; drones as one walker | "bow section", "snapped spar", "by salvage drones" | Wreck looks say girder and forward hull; "the cutting beams of small drones" |
+
+Two more were the model or a Stylebook style (a wire sculpture style drew wire
+and cable) and were left alone.
+
+A second batch, two subtypes of every kind in each pack, found eight more:
+
+| Rendered | Cause | Fix |
+| --- | --- | --- |
+| A faun drawn as a goat | "lowering its head" for a subject the prose calls "they" | Every act speaks its subject's pronoun; `PronounTests` sweeps all three packs |
+| Coins among spiders | "coin-sized spiders" | "little spiders" |
+| A hall clock in a supermarket | Furnishings needed only a room | A grandfather clock and a family picture need `domestic` |
+| A bone revenant with a third arm | Horror's undead weapons were not `carried-weapon`, so clawing acts kept them | Tagged; clawing, dragging and prying acts are `both-hands-act` (fantasy too) |
+| A skeleton eating raw meat | Feeding acts had no flesh need | Tagged `flesh-intact` |
+| A scythe on a chariot | "scythe-wheeled frame" | "frame with bladed wheel hubs" |
+| A green flame on a chain | A bare "spectral flame" emitter | "spectral flame burning in its chest" |
+| A flyer pushing a dumpster | "sweeping a sampling scoop" | "skimming through an ash plume to take samples" |
+
+A sky galleon drawn on the forest floor was the model: its act says it glides
+over the treetops.
+
+### Lessons
+
+- Judge `tests/validate_data.py` by its exit code. Its last line is horror's
+  OK and hides a sci-fi failure above it.
+- A wreck act must also be listed in sci-fi's `DORMANT_ACTS`.
+- Needs are all-of. A sky-weather Place state needs `air` as well as its own
+  needs.
+- A shared Place state or Placement pool must fit every storey and season of
+  every place that draws it. If it doesn't, key the value to the place.
+- New looks count toward the motif ceilings. CI caught the sci-fi "ring" motif
+  at 23% (ceiling 15%), from "ring-shaped drone body", a "ringed" variant and a
+  quarantine state "ringed by" beacons. They now say "hoop-framed", "segment-banded"
+  and "cordoned off". Run every `ci.yml` step locally, including
+  `sample_distribution.py`, before pushing.
+- A word that names a thing renders the thing. "Fire-gutted" draws a fire,
+  "net-tangled" draws a net, "spar" and "bow" draw a sailing ship, and "a
+  weapon" next to a carried spear draws two weapons. Say the damage or the
+  owner, not the object.

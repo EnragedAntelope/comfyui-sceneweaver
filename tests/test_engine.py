@@ -86,7 +86,8 @@ class JsonSchemaTests(unittest.TestCase):
 
     def test_the_top_level_shape(self) -> None:
         self.assertEqual(
-            set(self.document), {"environment", "context", "entities", "relations", "_meta"}
+            set(self.document),
+            {"environment", "context", "staging", "aspect", "entities", "relations", "_meta"},
         )
 
     def test_the_meta_block(self) -> None:

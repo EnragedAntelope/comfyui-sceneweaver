@@ -48,6 +48,9 @@ from tests._loader import REPO_ROOT, load_entrypoint
 #: unambiguous.
 CUSTOM_COLOUR = "zzz-test-hunter-green"
 CUSTOM_SITUATION = "zzz-test drifting past a survey buoy"
+#: Every starship subkind reads a situation pool of its own, so a value keyed by
+#: the kind is read through one of them.
+SCOUT = {"kind": "starship", "subkind": "scout ship"}
 
 DOCUMENT = {
     "pools": {
@@ -64,13 +67,13 @@ class MergeTests(unittest.TestCase):
 
     def test_a_custom_value_joins_its_pool(self) -> None:
         self.assertIn(CUSTOM_COLOUR, pool_for(self.merged, "primary_color"))
-        self.assertIn(CUSTOM_SITUATION, pool_for(self.merged, "situation", "starship"))
+        self.assertIn(CUSTOM_SITUATION, pool_for(self.merged, "situation", SCOUT))
 
     def test_the_built_in_pack_is_left_alone(self) -> None:
         """A pack is frozen and shared process-wide; a merge that appended in
         place would leak one caller's additions into every other reader."""
         self.assertNotIn(CUSTOM_COLOUR, pool_for(SCIFI_PACK, "primary_color"))
-        self.assertNotIn(CUSTOM_SITUATION, pool_for(SCIFI_PACK, "situation", "starship"))
+        self.assertNotIn(CUSTOM_SITUATION, pool_for(SCIFI_PACK, "situation", SCOUT))
 
     def test_a_custom_value_becomes_a_widget_option(self) -> None:
         """Pools are not enough: a value a user cannot select is not an option."""
@@ -86,8 +89,8 @@ class MergeTests(unittest.TestCase):
         self.assertEqual(document["entities"][0]["primary_color"], CUSTOM_COLOUR)
 
     def test_a_custom_tag_is_read_by_the_content_filter(self) -> None:
-        peaceful = filtered_pool(self.merged, "situation", "starship", "Peaceful")
-        conflict = filtered_pool(self.merged, "situation", "starship", "Conflict")
+        peaceful = filtered_pool(self.merged, "situation", SCOUT, "Peaceful")
+        conflict = filtered_pool(self.merged, "situation", SCOUT, "Conflict")
         self.assertIn(CUSTOM_SITUATION, peaceful)
         self.assertNotIn(CUSTOM_SITUATION, conflict)
 
@@ -97,7 +100,7 @@ class MergeTests(unittest.TestCase):
             with self.subTest(scene_filter=scene_filter):
                 self.assertIn(
                     CUSTOM_SITUATION,
-                    filtered_pool(merged, "situation", "starship", scene_filter),
+                    filtered_pool(merged, "situation", SCOUT, scene_filter),
                 )
 
     def test_the_merge_is_idempotent(self) -> None:
@@ -173,7 +176,7 @@ class BadFileTests(unittest.TestCase):
             merged = merge_user_options(SCIFI_PACK, document, sections=("fantasy", "horror"))
         self.assertIn("hunter green", pool_for(merged, "primary_color"))
         self.assertIn("running dark past a picket line",
-                      merged.pools["situation"]["starship"])
+                      pool_for(merged, "situation", SCOUT))
 
 
 ALL_PACKS = (SCIFI_PACK, FANTASY_PACK, HORROR_PACK)
@@ -205,10 +208,10 @@ class KeyedByWhereItIsReadTests(unittest.TestCase):
 
     def test_a_kind_keyed_value_still_works_where_the_kind_key_is_read(self) -> None:
         merged = merge_user_options(
-            SCIFI_PACK, {"pools": {"situation": {"starship": [CUSTOM]}}}
+            FANTASY_PACK, {"pools": {"situation": {"folk": [CUSTOM]}}}
         )
-        self.assertIn(CUSTOM, merged.pools["situation"]["starship"])
-        self.assertGreater(_drawn(merged, {"entity1_kind": "starship"}), 0)
+        self.assertIn(CUSTOM, merged.pools["situation"]["folk"])
+        self.assertGreater(_drawn(merged, {"entity1_kind": "folk", "entity1_subkind": "knight"}), 0)
 
     def test_an_environment_keyed_by_its_band_is_drawable_in_every_pack(self) -> None:
         for pack in ALL_PACKS:

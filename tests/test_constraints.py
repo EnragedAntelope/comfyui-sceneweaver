@@ -130,10 +130,12 @@ class AddressResolutionTests(unittest.TestCase):
     def test_every_trigger_value_is_a_real_option(self) -> None:
         for rule in SCIFI_PACK.all_constraints:
             field = PATH_TO_FIELD[_resolved_paths(rule.field)[0]]
+            # Every keyed pool, not pool_for: a bare-string scope reads as a
+            # kind, so place-keyed scene pools (context) would look empty.
             reachable = {
                 option
-                for key in (None, *SCIFI_PACK.pools.get(field, {}))
-                for option in pool_for(SCIFI_PACK, field, key)
+                for values in SCIFI_PACK.pools.get(field, {}).values()
+                for option in values
             }
             for trigger in rule.triggers:
                 with self.subTest(rule=rule.reason, field=field, value=trigger):

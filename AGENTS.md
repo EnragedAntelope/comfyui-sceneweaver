@@ -8,15 +8,17 @@ genre is a data module and two registration lines.
 
 ## Current state
 
-_Last verified: 2026-10-07_
+_Last verified: 2026-10-13_
 
-- **Status:** v0.7.0 on `main`, released on GitHub and published to the ComfyUI
+- **Status:** v0.8.0 on `main`, released on GitHub and published to the ComfyUI
   Registry by `publish.yml`; all three genres on one coherence engine. 0.6.0
   added user_options keys that follow the scope chain, a working recreate, the
   speedup and gates, a content round in all three packs, and two render-test
   rounds of fixes. 0.7.0 adds Round XXVIII's fixes and Round XXIX's subgenre
   content (post-collapse horror places, grown sci-fi places and void-order rites,
-  fantasy brass beasts and weather). The repo is public at `EnragedAntelope/comfyui-sceneweaver`;
+  fantasy brass beasts and weather). 0.8.0 is the variety release (Round XXX):
+  a hidden variant draw per type, owned-act weighting, the Placement and Place
+  state widgets, foreground context framings and the variety floors. The repo is public at `EnragedAntelope/comfyui-sceneweaver`;
   the full pre-release history stays local (a git bundle outside the repo, and
   the `coherence-round-*` branches).
 - **Works:** both node classes per genre register through the V3
@@ -28,9 +30,10 @@ _Last verified: 2026-10-07_
   order and validates both example workflows. Every gate under "Build and test"
   is green. The mechanisms and every round's decisions and measurements are in
   `docs/architecture.md` ("Round XV" to "Round XXVIII" are the render-test rounds;
-  "Round XXIX" is the subgenre content round).
-- **In progress:** nothing is open. Rounds XXVIII and XXIX are released in 0.7.0
-  but not yet render-tested by the maintainer, who keeps render-testing;
+  "Round XXIX" is the subgenre content round; "Round XXX" is the variety round).
+- **In progress:** nothing is open. 0.8.0 went through three render batches
+  (Round XXX), two of them reviewed by the maintainer, who keeps
+  render-testing;
   each reported image becomes a fix plus a regression row. Head cropping on tall
   subjects was seen and deliberately not addressed yet (no forced "full figure"
   framing until it recurs). Not built: a headless horseman, carrion crows, an
@@ -48,7 +51,9 @@ _Last verified: 2026-10-07_
     measure sci-fi only, and the frozen `concern_flags*` are sci-fi's.
   - Renaming or removing a dropdown value makes a saved workflow that locked it
     report "value not in list" (0.7.0 renamed the sci-fi situation "writhing in a
-    tight coil" to "thrashing violently in place"). Release notes live in commit messages, never in
+    tight coil" to "thrashing violently in place"; 0.8.0 rewrote the acts aimed
+    at "the viewer" and renamed many acts for verb spread). Seeds do not
+    reproduce 0.7.0 prompts: the variant and the new scene fields are drawn. Release notes live in commit messages, never in
     the README (maintainer's rule).
   - Cross-genre trait conflicts fail open: a wired foreign entity carries no
     traits into the host scene (`docs/genre-roadmap.md` proposes carrying them). A
@@ -158,6 +163,14 @@ that reads a gitignored file passes locally and fails on a clean checkout.
   exempt only as stranger vocabulary (`_default` alone) or when every archetype
   that reaches it lists the field in `omits`. There is no allowlist -- fix the
   scope, the need, or replace the value.
+- **A variant is a mask, not a scope.** Its owned looks live in the type's own
+  pool literals, marked in `value_variants`; `variant_mask` filters the drawn
+  pool. Making it a scope key would break the frontend's dropdown narrowing for
+  a field with no widget.
+- **Placement is relative to the place, never the camera.** Placement says how
+  far off the subject is and what it stands beside; pose and heading stay the
+  act's. A shared Placement or Place state pool must fit every place that
+  draws it (an attic is never flooded, snowbound woods have no long grass).
 - **A secondary actor is a machine, not a crowd.** A wreck is examined by a
   hovering survey drone, not by a survey team; a small crew stays only in
   interiors and in a spacefarer's own situations.

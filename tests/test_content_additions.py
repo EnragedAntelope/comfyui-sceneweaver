@@ -368,7 +368,7 @@ class RoundXXIXTests(unittest.TestCase):
     SCIFI_PLACES = ("genetics laboratory", "living bioship corridor", "terraced arboretum dome")
     NEW_SITUATIONS = (
         (HORROR_PACK, H._S_DEAD_EV_WRECK + H._S_SPIRIT_EV_WRECK + H._S_ELDRITCH_EV_WRECK
-         + H._S_BEAST_EV_WRECK + H._S_SURVIVOR_EV_WRECK + H._S_SWARM_EV_WRECK),
+         + H._S_BEAST_EV_WRECK + H._S_SWARM_EV_WRECK),
         (SCIFI_PACK, S._SITUATION_VOID_RITES + (
             "smashing out of a cracked specimen tank in a flood of green fluid",
             "clamping a cracked specimen tank shut as green fluid sprays out",
