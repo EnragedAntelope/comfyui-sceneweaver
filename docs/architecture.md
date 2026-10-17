@@ -2972,3 +2972,64 @@ over the treetops.
   "net-tangled" draws a net, "spar" and "bow" draw a sailing ship, and "a
   weapon" next to a carried spear draws two weapons. Say the damage or the
   owner, not the object.
+
+## Round XXXI: the audits take `--pack`
+
+`coherence_audit.py` and `coherence_sweep.py` measured sci-fi only. The audit
+reads pack declarations throughout, so `--pack` was enough there. The sweep's
+classes are sci-fi word lists and kind names, so under `--pack fantasy|horror`
+it runs two other sets: the pack's own classes from `tests/test_<pack>_pack.py`
+(ceiling 0) and `shape_classes`, the sweep classes that read only a pack's
+bands, affordances and traits. `concern_audit.py` stays sci-fi only: it
+replays frozen flags from reported sci-fi batches, and the other packs have
+none to replay.
+
+The test files sweep 400 to 500 seeds. At 3000 to 4000 seeds the same classes
+found what those runs never drew:
+
+| Found | Cause | Fix |
+| --- | --- | --- |
+| A dormant revenant on the seabed with no act (`no-situation`, `dead-but-live`, 0.2%) | Undead dormant acts needed air (dust) or a wall | Two seabed dormant acts, shared with the artifacts |
+| An abandoned airship, sky galleon or skiff with no act in the sky, a courtyard or a quay | Its dormant acts needed `ground` | A dead ship in the sky drifts if intact and falls if wrecked; the wreck act needs `floor` |
+| "with its gasbag torn" on a sky galleon and a cloud skiff | The act was in the shared flying-ship pool | "lying wrecked in a tangle of torn rigging" |
+| A huge golem in the blacksmith's forge (`huge-indoors`) | A later literal key `"blacksmith's forge": ("hot-place",)` replaced its `interior-place` | Both traits on the one key |
+| Merfolk "raising an arm against a gust of grit" on the seabed (`weather-in-wrong-medium`) | The act needed nothing | It needs `air` |
+
+The maintainer also reported a spear drawn leaving a sea serpent's mouth for
+"snapping at a hurled spear". An object thrown by someone off-frame now says
+its direction, and `TRAP_PHRASES` rejects the undirected form ("hurled",
+"thrown", "flung", "raised" or "levelled" before a spear, dagger, torch and
+the like). Renamed values, which a saved workflow that locked them will report
+as "value not in list":
+
+| Pack | Old | New |
+| --- | --- | --- |
+| fantasy | snapping at a hurled spear | snapping at a spear hurled straight at it |
+| fantasy | snatching a thrown dagger from the air | snatching a dagger thrown at them out of the air |
+| fantasy | lying wrecked across the ground with its gasbag torn | lying wrecked in a tangle of torn rigging |
+| horror | lurching away from a raised torch | lurching away from a torch thrust toward them |
+
+The shape ceilings are what 3000 seeds measured on both paths after the fixes;
+`PACK_CEILINGS` in the script says what each remaining hit looked like. Each
+fix has a regression row in `tests/test_concern_regressions.py`, and every row
+failed on the old data first. CI now runs the fantasy and horror sweeps on both
+paths (about 10 to 25 seconds each locally).
+
+### A drawn field gives way to a lock
+
+When a rule forbade a locked value, `_apply_constraints` kept the lock, warned,
+and changed nothing else. An airship locked "wrecked" in the sea of clouds
+kept its drawn intact gasbag, which forbids a wreck act, so it had no act in
+150 of 150 seeds. `_redraw_triggers` now re-draws each unlocked field whose
+value fired the rule, away from every value that fires it, and warns only when
+no such field can move. A trigger with nothing else to draw keeps its value,
+so a lock never empties another field. The torn-gasbag form also gained the
+`falls` stance, and "plunging out of the sky trailing torn rigging" requires
+it, as sci-fi's falling wrecks do; without that the torn form could not be in
+the sky at all and there was nothing to re-draw to.
+
+Measured against the previous engine on 400 seeds per pack: 0 of 1200 scenes
+without locks changed. Of 1200 scenes with two or three fields locked from an
+earlier draw, 66 changed, all of them scenes that had a conflict warning
+before. Scenes with any conflict warning went from 78 to 16, and none failed
+to settle.

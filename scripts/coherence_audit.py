@@ -2,6 +2,7 @@
 
     python scripts/coherence_audit.py                # 1000 seeds
     python scripts/coherence_audit.py --seeds 2000
+    python scripts/coherence_audit.py --pack fantasy   # or horror
 
 **Why this exists.** ``tests/test_coherence.py`` sweeps and asserts invariants;
 this is the maintainer's instrument that *names* a defect instead of failing a
@@ -28,7 +29,7 @@ coil of gas" came from?
 *   buckets of the reference corpus, and it should sit near zero for the built and
 *   inert archetypes. A report, not a gate.
 
-Zero dependencies and no ComfyUI; imports ``data.scifi`` directly (never the
+Zero dependencies and no ComfyUI; imports ``data.<pack>`` directly (never the
 entrypoint) so ``user_options.json`` can never reach a committed number.
 """
 from __future__ import annotations
@@ -43,12 +44,12 @@ if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 from data.genre import KIND_FIELD, archetype_name_for, scope_keys  # noqa: E402
-from data.scifi import SCIFI_PACK  # noqa: E402
 from engine.budget import count_tokens  # noqa: E402
 from engine.grammar import head_noun  # noqa: E402
 from engine.prose import render_entity  # noqa: E402
 from engine.resolution import ResolvedEntity  # noqa: E402
 from engine.scene import generate_scene  # noqa: E402
+from sample_distribution import PACK_SLUGS, load_pack  # noqa: E402
 
 
 def _normalized_head(value: str) -> str:
@@ -138,9 +139,10 @@ def _component_clauses(pack, record) -> int:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--seeds", type=int, default=1000, help="seeds to sweep")
+    parser.add_argument("--pack", choices=PACK_SLUGS, default="scifi")
     args = parser.parse_args(argv)
 
-    pack = SCIFI_PACK
+    pack = load_pack(args.pack)
     by_kind_routes: dict[str, Counter] = defaultdict(Counter)
     fallthrough_subkinds: dict[str, Counter] = defaultdict(Counter)
     archetype_shape: dict[str, dict[str, list[int] | int]] = defaultdict(
@@ -185,7 +187,7 @@ def main(argv: list[str] | None = None) -> int:
                 if _component_clauses(pack, record) >= 4:
                     stats["heavy"] += 1
 
-    print(f"seeds {args.seeds} -- {entities} entities")
+    print(f"{args.pack}: seeds {args.seeds} -- {entities} entities")
     print()
     print("form resolution, per kind (share through a group/raw key):")
     for kind in pack.kinds:

@@ -64,6 +64,16 @@ jobs:
         # The user's own graph: a Scene Entity wired into the Scene Weaver. Every class a
         # reported image fell into must stay absent; the flags are frozen in scripts/concern_flags.py.
         run: python scripts/concern_audit.py --seeds 600 --gate
+      - name: Sweep the fantasy pack for coherence
+        # The pack tests sweep 400-500 seeds; these sweep thousands, which is what
+        # finds a rare draw. Ceilings live in scripts/coherence_sweep.py.
+        run: |
+          python scripts/coherence_sweep.py --pack fantasy --gate
+          python scripts/coherence_sweep.py --pack fantasy --gate --path unwired
+      - name: Sweep the horror pack for coherence
+        run: |
+          python scripts/coherence_sweep.py --pack horror --gate
+          python scripts/coherence_sweep.py --pack horror --gate --path unwired
 
   frontend:
     name: Frontend tests

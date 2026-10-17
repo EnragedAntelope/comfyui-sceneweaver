@@ -4,6 +4,7 @@
     python scripts/coherence_sweep.py --path unwired
     python scripts/coherence_sweep.py --gate             # exit 1 over a ceiling
     python scripts/coherence_sweep.py --examples 3       # print real prompts
+    python scripts/coherence_sweep.py --pack fantasy     # or horror
 
 **Why this exists, and why it is not another concern_flags file.**
 
@@ -31,7 +32,15 @@ ceilings in ``CEILINGS`` are what the round left them at, so a change that puts
 one back up is visible. Raise a ceiling only with a measured reason written next
 to it.
 
-An instrument, not a test: ``tests/`` owns the gates. Imports ``data.scifi``
+**Fantasy and horror.** The sci-fi classes below are sci-fi word lists and kind
+names, so ``--pack fantasy|horror`` runs two other sets instead: the pack's own
+classes from ``tests/test_<pack>_pack.py`` (gated at zero there, over a few
+hundred seeds; a ceiling of 0 here, over thousands), and ``shape_classes``,
+which read only the pack's own declarations (bands, affordances, traits). At
+4000 seeds the first set found dead subjects with no act and a forge holding a
+huge golem that the 500-seed test sweep had never drawn.
+
+An instrument, not a test: ``tests/`` owns the gates. Imports ``data.<pack>``
 directly, never the entrypoint, so ``user_options.json`` can never reach a number.
 """
 from __future__ import annotations
@@ -54,6 +63,7 @@ from data.genre import (  # noqa: E402
 )
 from data.scifi import SCIFI_PACK as PACK  # noqa: E402
 from engine.scene import generate_entity, generate_scene  # noqa: E402
+from sample_distribution import PACK_SLUGS, load_pack  # noqa: E402
 
 
 def _words(*terms: str) -> "re.Pattern[str]":
@@ -299,8 +309,80 @@ def classes(text: str, document: dict) -> "list[str]":
     return out
 
 
-def sweep(seeds: int, path: str, examples: int):
+def shape_classes(pack, text: str, document: dict) -> "list[str]":
+    """The classes above that need no sci-fi word: each reads ``pack``'s own bands,
+    affordances and traits, over every entity."""
+    out: set[str] = set()
+    place = document.get(ENVIRONMENT_FIELD) or ""
+    affords = affordances_of(pack, place)
+    context = (document.get(CONTEXT_FIELD) or "").lower()
+    low = text.lower()
+    pristine = {v for v, t in (pack.value_traits.get("condition") or {}).items() if "pristine-state" in t}
+    for entity in document["entities"]:
+        situation = (entity.get(SITUATION_FIELD) or "").lower()
+        substance = " ".join((entity.get(f) or "") for f in SUBSTANCE_FIELDS).lower()
+        if HOT.search(substance) and COLD.search(substance):
+            out.add("thermal-conflict")
+        if entity.get("condition") in pristine and BREAKING_GERUND.search(situation):
+            out.add("pristine-but-destroyed")
+        if "submerged" in affords and FIRE.search(situation):
+            out.add("fire-in-wrong-medium")
+        if "submerged" in affords and WEATHER.search(situation + " " + context):
+            out.add("weather-in-wrong-medium")
+    if place in (pack.environment_bands.get("interior") or ()) and context and DISTANCE.search(low):
+        out.add("interior-distance-context")
+    context_sentence = next((s for s in low.split(". ") if context and context in s), "")
+    if STANCE_VERB.search(context_sentence.replace(context, "")):
+        out.add("context-stance-verb")
+    return sorted(out)
+
+
+#: Fantasy and horror. A class not listed is a test file's class, zero-gated there,
+#: so any hit here is a rare draw the test sweep never reached. Shape ceilings were
+#: measured at 3000 seeds on both paths when added (2026-10-17), after fixing merfolk
+#: bracing against "a gust of grit" on the seabed (weather 0.13% -> 0).
+PACK_CEILINGS: dict[str, dict[str, float]] = {
+    "fantasy": {
+        # 0.67 / 0.57: wide on purpose. A gleaming golem "splitting along a fresh crack",
+        # a pristine crown "bursting into a halo of cold blue flame", and plain misses
+        # ("crumbling a stone block in its grip", "breaking the surface").
+        "pristine-but-destroyed": 1.0,
+        # 0.07 / 0.17: a frost-grown crystal golem or a frost giant with a hot word.
+        "thermal-conflict": 0.3,
+        "fire-in-wrong-medium": 0.0,
+        "weather-in-wrong-medium": 0.0,
+        "interior-distance-context": 0.0,
+        "context-stance-verb": 0.0,
+    },
+    "horror": {
+        "pristine-but-destroyed": 0.0,
+        "thermal-conflict": 0.0,
+        "fire-in-wrong-medium": 0.0,
+        "weather-in-wrong-medium": 0.0,
+        # 0.90 / 0.83: the chapel and the ballroom afford ``vast``, so "In the distance"
+        # is the pack's own choice there.
+        "interior-distance-context": 1.0,
+        "context-stance-verb": 0.0,
+    },
+}
+
+
+def _classifier(slug: str):
+    """``(pack, classify, ceilings)`` for one pack."""
+    if slug == "scifi":
+        return PACK, classes, CEILINGS
+    pack = load_pack(slug)
+    module = __import__(f"tests.test_{slug}_pack", fromlist=["_classes"])
+
+    def classify(text: str, document: dict) -> "list[str]":
+        return sorted(set(module._classes(text, document)) | set(shape_classes(pack, text, document)))
+
+    return pack, classify, PACK_CEILINGS[slug]
+
+
+def sweep(seeds: int, path: str, examples: int, slug: str = "scifi"):
     """``(counts, scenes with any class, examples)`` over ``seeds`` scenes."""
+    pack, classify, _ceilings = _classifier(slug)
     rng = random.Random(777)
     tally: Counter = Counter()
     shown: dict[str, list[str]] = defaultdict(list)
@@ -309,12 +391,12 @@ def sweep(seeds: int, path: str, examples: int):
         entity_seed, scene_seed = rng.randrange(2**48), rng.randrange(2**48)
         wired = {}
         if path == "wired":
-            _text, payload = generate_entity(entity_seed, PACK)
+            _text, payload = generate_entity(entity_seed, pack)
             wired = {1: payload}
         text, document = generate_scene(
-            scene_seed, PACK, wired_entities=wired, entity_count=1
+            scene_seed, pack, wired_entities=wired, entity_count=1
         )
-        found = classes(text, document)
+        found = classify(text, document)
         tally.update(found)
         flagged += bool(found)
         for name in found:
@@ -329,18 +411,21 @@ def main(argv: "list[str] | None" = None) -> int:
     parser.add_argument("--path", choices=("wired", "unwired"), default="wired")
     parser.add_argument("--examples", type=int, default=0)
     parser.add_argument("--gate", action="store_true")
+    parser.add_argument("--pack", choices=PACK_SLUGS, default="scifi")
     args = parser.parse_args(argv)
     logging.getLogger("sceneweaver").setLevel(logging.ERROR)
 
-    tally, flagged, shown = sweep(args.seeds, args.path, args.examples)
+    ceilings = _classifier(args.pack)[2]
+    tally, flagged, shown = sweep(args.seeds, args.path, args.examples, args.pack)
     share = 100.0 * flagged / args.seeds
-    print(f"coherence_sweep -- {args.path} path, {args.seeds} scenes, "
+    print(f"coherence_sweep -- {args.pack}, {args.path} path, {args.seeds} scenes, "
           f"{share:.1f}% carry at least one class")
     over: list[str] = []
-    for name in sorted(CEILINGS):
+    # A class with no ceiling is a test file's zero-gated class: any hit is over.
+    for name in sorted(set(ceilings) | set(tally)):
         count = tally.get(name, 0)
         pct = 100.0 * count / args.seeds
-        ceiling = CEILINGS[name]
+        ceiling = ceilings.get(name, 0.0)
         mark = ""
         if pct > ceiling:
             mark = f"  <-- over ceiling {ceiling:.1f}%"

@@ -8,10 +8,10 @@ genre is a data module and two registration lines.
 
 ## Current state
 
-_Last verified: 2026-10-13_
+_Last verified: 2026-10-17_
 
-- **Status:** v0.8.0 on `main`, released on GitHub and published to the ComfyUI
-  Registry by `publish.yml`; all three genres on one coherence engine. 0.6.0
+- **Status:** `main` is v0.8.0 (released on GitHub and published to the ComfyUI
+  Registry by `publish.yml`) plus Round XXXI, merged and not yet released; all three genres on one coherence engine. 0.6.0
   added user_options keys that follow the scope chain, a working recreate, the
   speedup and gates, a content round in all three packs, and two render-test
   rounds of fixes. 0.7.0 adds Round XXVIII's fixes and Round XXIX's subgenre
@@ -30,8 +30,13 @@ _Last verified: 2026-10-13_
   order and validates both example workflows. Every gate under "Build and test"
   is green. The mechanisms and every round's decisions and measurements are in
   `docs/architecture.md` ("Round XV" to "Round XXVIII" are the render-test rounds;
-  "Round XXIX" is the subgenre content round; "Round XXX" is the variety round).
-- **In progress:** nothing is open. 0.8.0 went through three render batches
+  "Round XXIX" is the subgenre content round; "Round XXX" is the variety round;
+  "Round XXXI" gives the audits `--pack` and fixes what they found).
+- **In progress:** Round XXXI is on `main` and unreleased: `--pack` on
+  `coherence_audit.py` and `coherence_sweep.py`, the fantasy and horror fixes it
+  found, the fantasy and horror sweeps in CI, and a locked value that a drawn
+  field contradicts re-drawing that field. The next release ships it with a
+  version bump. 0.8.0 went through three render batches
   (Round XXX), two of them reviewed by the maintainer, who keeps
   render-testing;
   each reported image becomes a fix plus a regression row. Head cropping on tall
@@ -40,19 +45,23 @@ _Last verified: 2026-10-13_
   exorcist and a mortician (the last two would only reskin the village priest).
 - **Known gaps:**
   - A situation can disagree with the pose a model draws (a fire drake breathing
-    fire instead of "snapping at a spear") with no text contradiction behind it.
-    It is a model-fidelity limit; there is no wording fix.
+    fire instead of snapping at a spear) with no text contradiction behind it.
+    It is a model-fidelity limit. The one wording fix is direction: an object
+    thrown by someone off-frame says it comes "at it" (`TRAP_PHRASES`).
   - Small alien creatures still name limbs, a natural weapon, senses and a mouth
     by design, so a render can show odd protrusions. Watch small creatures.
   - `scripts/reach_audit.py --gate` samples, so a low seed count lists rare
     place-and-kind combinations as never drawn; use 30000 seeds. CI does not run it.
-  - Only `scripts/reach_audit.py` and `scripts/sample_distribution.py` take
-    `--pack`. `concern_audit.py`, `coherence_sweep.py` and `coherence_audit.py`
-    measure sci-fi only, and the frozen `concern_flags*` are sci-fi's.
+  - `concern_audit.py` is sci-fi only, by design: it replays the frozen
+    `concern_flags*` of reported sci-fi batches, and fantasy and horror have
+    none. Every other script takes `--pack`. CI runs `coherence_sweep.py`
+    for fantasy and horror on both paths, and the sci-fi classes run as
+    unit tests; it does not run `reach_audit.py`.
   - Renaming or removing a dropdown value makes a saved workflow that locked it
     report "value not in list" (0.7.0 renamed the sci-fi situation "writhing in a
     tight coil" to "thrashing violently in place"; 0.8.0 rewrote the acts aimed
-    at "the viewer" and renamed many acts for verb spread). Seeds do not
+    at "the viewer" and renamed many acts for verb spread; Round XXXI renames
+    four acts, listed there). Seeds do not
     reproduce 0.7.0 prompts: the variant and the new scene fields are drawn. Release notes live in commit messages, never in
     the README (maintainer's rule).
   - Cross-genre trait conflicts fail open: a wired foreign entity carries no
@@ -125,6 +134,10 @@ python scripts/coherence_audit.py --seeds 2000
 python scripts/concern_audit.py --seeds 600 --gate
 python scripts/coherence_sweep.py --gate
 python scripts/coherence_sweep.py --gate --path unwired
+python scripts/coherence_sweep.py --pack fantasy --gate
+python scripts/coherence_sweep.py --pack fantasy --gate --path unwired
+python scripts/coherence_sweep.py --pack horror --gate
+python scripts/coherence_sweep.py --pack horror --gate --path unwired
 npm ci && npm run test:frontend
 python -m ruff check .
 ```

@@ -125,7 +125,8 @@ Every dropdown offers `Random`, then its values, then `None`:
 * **a value** - **lock it.** Set `Creature type: cephalopod` and every scene is a
   cephalopod, with everything else still rolling around it. Lock the creature
   type and the hull colour and the environment; leave the rest wild. A locked
-  field is never cut and never overruled.
+  field is never cut and never overruled: a rolled field that contradicts it is
+  rolled again.
 * **`None`** - omit it. Switch a slot's `kind` to `None` and that entity leaves
   the scene entirely, which is how you get a pure-landscape shot.
 
