@@ -1274,6 +1274,65 @@ def _required_targets(
     return required
 
 
+def _redraw_triggers(
+    rng: random.Random,
+    pack: GenrePack,
+    state: dict[str, str | None],
+    address_of: Mapping[str, FieldDef],
+    locked_paths: "set[str]",
+    scene_filter: str,
+    slots: int,
+    target: str,
+    banned: "Mapping[str, set[str]]",
+    sticky_bans: "Mapping[str, frozenset[str]]",
+    nulled: "set[str]",
+) -> bool:
+    """Re-draw each unlocked field whose value makes a rule forbid locked ``target``.
+
+    The trigger is drawn away from every value that fires the rule. A trigger
+    with nothing else to draw keeps its value, so a lock never empties another
+    field; the caller then reports the conflict. True when anything moved.
+    """
+    current = state.get(target)
+    moved = False
+    for rule, trigger, bound_target, triggers in _bound_rules(pack, slots):
+        if bound_target != target or trigger in locked_paths:
+            continue
+        if state.get(trigger) not in triggers:
+            continue
+        if rule.type == RULE_EXCLUDE:
+            if current not in rule.excludes_values:
+                continue
+        elif current in (set(rule.requires_values) if rule.requires_values else {rule.requires_value}):
+            continue
+        definition = address_of.get(trigger)
+        if definition is None:
+            continue
+        forbidden = set(triggers) | banned.get(trigger, set())
+        is_control = definition.base in _control_fields(pack) and definition.slot is not None
+        if is_control:
+            forbidden |= _control_values_ruled_out_by_state(
+                pack, definition.base, state, locked_paths, definition.slot
+            )
+        sticky = set(sticky_bans.get(trigger, ()))
+        if trigger == ENVIRONMENT_FIELD:
+            sticky |= _environments_ruled_out_by_state(pack, state, slots)
+        scope = _scope_for(pack, state, trigger)
+        replacement = _draw(rng, pack, definition, scope, scene_filter, forbidden | sticky)
+        if replacement is None and sticky:
+            replacement = _draw(rng, pack, definition, scope, scene_filter, forbidden)
+        if replacement is None:
+            continue
+        state[trigger] = replacement
+        moved = True
+        if is_control:
+            _rescope_slot(
+                rng, pack, state, address_of, locked_paths,
+                scene_filter, definition.slot, {definition.base}, nulled,
+            )
+    return moved
+
+
 def _apply_constraints(
     rng: random.Random,
     pack: GenrePack,
@@ -1330,8 +1389,18 @@ def _apply_constraints(
                 elif current not in forbidden:
                     continue
                 if target in locked_paths:
-                    # The user named this value. It wins, and the rule's reason
-                    # is reported -- to _meta.warnings, never to prompt_text.
+                    # The user named this value, so it wins. The unlocked field
+                    # whose value fired the rule is re-drawn instead: a ship
+                    # locked "wrecked" in the sky gets a torn gasbag, not an
+                    # intact one that leaves no act it may do.
+                    if _redraw_triggers(
+                        rng, pack, state, address_of, locked_paths, scene_filter,
+                        slots, target, banned, sticky_bans, nulled,
+                    ):
+                        changed = True
+                        continue
+                    # Nothing else could move. The rule's reason is reported --
+                    # to _meta.warnings, never to prompt_text.
                     for reason in reasons.get(target, ()):
                         message = f"{target}: kept the locked value {current!r} ({reason})"
                         if message not in warnings:

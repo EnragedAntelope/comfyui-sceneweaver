@@ -1458,6 +1458,10 @@ CONCERNS = CONCERNS + (
     Concern("a wrecked airship has no act in the sky", lambda r, d, t: not r.get("situation"),
             widgets={"environment": "stormy sky above a mountain range", "entity1_subkind": "airship",
                      "entity1_form": "torn gasbag sagging over a broken hull"}, pack=FANTASY_PACK),
+    # A lock a drawn field contradicts: the drawn field moves, the lock stays.
+    Concern("a locked-wrecked airship has no act in the sky", lambda r, d, t: not r.get("situation"),
+            widgets={"environment": "sea of clouds", "entity1_subkind": "airship",
+                     "entity1_condition": "wrecked"}, pack=FANTASY_PACK),
     Concern("a torn gasbag drifts on the wind",
             lambda r, d, t: said(r, "situation") == "drifting crewless on the wind",
             widgets={"environment": "windswept moorland", "entity1_subkind": "airship",

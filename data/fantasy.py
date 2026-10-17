@@ -2793,7 +2793,9 @@ _S_AIRSHIP_EV_WAR = (
 #: paved quay or courtyard holds the wreck too.
 _S_AIRSHIP_DORMANT = ("lying wrecked in a tangle of torn rigging",)
 #: A dead flying ship in a sky place had no act at all. An intact one drifts; a wreck falls.
-_S_AIRSHIP_DORMANT_SKY = ("drifting crewless on the wind", "plunging out of the sky trailing torn rigging")
+_S_AIRSHIP_DORMANT_SKY = ("drifting crewless on the wind",)
+#: Only a body that can fall does this, so a torn gasbag reaches the sky by it alone.
+_S_AIRSHIP_FALL_SKY = ("plunging out of the sky trailing torn rigging",)
 _S_CART_ACT_GROUND = ("rumbling along a rutted road behind a team of horses", "drawing up at a crossroads behind a team of horses")
 _S_CART_EV_GROUND = ("bouncing over rough ground behind a straining team of horses", "stuck axle-deep in mud")
 _S_CART_EV_GROUND_WAR = ("charging headlong across a battlefield behind armoured horses",)
@@ -3588,6 +3590,7 @@ _BUCKETS = (
     (_S_AIRSHIP_EV_WAR, "event", "c", _SKY, _FLY, ""),
     (_S_AIRSHIP_DORMANT, "idle", "n", frozenset({"floor"}), _A, "d"),
     (_S_AIRSHIP_DORMANT_SKY, "idle", "n", _SKY, _A, "d"),
+    (_S_AIRSHIP_FALL_SKY, "idle", "n", _SKY, frozenset({"falls"}), "d"),
     (_S_CART_ACT_GROUND, "activity", "n", _GROUND, _ROLL, ""),
     (_S_CART_EV_GROUND, "event", "n", _GROUND, _ROLL, ""),
     (_S_CART_EV_GROUND_WAR, "event", "c", _GROUND, _ROLL, ""),
@@ -3901,7 +3904,8 @@ SITUATION_POOLS: dict[str, tuple[str, ...]] = {
     ),
     "flying ship": (
         _S_AIRSHIP_EV_SKY + _S_AIRSHIP_ACT_SKY + _S_AIRSHIP_EV_ANY + _S_AIRSHIP_ACT_ANY + _S_AIRSHIP_EV_WAR
-        + _S_VESSEL_IDLE + _S_AIRSHIP_DORMANT + _S_AIRSHIP_DORMANT_SKY + _S_VESSEL_DORMANT_LIFE
+        + _S_VESSEL_IDLE + _S_AIRSHIP_DORMANT + _S_AIRSHIP_DORMANT_SKY + _S_AIRSHIP_FALL_SKY
+        + _S_VESSEL_DORMANT_LIFE
         + _S_VESSEL_DORMANT_GROUND
     ),
     "land vehicle": (
@@ -4539,8 +4543,8 @@ _FORM_KEY_STANCES: dict[str, frozenset[str]] = {
 _FORM_STANCE_OVERRIDES: dict[str, frozenset[str]] = {
     "bat-winged lion body": _WALK_FLY,
     "winged lion body with a human face": _WALK_FLY,
-    # A wreck lies where it came down (#757).
-    "torn gasbag sagging over a broken hull": frozenset({"rests"}),
+    # A wreck lies where it came down (#757), or is still coming down.
+    "torn gasbag sagging over a broken hull": frozenset({"rests", "falls"}),
 }
 
 

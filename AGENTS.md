@@ -33,8 +33,9 @@ _Last verified: 2026-10-16_
   "Round XXIX" is the subgenre content round; "Round XXX" is the variety round;
   "Round XXXI" gives the audits `--pack` and fixes what they found).
 - **In progress:** branch `coherence-audit-pack` (unmerged, unreleased) holds
-  Round XXXI: `--pack` on `coherence_audit.py` and `coherence_sweep.py`, and the
-  fantasy and horror fixes it found. 0.8.0 went through three render batches
+  Round XXXI: `--pack` on `coherence_audit.py` and `coherence_sweep.py`, the
+  fantasy and horror fixes it found, the fantasy and horror sweeps in CI, and a
+  locked value that a drawn field contradicts re-drawing that field. 0.8.0 went through three render batches
   (Round XXX), two of them reviewed by the maintainer, who keeps
   render-testing;
   each reported image becomes a fix plus a regression row. Head cropping on tall
@@ -52,8 +53,9 @@ _Last verified: 2026-10-16_
     place-and-kind combinations as never drawn; use 30000 seeds. CI does not run it.
   - `concern_audit.py` is sci-fi only, by design: it replays the frozen
     `concern_flags*` of reported sci-fi batches, and fantasy and horror have
-    none. Every other script takes `--pack`. CI runs neither
-    `coherence_sweep.py` nor `reach_audit.py`.
+    none. Every other script takes `--pack`. CI runs `coherence_sweep.py`
+    for fantasy and horror on both paths, and the sci-fi classes run as
+    unit tests; it does not run `reach_audit.py`.
   - Renaming or removing a dropdown value makes a saved workflow that locked it
     report "value not in list" (0.7.0 renamed the sci-fi situation "writhing in a
     tight coil" to "thrashing violently in place"; 0.8.0 rewrote the acts aimed

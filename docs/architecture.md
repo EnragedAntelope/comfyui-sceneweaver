@@ -3012,4 +3012,24 @@ as "value not in list":
 The shape ceilings are what 3000 seeds measured on both paths after the fixes;
 `PACK_CEILINGS` in the script says what each remaining hit looked like. Each
 fix has a regression row in `tests/test_concern_regressions.py`, and every row
-failed on the old data first.
+failed on the old data first. CI now runs the fantasy and horror sweeps on both
+paths (about 10 to 25 seconds each locally).
+
+### A drawn field gives way to a lock
+
+When a rule forbade a locked value, `_apply_constraints` kept the lock, warned,
+and changed nothing else. An airship locked "wrecked" in the sea of clouds
+kept its drawn intact gasbag, which forbids a wreck act, so it had no act in
+150 of 150 seeds. `_redraw_triggers` now re-draws each unlocked field whose
+value fired the rule, away from every value that fires it, and warns only when
+no such field can move. A trigger with nothing else to draw keeps its value,
+so a lock never empties another field. The torn-gasbag form also gained the
+`falls` stance, and "plunging out of the sky trailing torn rigging" requires
+it, as sci-fi's falling wrecks do; without that the torn form could not be in
+the sky at all and there was nothing to re-draw to.
+
+Measured against the previous engine on 400 seeds per pack: 0 of 1200 scenes
+without locks changed. Of 1200 scenes with two or three fields locked from an
+earlier draw, 66 changed, all of them scenes that had a conflict warning
+before. Scenes with any conflict warning went from 78 to 16, and none failed
+to settle.
