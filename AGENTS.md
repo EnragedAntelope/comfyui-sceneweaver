@@ -8,7 +8,7 @@ genre is a data module and two registration lines.
 
 ## Current state
 
-_Last verified: 2026-10-13_
+_Last verified: 2026-10-16_
 
 - **Status:** v0.8.0 on `main`, released on GitHub and published to the ComfyUI
   Registry by `publish.yml`; all three genres on one coherence engine. 0.6.0
@@ -46,9 +46,10 @@ _Last verified: 2026-10-13_
     by design, so a render can show odd protrusions. Watch small creatures.
   - `scripts/reach_audit.py --gate` samples, so a low seed count lists rare
     place-and-kind combinations as never drawn; use 30000 seeds. CI does not run it.
-  - Only `scripts/reach_audit.py` and `scripts/sample_distribution.py` take
-    `--pack`. `concern_audit.py`, `coherence_sweep.py` and `coherence_audit.py`
-    measure sci-fi only, and the frozen `concern_flags*` are sci-fi's.
+  - `reach_audit.py`, `sample_distribution.py` and `coherence_audit.py` take
+    `--pack`. `concern_audit.py` and `coherence_sweep.py` measure sci-fi only:
+    their checks are sci-fi word lists and the frozen `concern_flags*` are
+    sci-fi's, so a `--pack` flag alone would measure nothing for the other two.
   - Renaming or removing a dropdown value makes a saved workflow that locked it
     report "value not in list" (0.7.0 renamed the sci-fi situation "writhing in a
     tight coil" to "thrashing violently in place"; 0.8.0 rewrote the acts aimed
