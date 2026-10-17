@@ -8,10 +8,10 @@ genre is a data module and two registration lines.
 
 ## Current state
 
-_Last verified: 2026-10-16_
+_Last verified: 2026-10-17_
 
-- **Status:** v0.8.0 on `main`, released on GitHub and published to the ComfyUI
-  Registry by `publish.yml`; all three genres on one coherence engine. 0.6.0
+- **Status:** `main` is v0.8.0 (released on GitHub and published to the ComfyUI
+  Registry by `publish.yml`) plus Round XXXI, merged and not yet released; all three genres on one coherence engine. 0.6.0
   added user_options keys that follow the scope chain, a working recreate, the
   speedup and gates, a content round in all three packs, and two render-test
   rounds of fixes. 0.7.0 adds Round XXVIII's fixes and Round XXIX's subgenre
@@ -32,10 +32,11 @@ _Last verified: 2026-10-16_
   `docs/architecture.md` ("Round XV" to "Round XXVIII" are the render-test rounds;
   "Round XXIX" is the subgenre content round; "Round XXX" is the variety round;
   "Round XXXI" gives the audits `--pack` and fixes what they found).
-- **In progress:** branch `coherence-audit-pack` (unmerged, unreleased) holds
-  Round XXXI: `--pack` on `coherence_audit.py` and `coherence_sweep.py`, the
-  fantasy and horror fixes it found, the fantasy and horror sweeps in CI, and a
-  locked value that a drawn field contradicts re-drawing that field. 0.8.0 went through three render batches
+- **In progress:** Round XXXI is on `main` and unreleased: `--pack` on
+  `coherence_audit.py` and `coherence_sweep.py`, the fantasy and horror fixes it
+  found, the fantasy and horror sweeps in CI, and a locked value that a drawn
+  field contradicts re-drawing that field. The next release ships it with a
+  version bump. 0.8.0 went through three render batches
   (Round XXX), two of them reviewed by the maintainer, who keeps
   render-testing;
   each reported image becomes a fix plus a regression row. Head cropping on tall
