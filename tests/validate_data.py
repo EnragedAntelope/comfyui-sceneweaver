@@ -258,7 +258,11 @@ SUBSTANCE_COLOUR_HOMES: dict[str, tuple[str, ...]] = {
 #: in sci-fi and horror; fantasy's torch is a real one, so it is not listed.
 TRAP_PHRASES = re.compile(
     r"\b(fork of|heart in its|iris of|iris valve|rolling body|winding key|bone charms?|bottle|"
-    r"handheld torch|with a torch)\b"
+    r"handheld torch|with a torch|"
+    # An object aimed by someone off-frame, with no direction: "snapping at a hurled spear"
+    # drew the spear leaving the subject's mouth. Say it comes "at it" / "toward them".
+    r"(?:hurled|thrown|flung|raised|levelled) (?:spears?|daggers?|knives|knife|axes?|stones?|rocks?|"
+    r"torch(?:es)?|javelins?|lances?))\b"
 )
 
 

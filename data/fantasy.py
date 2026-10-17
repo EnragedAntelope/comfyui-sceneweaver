@@ -2307,7 +2307,7 @@ POOL_GROUPS: dict[str, dict[str, tuple[str, ...]]] = {
 # --- dragon ---
 _S_DRAGON_EV_WAR = (
     "rearing up to strike", "lashing out with a snapping bite", "coiling to strike",
-    "lashing its tail in fury", "raking the air with a clawed swipe", "snapping at a hurled spear",
+    "lashing its tail in fury", "raking the air with a clawed swipe", "snapping at a spear hurled straight at it",
 )
 _S_DRAGON_EV_BREATH = (
     "spewing a torrent of flame", "unleashing a gout of roaring fire",
@@ -2483,8 +2483,9 @@ _S_FEY_CALM = ("sprinkling a trail of sparkling dust",)
 # --- hybrid folk ---
 _S_HYBRID_EV_WAR = (
     "brandishing their weapon high", "charging with their weapon lowered", "lunging forward with a battle cry",
-    "raising an arm against a gust of grit",
 )
+#: A gust needs air: merfolk raised an arm against one on the seabed.
+_S_HYBRID_EV_WAR_AIR = ("raising an arm against a gust of grit",)
 _S_HYBRID_EV = ("recoiling in alarm", "ducking back into cover", "spinning to face a sudden threat")
 _S_HYBRID_ACT = (
     "turning sharply at a sudden sound", "standing guard with folded arms", "calling out a warning",
@@ -2497,7 +2498,7 @@ _S_HYBRID_CALM = (
 )
 _S_FAUN_CALM = ("playing a haunting tune on a set of panpipes",)
 _S_HYBRID_IDLE = ("resting with their eyes closed", "sitting on a mossy stone lost in thought")
-_S_HYBRID_EV2 = ("vaulting over a fallen log", "snatching a thrown dagger from the air")
+_S_HYBRID_EV2 = ("vaulting over a fallen log", "snatching a dagger thrown at them out of the air")
 _S_HYBRID_EV2_WAR = ("springing from a crouch to strike", "shouting a war cry")
 _S_HYBRID_ACT2 = ("braiding flowers into their hair", "carving a small wooden totem",
                   "tracing the stars with an outstretched finger")
@@ -2623,6 +2624,8 @@ _S_RESTLESS_ACT_WALLS = ("drifting through a stone wall",)
 _S_UNDEAD_DORMANT = ("resting beneath a layer of dust",)
 _S_BONES_DORMANT = ("lying in a heap of bones",)
 _S_UNDEAD_DORMANT_WALLS = ("lying still in an open sarcophagus", "standing motionless in an alcove")
+#: A dormant undead on an open seabed had no act: dust needs air and the other two a wall.
+_S_UNDEAD_DORMANT_DEEP = ("half-buried in drifting silt", "draped in swaying strands of weed")
 
 # --- construct ---
 _S_CONSTRUCT_EV_WAR = (
@@ -2786,7 +2789,11 @@ _S_AIRSHIP_EV_WAR = (
     "bristling with crossbowmen along its rails", "burning as it drifts across the sky",
     "breaking apart high in the air under a heavy blow",
 )
-_S_AIRSHIP_DORMANT = ("lying wrecked across the ground with its gasbag torn",)
+#: Rigging, not a gasbag: a sky galleon and a cloud skiff have none. On a floor, so a
+#: paved quay or courtyard holds the wreck too.
+_S_AIRSHIP_DORMANT = ("lying wrecked in a tangle of torn rigging",)
+#: A dead flying ship in a sky place had no act at all. An intact one drifts; a wreck falls.
+_S_AIRSHIP_DORMANT_SKY = ("drifting crewless on the wind", "plunging out of the sky trailing torn rigging")
 _S_CART_ACT_GROUND = ("rumbling along a rutted road behind a team of horses", "drawing up at a crossroads behind a team of horses")
 _S_CART_EV_GROUND = ("bouncing over rough ground behind a straining team of horses", "stuck axle-deep in mud")
 _S_CART_EV_GROUND_WAR = ("charging headlong across a battlefield behind armoured horses",)
@@ -3446,6 +3453,7 @@ _BUCKETS = (
     (_S_FEY_EV_AIR, "event", "n", _AIR, _FLOAT, ""),
     (_S_FEY_CALM, "activity", "p", _A, _A, ""),
     (_S_HYBRID_EV_WAR, "event", "c", _A, _A, ""),
+    (_S_HYBRID_EV_WAR_AIR, "event", "c", _AIR, _A, ""),
     (_S_HYBRID_EV, "event", "n", _A, _A, ""),
     (_S_HYBRID_ACT, "activity", "n", _A, _A, ""),
     (_S_HYBRID_CALM, "activity", "p", _A, _A, ""),
@@ -3518,6 +3526,7 @@ _BUCKETS = (
     (_S_RESTLESS_ACT_WALLS, "activity", "n", _WALLS, _FLOAT, ""),
     (_S_UNDEAD_DORMANT, "idle", "n", _A, _A, "d"),
     (_S_UNDEAD_DORMANT_WALLS, "idle", "n", _WALLS, _A, "d"),
+    (_S_UNDEAD_DORMANT_DEEP, "idle", "n", _DEEP, _A, "d"),
     (_S_CONSTRUCT_EV_WAR, "event", "c", _A, _A, ""),
     (_S_CONSTRUCT_EV, "event", "n", _A, _A, ""),
     (_S_CONSTRUCT_ACT, "activity", "n", _A, _A, ""),
@@ -3577,7 +3586,8 @@ _BUCKETS = (
     (_S_AIRSHIP_EV_ANY, "event", "n", _SKY, _FLY, ""),
     (_S_AIRSHIP_ACT_ANY, "activity", "n", _SKY, _FLY, ""),
     (_S_AIRSHIP_EV_WAR, "event", "c", _SKY, _FLY, ""),
-    (_S_AIRSHIP_DORMANT, "idle", "n", _GROUND, _A, "d"),
+    (_S_AIRSHIP_DORMANT, "idle", "n", frozenset({"floor"}), _A, "d"),
+    (_S_AIRSHIP_DORMANT_SKY, "idle", "n", _SKY, _A, "d"),
     (_S_CART_ACT_GROUND, "activity", "n", _GROUND, _ROLL, ""),
     (_S_CART_EV_GROUND, "event", "n", _GROUND, _ROLL, ""),
     (_S_CART_EV_GROUND_WAR, "event", "c", _GROUND, _ROLL, ""),
@@ -3753,7 +3763,7 @@ _S_SMALL_CORE = (
     + _S_SMALL_ACT_WALLS + _S_SMALL_EV2 + _S_SMALL_ACT2
 )
 _S_HYBRID_CORE = (
-    _S_HYBRID_EV_WAR + _S_HYBRID_EV + _S_HYBRID_ACT + _S_HYBRID_CALM + _S_HYBRID_IDLE + _S_HYBRID_EV2
+    _S_HYBRID_EV_WAR + _S_HYBRID_EV_WAR_AIR + _S_HYBRID_EV + _S_HYBRID_ACT + _S_HYBRID_CALM + _S_HYBRID_IDLE + _S_HYBRID_EV2
     + _S_HYBRID_EV2_WAR + _S_HYBRID_ACT2
 )
 _S_FOLK_CORE = (
@@ -3763,7 +3773,8 @@ _S_FOLK_CORE = (
 )
 _S_UNDEAD_CORE = (
     _S_UNDEAD_EV_WAR + _S_UNDEAD_EV_WAR_WALLS + _S_UNDEAD_EV + _S_UNDEAD_ACT + _S_UNDEAD_CANDLE_WALLS + _S_UNDEAD_EV_GROUND + _S_UNDEAD_EV_WALLS
-    + _S_UNDEAD_ACT_WALLS + _S_UNDEAD_DORMANT + _S_UNDEAD_DORMANT_WALLS + _S_UNDEAD_ACT2
+    + _S_UNDEAD_ACT_WALLS + _S_UNDEAD_DORMANT + _S_UNDEAD_DORMANT_WALLS + _S_UNDEAD_DORMANT_DEEP
+    + _S_UNDEAD_ACT2
 )
 _S_CONSTRUCT_CORE = (
     _S_CONSTRUCT_EV_WAR + _S_CONSTRUCT_EV + _S_CONSTRUCT_ACT + _S_CONSTRUCT_IDLE + _S_CONSTRUCT_EV2
@@ -3890,7 +3901,8 @@ SITUATION_POOLS: dict[str, tuple[str, ...]] = {
     ),
     "flying ship": (
         _S_AIRSHIP_EV_SKY + _S_AIRSHIP_ACT_SKY + _S_AIRSHIP_EV_ANY + _S_AIRSHIP_ACT_ANY + _S_AIRSHIP_EV_WAR
-        + _S_VESSEL_IDLE + _S_AIRSHIP_DORMANT + _S_VESSEL_DORMANT_LIFE + _S_VESSEL_DORMANT_GROUND
+        + _S_VESSEL_IDLE + _S_AIRSHIP_DORMANT + _S_AIRSHIP_DORMANT_SKY + _S_VESSEL_DORMANT_LIFE
+        + _S_VESSEL_DORMANT_GROUND
     ),
     "land vehicle": (
         _S_VESSEL_CORE + _S_CART_ACT_GROUND + _S_CART_EV_GROUND + _S_CART_EV_GROUND_WAR
@@ -4767,7 +4779,9 @@ VALUE_TRAITS: dict[str, dict[str, tuple[str, ...]]] = {
         **{v: ("interior-place",) for v in _ENV_INTERIOR},
         "volcanic ashlands": ("hot-place",), "magma cavern": ("hot-place",),
         "blazing elemental plane": ("hot-place",),
-        "blacksmith's forge": ("hot-place",),
+        # A later key replaces an earlier one in a literal: the forge lost ``interior-place``
+        # here and admitted huge golems and fire elementals.
+        "blacksmith's forge": ("interior-place", "hot-place"),
         "snowbound mountain peak": ("cold-place",), "glacier valley": ("cold-place",),
         "frozen lake shore": ("cold-place",), "frozen realm of the frost giants": ("cold-place",),
         "high mountain pass": ("cold-place",),
@@ -4900,6 +4914,8 @@ _NEGLECT_ACTS = (
     "resting beneath a layer of dust", "streaked with lichen and weather",
     "crumbling at one edge", "wreathed in creeping ivy",
     "sprouting a young tree from one cracked flank",
+    # Not "plunging out of the sky": a fall is an event, and a newly launched ship can fall.
+    "lying wrecked in a tangle of torn rigging",
 )
 _add_traits("condition", {v: ("pristine-state",) for v in _PRISTINE_CONDITIONS})
 _add_traits(SITUATION_FIELD, {v: ("neglect-act",) for v in _NEGLECT_ACTS})
@@ -5871,14 +5887,20 @@ for _field, _pools in (("surface_detail", SURFACE_DETAIL_POOLS), ("markings", MA
         v: ("worn-material",) for pool in _pools.values() for v in pool if any(w in v for w in _WORN_WORDS)
     })
 # #757 a wreck's gasbag has come down with it.
-_add_traits("form", {"torn gasbag sagging over a broken hull": ("inactive", "worn-material")})
+_add_traits("form", {"torn gasbag sagging over a broken hull": ("inactive", "worn-material", "wreck-state")})
 _add_traits("form", {v: ("intact-gasbag",) for v in (
     "gasbag above a wooden hull", "twin gasbags above a long hull", "long gasbag above a slung gondola hull",
 )})
 _add_traits("condition", {"wrecked": ("wreck-state",)})
 _add_traits(SITUATION_FIELD, {v: ("wreck-state",) for v in (
     "lying beached on its side", "lying toppled and smashed on its side", "rotting in the shallows",
+    "plunging out of the sky trailing torn rigging",
 )})
+#: Only an intact ship drifts: a wreck or a torn gasbag falls instead. Its own trait,
+#: so the wreck wins (a pair's first trait is the trigger, the second is re-drawn).
+_add_traits(SITUATION_FIELD, {"drifting crewless on the wind": ("crewless-drift",)})
+TRAIT_CONFLICTS = TRAIT_CONFLICTS + (("wreck-state", "crewless-drift"),)
+TRAIT_REASONS["wreck-state|crewless-drift"] = "a wrecked ship cannot stay aloft"
 # #746 a siege tower is pushed, and a cart pulled.
 _add_traits("subkind", {"siege tower": ("pushed-vehicle",)})
 _add_traits("subkind", {v: ("drawn-vehicle",) for v in (

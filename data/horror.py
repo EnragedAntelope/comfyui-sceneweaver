@@ -1629,7 +1629,7 @@ _S_SURVIVOR_SWARM = (
 # --- the afflicted ---
 _S_AFFLICTED_EV = (
     "collapsing to their knees", "staggering toward a fleeing woman with one arm outstretched",
-    "lurching away from a raised torch", "flinching from a sudden light",
+    "lurching away from a torch thrust toward them","flinching from a sudden light",
     "screaming as flies swarm around them", "tearing at their collar as if suffocating",
 )
 _S_AFFLICTED_EV_GORE = ("coughing up black blood", "clawing at weeping boils until they bleed")

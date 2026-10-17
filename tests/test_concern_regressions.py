@@ -1441,6 +1441,37 @@ CONCERNS = CONCERNS + (
             widgets={"entity1_subkind": "faun"}, pack=FANTASY_PACK),
     Concern("a centaur turns into a horse", lambda r, d, t: bool(re.search(r"small (?:[\w-]+ )*centaur|war harness|pony|horse tail", t)),
             widgets={"entity1_subkind": "centaur"}, pack=FANTASY_PACK),
+    # --- coherence_sweep --pack fantasy at 4000 seeds: what the 500-seed test sweep missed ---
+    *(
+        Concern(f"a dormant undead has no act in {place}", lambda r, d, t: not r.get("situation"),
+                widgets={"environment": place, "entity1_kind": "undead", "entity1_condition": "dormant"},
+                pack=FANTASY_PACK)
+        for place in ("abyssal sea trench", "sunken temple ruins")
+    ),
+    *(
+        Concern(f"an abandoned {subkind} has no act in {place}", lambda r, d, t: not r.get("situation"),
+                widgets={"environment": place, "entity1_kind": "vessel", "entity1_subkind": subkind,
+                         "entity1_condition": "abandoned"}, pack=FANTASY_PACK)
+        for subkind in ("airship", "sky galleon", "cloud skiff")
+        for place in ("sea of clouds", "castle courtyard", "harbour town quay")
+    ),
+    Concern("a wrecked airship has no act in the sky", lambda r, d, t: not r.get("situation"),
+            widgets={"environment": "stormy sky above a mountain range", "entity1_subkind": "airship",
+                     "entity1_form": "torn gasbag sagging over a broken hull"}, pack=FANTASY_PACK),
+    Concern("a torn gasbag drifts on the wind",
+            lambda r, d, t: said(r, "situation") == "drifting crewless on the wind",
+            widgets={"environment": "windswept moorland", "entity1_subkind": "airship",
+                     "entity1_form": "torn gasbag sagging over a broken hull"}, pack=FANTASY_PACK),
+    Concern("a sky galleon or a cloud skiff has a gasbag",
+            lambda r, d, t: "gasbag" in said(r, "situation") and said(r, "subkind") != "airship",
+            widgets={"environment": "windswept moorland", "entity1_kind": "vessel"}, pack=FANTASY_PACK),
+    Concern("a sea folk braces against a gust underwater",
+            lambda r, d, t: "gust" in said(r, "situation"),
+            widgets={"environment": "kelp forest depths", "entity1_kind": "hybrid folk",
+                     "entity1_subkind": "merfolk"}, pack=FANTASY_PACK),
+    Concern("a huge subject fits in a forge",
+            lambda r, d, t: said(r, "scale") in ("huge", "colossal", "titanic"),
+            widgets={"environment": "blacksmith's forge"}, pack=FANTASY_PACK),
 )
 
 
