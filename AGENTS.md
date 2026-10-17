@@ -10,15 +10,17 @@ genre is a data module and two registration lines.
 
 _Last verified: 2026-10-17_
 
-- **Status:** `main` is v0.8.0 (released on GitHub and published to the ComfyUI
-  Registry by `publish.yml`) plus Round XXXI, merged and not yet released; all three genres on one coherence engine. 0.6.0
+- **Status:** `main` is v0.8.1, released on GitHub and published to the ComfyUI
+  Registry by `publish.yml`; all three genres on one coherence engine. 0.6.0
   added user_options keys that follow the scope chain, a working recreate, the
   speedup and gates, a content round in all three packs, and two render-test
   rounds of fixes. 0.7.0 adds Round XXVIII's fixes and Round XXIX's subgenre
   content (post-collapse horror places, grown sci-fi places and void-order rites,
   fantasy brass beasts and weather). 0.8.0 is the variety release (Round XXX):
   a hidden variant draw per type, owned-act weighting, the Placement and Place
-  state widgets, foreground context framings and the variety floors. The repo is public at `EnragedAntelope/comfyui-sceneweaver`;
+  state widgets, foreground context framings and the variety floors. 0.8.1 is
+  Round XXXI: the audits take `--pack`, the fixes they found in fantasy and
+  horror, and a locked value re-drawing the field that contradicts it. The repo is public at `EnragedAntelope/comfyui-sceneweaver`;
   the full pre-release history stays local (a git bundle outside the repo, and
   the `coherence-round-*` branches).
 - **Works:** both node classes per genre register through the V3
@@ -32,11 +34,8 @@ _Last verified: 2026-10-17_
   `docs/architecture.md` ("Round XV" to "Round XXVIII" are the render-test rounds;
   "Round XXIX" is the subgenre content round; "Round XXX" is the variety round;
   "Round XXXI" gives the audits `--pack` and fixes what they found).
-- **In progress:** Round XXXI is on `main` and unreleased: `--pack` on
-  `coherence_audit.py` and `coherence_sweep.py`, the fantasy and horror fixes it
-  found, the fantasy and horror sweeps in CI, and a locked value that a drawn
-  field contradicts re-drawing that field. The next release ships it with a
-  version bump. 0.8.0 went through three render batches
+- **In progress:** nothing unmerged. Every merge to `main` beyond docs carries a
+  version bump, which publishes. 0.8.0 went through three render batches
   (Round XXX), two of them reviewed by the maintainer, who keeps
   render-testing;
   each reported image becomes a fix plus a regression row. Head cropping on tall
