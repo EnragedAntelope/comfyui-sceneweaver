@@ -96,6 +96,11 @@ _Last verified: 2026-10-17_
   all three packs, and one section per render-test round. `docs/genre-roadmap.md`
   - the genre content brainstorm and the decisions behind it.
 
+## Registry releases
+
+Before publishing or investigating Manager visibility, read
+[Registry release checks](docs/registry-release-checks.md).
+
 ## Layout
 
 | Path | What lives there |
