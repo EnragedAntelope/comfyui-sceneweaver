@@ -1162,7 +1162,7 @@ def _rescope_slot(
     scene_filter: str,
     slot: int,
     changed: "frozenset[str] | set[str]",
-    revive: "set[str] | frozenset[str]" = frozenset(),
+    revive: "set[str]",
 ) -> None:
     """Re-draw the fields a changed control scopes, in declaration order.
 
@@ -1178,7 +1178,9 @@ def _rescope_slot(
 
     A field that is ``None`` is also left alone, because a field with an empty
     pool is legitimately silent -- except for a path in ``revive``, which a rule
-    nulled and which the new control value may make drawable again.
+    nulled and which the new control value may make drawable again. A revived
+    path is removed from ``revive`` in place, which is why it is a required,
+    mutable set: a frozenset default raised on the first re-draw.
     """
     changed = set(changed)
     controls = _control_fields(pack)
@@ -1719,14 +1721,14 @@ def generate_scene(
 
     ``wired_entities`` maps a 1-based slot to a ``SCENE_ENTITY`` payload.
 
-    ``entity_count`` is how many slots the scene occupies, and it is the
-    **authority** on that: slots past it are left out even if their kind widget
-    holds a value, and slots within it are filled even if their kind widget
-    still says "None". Anything else makes the control a lie -- a user who sets
-    it to 3 and gets one entity because two hidden widgets defaulted to "None"
-    has been told something untrue by the node face. A wired slot is occupied
-    whatever the count says, because connecting a node is the more explicit
-    statement; the count is raised to match and reported in ``_meta``.
+    ``entity_count`` is how many slots the scene occupies: slots past it are
+    emptied, and a slot within it is whatever its own kind widget says -- the
+    kind widgets default to "Random", so the count is what the user gets, and a
+    slot deliberately set to "None" stays empty. Two things outrank the count,
+    as ``_occupied_slots`` records: a wired slot, because connecting a node is
+    the more explicit statement, and a slot whose kind widget holds a literal,
+    because naming a subject is a lock. Either raises the count, and the widened
+    count is what the budget divides the scene's detail between.
 
     It defaults to ``DEFAULT_ENTITY_COUNT`` rather than to ``None`` so that a
     bare call behaves like a freshly-dropped node: one subject. Pass ``None``

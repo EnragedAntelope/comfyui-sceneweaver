@@ -115,10 +115,7 @@ def build_scene_node(pack: GenrePack) -> type:
                 ],
             )
 
-        @classmethod
-        def fingerprint_inputs(cls, **kwargs: Any) -> float:
-            # See the identical note on the Scene Entity node: ComfyUI #11905.
-            return float("nan")
+        # No fingerprint_inputs; see the note on the Scene Entity node.
 
         @classmethod
         def execute(cls, **kwargs: Any) -> "io.NodeOutput":

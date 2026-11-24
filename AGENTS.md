@@ -8,9 +8,9 @@ genre is a data module and two registration lines.
 
 ## Current state
 
-_Last verified: 2026-10-17_
+_Last verified: 2026-11-24_
 
-- **Status:** `main` is v0.8.1, released on GitHub and published to the ComfyUI
+- **Status:** `main` is v0.8.2, released on GitHub and published to the ComfyUI
   Registry by `publish.yml`; all three genres on one coherence engine. 0.6.0
   added user_options keys that follow the scope chain, a working recreate, the
   speedup and gates, a content round in all three packs, and two render-test
@@ -20,7 +20,12 @@ _Last verified: 2026-10-17_
   a hidden variant draw per type, owned-act weighting, the Placement and Place
   state widgets, foreground context framings and the variety floors. 0.8.1 is
   Round XXXI: the audits take `--pack`, the fixes they found in fantasy and
-  horror, and a locked value re-drawing the field that contradicts it. The repo is public at `EnragedAntelope/comfyui-sceneweaver`;
+  horror, and a locked value re-drawing the field that contradicts it. 0.8.2
+  drops the nodes' `NaN` cache fingerprint, which re-ran every downstream node
+  on each queue ("0.8.2: the input cache is ComfyUI's" in
+  `docs/architecture.md`). Registry: 0.8.1 was still Flagged on 2026-11-24 on
+  the recreate code's known false positive, review request open (see
+  `docs/registry-release-checks.md`). The repo is public at `EnragedAntelope/comfyui-sceneweaver`;
   the full pre-release history stays local (a git bundle outside the repo, and
   the `coherence-round-*` branches).
 - **Works:** both node classes per genre register through the V3
@@ -33,7 +38,9 @@ _Last verified: 2026-10-17_
   is green. The mechanisms and every round's decisions and measurements are in
   `docs/architecture.md` ("Round XV" to "Round XXVIII" are the render-test rounds;
   "Round XXIX" is the subgenre content round; "Round XXX" is the variety round;
-  "Round XXXI" gives the audits `--pack` and fixes what they found).
+  "Round XXXI" gives the audits `--pack` and fixes what they found). Scene
+  output is a pure function of the inputs, so ComfyUI's input cache is correct
+  for both nodes; no `fingerprint_inputs` override.
 - **In progress:** nothing unmerged. Every merge to `main` beyond docs carries a
   version bump, which publishes. 0.8.0 went through three render batches
   (Round XXX), two of them reviewed by the maintainer, who keeps

@@ -1,6 +1,6 @@
 [project]
 name = "comfyui-sceneweaver"
-version = "0.8.1"
+version = "0.8.2"
 description = "One click, one whole coherent scene: the place, what is standing in it, and what it is doing - written as prose a text encoder can follow, where every detail agrees with every other one. A multi-genre scene engine: sci-fi (alien creatures, spacefarers, mechs, starships, stations, wrecks, worlds) fantasy (dragons, mythic beasts, giants, goblins, centaurs, elves, undead, golems, castles, airships) and horror (ghouls, vampires, banshees, cryptids, eldritch horrors, cultists, cursed objects, haunted houses, with a gore filter that starts on No gore), each drawn across a full morphology, with entities that wire across genres. Every field independently lockable."
 license = { text = "MIT" }
 readme = "README.md"
@@ -23,6 +23,11 @@ Icon = "https://raw.githubusercontent.com/EnragedAntelope/comfyui-sceneweaver/ma
 
 [tool.ruff]
 line-length = 100
+
+[tool.ruff.lint]
+# The rule set CI's pinned ruff applies by default, stated so a newer local ruff
+# (0.17 widened its defaults to import sorting and naming) agrees with CI.
+select = ["E4", "E7", "E9", "F"]
 
 [tool.ruff.lint.per-file-ignores]
 # The test modules prepend the repo root onto sys.path so they can be run

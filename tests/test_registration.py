@@ -100,14 +100,16 @@ class NodeIdentityTests(unittest.TestCase):
         self.assertEqual([o.display_name for o in entity_outputs], ["entity_text", "entity"])
         self.assertEqual(entity_outputs[1].io_type, "SCENE_ENTITY")
 
-    def test_both_force_a_fresh_roll_every_queue(self) -> None:
-        """ComfyUI #11905: with ``control_after_generate`` advancing the seed, a
-        cached result can be served for the new seed. ``vars(cls)`` rather than
-        ``hasattr`` -- the base class declares the hook either way."""
+    def test_neither_overrides_the_input_cache(self) -> None:
+        """The output is a pure function of the inputs (a changed seed is a
+        changed input), so ComfyUI's input cache is correct. A never-equal
+        fingerprint cannot produce a new scene -- an unchanged seed re-runs to the
+        same text -- but it enters every downstream node's cache signature, so a
+        re-queue re-ran the sampler. Measured on a live ComfyUI before removing it.
+        ``vars(cls)`` rather than ``hasattr`` -- the base class declares the hook."""
         for name, node in self.nodes.items():
             with self.subTest(node=name):
-                self.assertIn("fingerprint_inputs", vars(node))
-                self.assertNotEqual(node.fingerprint_inputs(), node.fingerprint_inputs())
+                self.assertNotIn("fingerprint_inputs", vars(node))
 
     def test_neither_node_is_a_shell_any_more(self) -> None:
         """Replaces the placeholder assertions Todos 17 and 18 retired. The
