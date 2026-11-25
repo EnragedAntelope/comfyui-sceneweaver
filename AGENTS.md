@@ -23,7 +23,8 @@ _Last verified: 2026-11-24_
   horror, and a locked value re-drawing the field that contradicts it. 0.8.2
   drops the nodes' `NaN` cache fingerprint, which re-ran every downstream node
   on each queue ("0.8.2: the input cache is ComfyUI's" in
-  `docs/architecture.md`). Registry: 0.8.1 was still Flagged on 2026-11-24 on
+  `docs/architecture.md`), and rewords three sci-fi values that pushed the
+  `ring` motif over its ceiling. Registry: 0.8.1 was still Flagged on 2026-11-24 on
   the recreate code's known false positive, review request open (see
   `docs/registry-release-checks.md`). The repo is public at `EnragedAntelope/comfyui-sceneweaver`;
   the full pre-release history stays local (a git bundle outside the repo, and
@@ -67,7 +68,8 @@ _Last verified: 2026-11-24_
     report "value not in list" (0.7.0 renamed the sci-fi situation "writhing in a
     tight coil" to "thrashing violently in place"; 0.8.0 rewrote the acts aimed
     at "the viewer" and renamed many acts for verb spread; Round XXXI renames
-    four acts, listed there). Seeds do not
+    four acts, listed there; 0.8.2 rewords three sci-fi values, listed in
+    its section). Seeds do not
     reproduce 0.7.0 prompts: the variant and the new scene fields are drawn. Release notes live in commit messages, never in
     the README (maintainer's rule).
   - Cross-genre trait conflicts fail open: a wired foreign entity carries no

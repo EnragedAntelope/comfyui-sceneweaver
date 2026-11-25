@@ -3047,3 +3047,13 @@ Concatenate Text into Preview as Text cached nothing on an identical second
 queue; the same two nodes without Scene Weaver upstream were both cached. In a
 real graph that re-ran the encoder and the sampler on every queue. The override
 is gone and `tests/test_registration.py` pins its absence.
+
+The same release clears the sci-fi `ring` motif, which sat at 15.90% over
+1000 seeds (ceiling 15%) on 0.8.1: CI sampled 500 seeds, where it passed, while
+`AGENTS.md` lists the 1000-seed run. Three values used the word for decoration
+rather than for a ring subject and are reworded in place, so every other scene
+is byte-identical: "spine-ringed shell" is "spine-fringed shell",
+"concentric-ring rosettes" is "concentric-banded rosettes", and "coiling itself
+into a defensive ring" is "looping itself into a defensive circle". The motif
+measures 14.70%. CI now samples 1000 seeds per pack, as `AGENTS.md` does. A
+workflow that locked one of the three old values reports "value not in list".
