@@ -71,14 +71,9 @@ def build_entity_node(pack: GenrePack) -> type:
                 ],
             )
 
-        @classmethod
-        def fingerprint_inputs(cls, **kwargs: Any) -> float:
-            # Force a fresh roll on every queue. ComfyUI can serve a stale cached
-            # result when control_after_generate auto-advances the seed (ComfyUI
-            # #11905); a never-equal value makes this node's cache signature always
-            # differ, so it re-executes and reads the new seed. Pure cache control --
-            # no RNG here, so a fixed seed still reproduces exactly.
-            return float("nan")
+        # No fingerprint_inputs: the output is a pure function of the inputs, so
+        # ComfyUI's own input cache is correct. A NaN fingerprint (0.8.1 and
+        # earlier) re-ran every downstream node, sampler included, on each queue.
 
         @classmethod
         def execute(cls, **kwargs: Any) -> "io.NodeOutput":

@@ -55,11 +55,11 @@ jobs:
         # Bias is measured, not assumed: a distribution defect has no
         # single-scene symptom. Fails if one kind or the scale extremes break
         # their documented ceiling; the baseline is in docs/architecture.md.
-        run: python scripts/sample_distribution.py --seeds 500
+        run: python scripts/sample_distribution.py --seeds 1000
       - name: Measure the fantasy distribution
-        run: python scripts/sample_distribution.py --pack fantasy --seeds 500
+        run: python scripts/sample_distribution.py --pack fantasy --seeds 1000
       - name: Measure the horror distribution
-        run: python scripts/sample_distribution.py --pack horror --seeds 500
+        run: python scripts/sample_distribution.py --pack horror --seeds 1000
       - name: Audit the reported concern classes
         # The user's own graph: a Scene Entity wired into the Scene Weaver. Every class a
         # reported image fell into must stay absent; the flags are frozen in scripts/concern_flags.py.

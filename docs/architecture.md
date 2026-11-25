@@ -3033,3 +3033,27 @@ without locks changed. Of 1200 scenes with two or three fields locked from an
 earlier draw, 66 changed, all of them scenes that had a conflict warning
 before. Scenes with any conflict warning went from 78 to 16, and none failed
 to settle.
+
+## 0.8.2: the input cache is ComfyUI's
+
+Both node classes used to return `NaN` from `fingerprint_inputs`, citing
+ComfyUI #11905 (a randomised seed served a cached result). That could never
+produce a new scene: a changed seed is a changed input and already misses the
+cache, and an unchanged one re-runs to the same text, because a scene is a pure
+function of its inputs (the same seed hashed identically under three
+`PYTHONHASHSEED` values). What the `NaN` did do is enter the cache signature of
+every node downstream. On a live ComfyUI, Scene Weaver at a fixed seed into
+Concatenate Text into Preview as Text cached nothing on an identical second
+queue; the same two nodes without Scene Weaver upstream were both cached. In a
+real graph that re-ran the encoder and the sampler on every queue. The override
+is gone and `tests/test_registration.py` pins its absence.
+
+The same release clears the sci-fi `ring` motif, which sat at 15.90% over
+1000 seeds (ceiling 15%) on 0.8.1: CI sampled 500 seeds, where it passed, while
+`AGENTS.md` lists the 1000-seed run. Three values used the word for decoration
+rather than for a ring subject and are reworded in place, so every other scene
+is byte-identical: "spine-ringed shell" is "spine-fringed shell",
+"concentric-ring rosettes" is "concentric-banded rosettes", and "coiling itself
+into a defensive ring" is "looping itself into a defensive circle". The motif
+measures 14.70%. CI now samples 1000 seeds per pack, as `AGENTS.md` does. A
+workflow that locked one of the three old values reports "value not in list".

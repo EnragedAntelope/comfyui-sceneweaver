@@ -1163,7 +1163,7 @@ _VARIANT_MATERIAL: dict[str, tuple[str, ...]] = {
     "upright hunter": ("quill-backed hide", "mottled ambush hide", "venom-slick scales"),
     "stone feeder": ("ore-flecked mineral hide", "gem-studded hide", "salt-crusted mineral hide"),
     "mimic body": ("petal-patterned film", "clear glassy resin", "eye-spotted scale"),
-    "radial form": ("spine-ringed shell", "nettle-celled lace", "glassy calcified lace"),
+    "radial form": ("spine-fringed shell", "nettle-celled lace", "glassy calcified lace"),
     "filter swarm": ("swollen cloudy flesh", "silt-dulled membrane", "nettle-celled membrane"),
     "symbiotic body": ("fungus-laced flesh", "crystal-grown resin", "parasite-veined flesh"),
     "brooding colony": ("split brittle carapace", "spore-pitted silicate", "resin-glazed carapace"),
@@ -1697,7 +1697,7 @@ MARKINGS_POOLS: dict[str, tuple[str, ...]] = {
         "moulted banding", "spotted dappling", "countershaded gradient",
         # "eyespot" (a camouflage marking, like a moth wing's false eye) reads
         # as a literal extra eye on the creature -- render-trap-word class.
-        "warning chevron patterning", "concentric-ring rosettes", "ripple striping",
+        "warning chevron patterning", "concentric-banded rosettes", "ripple striping",
         "mottled camouflage blotching", "iridescent scale sheen",
         "veined tracery", "brindled patterning", "rosette clustering",
         "chevron-scaled flanks",
@@ -1706,7 +1706,7 @@ MARKINGS_POOLS: dict[str, tuple[str, ...]] = {
     # A rooted growth has no scales or flanks to mark.
     "sessile growth": (
         "veined tracery", "mottled camouflage blotching", "spotted dappling",
-        "iridescent banding", "concentric-ring rosettes",
+        "iridescent banding", "concentric-banded rosettes",
     ),
     "spacefarer": (
         "colony sigil emblems", "rank chevrons", "shoulder hazard striping",
@@ -4294,7 +4294,7 @@ _OWN_SEGMENTED = (
 
 _OWN_VERMIFORM = (
     "bursting up through the ground in a spray of rock",
-    "coiling itself into a defensive ring",
+    "looping itself into a defensive circle",
     "swallowing loose stones as it moves",
 )
 
@@ -10840,7 +10840,7 @@ SITUATION_TIERS.update({
     "moulting out of a split old shell": "activity",
     "stringing silk lines between two rocks": "activity",
     "bursting up through the ground in a spray of rock": "event",
-    "coiling itself into a defensive ring": "idle",
+    "looping itself into a defensive circle": "idle",
     "swallowing loose stones as it moves": "activity",
     "preening its wing membranes": "idle",
     "mantling its wings over a fresh kill": "event",
@@ -11173,7 +11173,7 @@ VALUE_NEEDS["situation"].update({
     "moulting out of a split old shell": frozenset(),
     "stringing silk lines between two rocks": frozenset(),
     "bursting up through the ground in a spray of rock": frozenset({"ground"}),
-    "coiling itself into a defensive ring": frozenset(),
+    "looping itself into a defensive circle": frozenset(),
     "swallowing loose stones as it moves": frozenset(),
     "preening its wing membranes": frozenset(),
     "mantling its wings over a fresh kill": frozenset(),

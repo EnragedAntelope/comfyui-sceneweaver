@@ -343,6 +343,19 @@ class WiredEntityTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             NODE.execute(seed=8, entity_1_in="not a payload")
 
+    def test_a_cached_payload_is_reused_unchanged(self) -> None:
+        """ComfyUI caches the Entity node and hands the same payload object to
+        every later run, so the scene must neither mutate it nor read it
+        differently the second time."""
+        for seed in range(25):
+            with self.subTest(seed=seed):
+                _, payload = ENTITY_NODE.execute(seed=seed).args
+                before = json.dumps(payload, sort_keys=True)
+                first = _run(seed=seed, entity_count="2", **{entity_socket_key(2): payload})
+                self.assertEqual(json.dumps(payload, sort_keys=True), before)
+                second = _run(seed=seed, entity_count="2", **{entity_socket_key(2): payload})
+                self.assertEqual(first, second)
+
 
 if __name__ == "__main__":  # pragma: no cover
     unittest.main()
